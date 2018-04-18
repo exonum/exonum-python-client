@@ -2,9 +2,11 @@ import struct
 import sys
 import io
 
+import ipaddress
 import nanotime
 from datetime import datetime
 from uuid import UUID
+
 
 from types import FunctionType
 from collections import OrderedDict
@@ -67,7 +69,7 @@ class Exonum:
         sz = 8
         fmt = '<q'
 
-    class UnsupportedDateTime(Exception):
+    class UnsupportedDatatype(Exception):
         pass
 
     class DateTime(ExonumField):
@@ -82,8 +84,9 @@ class Exonum:
             elif isinstance(val, nanotime.nanotime):
                 self.val = val
             else:
-                raise Exonum.UnsupportedDateTime(
-                    "Type {} is not supported".format(type(val)))
+                raise Exonum.UnsupportedDatatype(
+                    "Type {} is not supported for initializing DateTime"
+                    .format(type(val)))
 
         def write(self):
             sec = int(self.val.seconds())
@@ -115,7 +118,21 @@ class Exonum:
             return cls(UUID(bytes=data))
 
     class SocketAddr(ExonumField):
-        pass
+        sz = 6
+        fmt = "<4BH"
+
+        def __init__(self, val):
+            ip = ipaddress.IPv4Address(val[0])
+            self.val = (ip, val[1])
+
+        def write(self):
+            return self.val[0].packed + struct.pack("<H", self.val[1])
+
+        @classmethod
+        def read(cls, buf, offset):
+            data = struct.unpack_from(cls.fmt, buf, offset=offset)
+            return cls(data)
+
 
     # dyn size
     class vec(ExonumField):
@@ -173,3 +190,4 @@ class Fuck(metaclass = ExonumMeta):
     second = Exonum.u8
     time = Exonum.DateTime
     u = Exonum.Uuid
+    addr = Exonum.SocketAddr
