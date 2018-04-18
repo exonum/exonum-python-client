@@ -24,9 +24,9 @@ class ExonumField:
         val, =  struct.unpack_from(cls.fmt, buf, offset=offset)
         return cls(val)
 
-    def write(self, buf):
+    def write(self, buf, pos):
         raw = struct.pack(self.fmt, self.val)
-        buf.write(raw)
+        buf[pos: pos + self.sz] = raw
 
     def __str__(self):
         return "{} {}".format(self.__class__, self.val)
@@ -37,9 +37,8 @@ class ExonumSegment(ExonumField):
     fmt = "<2I"
     T = None
 
-    def write(self, buf):
+    def write(self, buf, pos):
         pass
-
 
 
 class Str(ExonumSegment):
@@ -103,11 +102,11 @@ class Exonum:
                     "Type {} is not supported for initializing DateTime"
                     .format(type(val)))
 
-        def write(self, buf):
+        def write(self, buf, pos):
             sec = int(self.val.seconds())
             nan = (self.val - nanotime.seconds(sec)).nanoseconds()
             raw = struct.pack(self.fmt, sec, nan)
-            buf.write(raw)
+            buf[pos: pos + self.sz] = raw
 
         @classmethod
         def read(cls, buf, offset):
@@ -124,8 +123,8 @@ class Exonum:
             else:
                 self.val = UUID(val)
 
-        def write(self, raw):
-            raw.write(self.val.bytes)
+        def write(self, buf, pos):
+            buf[pos: pos + self.sz] = self.val.bytes
 
         @classmethod
         def read(cls, buf, offset):
@@ -140,9 +139,9 @@ class Exonum:
             ip = ipaddress.IPv4Address(val[0])
             self.val = (ip, val[1])
 
-        def write(self, buf):
+        def write(self, buf, pos):
             raw = self.val[0].packed + struct.pack("<H", self.val[1])
-            buf.write(raw)
+            buf[pos: pos + self.sz] = raw
 
         @classmethod
         def read(cls, buf, offset):
@@ -162,14 +161,16 @@ class Exonum:
 
 class ExonumBase:
     def __init__(self, **kwargs):
+        sz = 0
         for field in self.__exonum_fields__:
             cls = getattr(self.__class__, field)
             setattr(self, field,  cls(kwargs[field]))
 
-    def write(self, buf):
+    def write(self, buf, pos):
         for field in self.__exonum_fields__:
             field = getattr(self, field)
-            field.write(buf)
+            field.write(buf, pos)
+            pos += field.sz
 
     @classmethod
     def read(cls, bytestring):
@@ -187,10 +188,17 @@ class ExonumBase:
 class ExonumMeta(type):
     _exclude = set(dir(type))
     def __new__(self, name, bases, classdict):
-        fields = [k for k, v in classdict.items()
-                  if k not in self._exclude
-                  and not isinstance(v, (FunctionType, classmethod, staticmethod))]
+        fields = []
+        sz = 0
+        for k, v in classdict.items():
+            if (k not in self._exclude
+                    and not isinstance(v, (FunctionType, classmethod, staticmethod))):
+                fields.append(k)
+                sz += v.sz
+
         classdict['__exonum_fields__'] = fields
+        classdict['sz'] = sz
+
         return type(name, (ExonumBase, *bases), classdict)
 
 
@@ -201,8 +209,5 @@ if sys.version_info.major < 3 or \
 
 
 class Fuck(metaclass = ExonumMeta):
-    first = Exonum.u8
-    second = Exonum.u8
-    time = Exonum.DateTime
-    u = Exonum.Uuid
     addr = Exonum.SocketAddr
+    first = Exonum.u64
