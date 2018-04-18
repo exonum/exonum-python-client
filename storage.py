@@ -1,8 +1,10 @@
 import struct
 import sys
+import io
 
 import nanotime
 from datetime import datetime
+from uuid import UUID
 
 from types import FunctionType
 from collections import OrderedDict
@@ -25,7 +27,7 @@ class ExonumField:
         val, =  struct.unpack_from(cls.fmt, buf, offset=offset)
         return cls(val)
 
-    def write(self, val):
+    def write(self):
         return struct.pack(self.fmt, self.val)
 
     def __str__(self):
@@ -48,7 +50,7 @@ class Exonum:
 
     class u64(ExonumField):
         sz = 8
-        fmt = '<L'
+        fmt = '<Q'
 
     class i8(ExonumField):
         fmt = '<b'
@@ -63,14 +65,14 @@ class Exonum:
 
     class i64(ExonumField):
         sz = 8
-        fmt = '<l'
+        fmt = '<q'
 
     class UnsupportedDateTime(Exception):
         pass
 
     class DateTime(ExonumField):
         sz = 12
-        fmt = '<lI'
+        fmt = '<qI'
 
         def __init__(self, val):
             if isinstance(val, (float, int)):
@@ -86,6 +88,7 @@ class Exonum:
         def write(self):
             sec = int(self.val.seconds())
             nan = (self.val - nanotime.seconds(sec)).nanoseconds()
+            print(struct.pack(self.fmt, sec, nan))
             return struct.pack(self.fmt, sec, nan)
 
         @classmethod
@@ -93,11 +96,25 @@ class Exonum:
             sec, nan = struct.unpack_from(cls.fmt, buf, offset=offset)
             return cls(nanotime.seconds(sec) + nanotime.nanoseconds(nan))
 
+    class Uuid(ExonumField):
+        sz =16
+        fmt = "<16B"
+
+        def __init__(self, val):
+            if isinstance(val, UUID):
+                self.val = val
+            else:
+                self.val = UUID(val)
+
+        def write(self):
+            return self.val.bytes
+
+        @classmethod
+        def read(cls, buf, offset):
+            data, = struct.unpack_from(cls.fmt, buf, offset=offset)
+            return cls(UUID(bytes=data))
 
     class SocketAddr(ExonumField):
-        pass
-
-    class Uuid(ExonumField):
         pass
 
     # dyn size
@@ -111,14 +128,16 @@ class Exonum:
 class ExonumBase:
     def __init__(self, **kwargs):
         for field in self.__exonum_fields__:
-            setattr(self, field, kwargs[field])
+            cls = getattr(self.__class__, field)
+            setattr(self, field,  cls(kwargs[field]))
 
     def write(self):
-        b = []
+        b = io.BytesIO()
         for field in self.__exonum_fields__:
-            data = getattr(self, field).write()
-            b.append(data)
-        return b''.join(b)
+            field = getattr(self, field)
+            data = field.write()
+            b.write(data)
+        return b.getvalue()
 
     @classmethod
     def read(cls, bytestring):
@@ -151,5 +170,6 @@ if sys.version_info.major < 3 or \
 
 class Fuck(metaclass = ExonumMeta):
     first = Exonum.u8
-    second = Exonum.u32
+    second = Exonum.u8
     time = Exonum.DateTime
+    u = Exonum.Uuid
