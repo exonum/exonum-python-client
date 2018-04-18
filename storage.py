@@ -11,11 +11,6 @@ from uuid import UUID
 from types import FunctionType
 from collections import OrderedDict
 
-# do we need this at all?
-
-SIGNATURE_LEN = 64  # bytes
-SERVICE_DATA_LEN = 10  # bytes
-
 
 class ExonumField:
     sz = 1
@@ -29,11 +24,31 @@ class ExonumField:
         val, =  struct.unpack_from(cls.fmt, buf, offset=offset)
         return cls(val)
 
-    def write(self):
-        return struct.pack(self.fmt, self.val)
+    def write(self, buf):
+        raw = struct.pack(self.fmt, self.val)
+        buf.write(raw)
 
     def __str__(self):
         return "{} {}".format(self.__class__, self.val)
+
+
+class ExonumSegment(ExonumField):
+    sz = 8
+    fmt = "<2I"
+    T = None
+
+    def write(self, buf):
+        pass
+
+
+
+class Str(ExonumSegment):
+    def item_sz(self):
+        return 1
+
+    def count(self):
+        return len(self.val.encode())
+
 
 class Exonum:
     class boolean(ExonumField):
@@ -88,11 +103,11 @@ class Exonum:
                     "Type {} is not supported for initializing DateTime"
                     .format(type(val)))
 
-        def write(self):
+        def write(self, buf):
             sec = int(self.val.seconds())
             nan = (self.val - nanotime.seconds(sec)).nanoseconds()
-            print(struct.pack(self.fmt, sec, nan))
-            return struct.pack(self.fmt, sec, nan)
+            raw = struct.pack(self.fmt, sec, nan)
+            buf.write(raw)
 
         @classmethod
         def read(cls, buf, offset):
@@ -109,8 +124,8 @@ class Exonum:
             else:
                 self.val = UUID(val)
 
-        def write(self):
-            return self.val.bytes
+        def write(self, raw):
+            raw.write(self.val.bytes)
 
         @classmethod
         def read(cls, buf, offset):
@@ -125,8 +140,9 @@ class Exonum:
             ip = ipaddress.IPv4Address(val[0])
             self.val = (ip, val[1])
 
-        def write(self):
-            return self.val[0].packed + struct.pack("<H", self.val[1])
+        def write(self, buf):
+            raw = self.val[0].packed + struct.pack("<H", self.val[1])
+            buf.write(raw)
 
         @classmethod
         def read(cls, buf, offset):
@@ -134,11 +150,13 @@ class Exonum:
             return cls(data)
 
 
-    # dyn size
-    class vec(ExonumField):
+    class Vec(ExonumSegment):
         pass
 
-    class str(ExonumField):
+    class Arr(Vec):
+        pass
+
+    class Str(ExonumField):
         pass
 
 
@@ -148,13 +166,10 @@ class ExonumBase:
             cls = getattr(self.__class__, field)
             setattr(self, field,  cls(kwargs[field]))
 
-    def write(self):
-        b = io.BytesIO()
+    def write(self, buf):
         for field in self.__exonum_fields__:
             field = getattr(self, field)
-            data = field.write()
-            b.write(data)
-        return b.getvalue()
+            field.write(buf)
 
     @classmethod
     def read(cls, bytestring):
