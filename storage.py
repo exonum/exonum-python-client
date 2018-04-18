@@ -50,13 +50,20 @@ class Exonum:
     class i64(ExonumField):
         fmt = '<l'
 
+    class DateTime(ExonumField):
+        fmt = '<lI'
+
+    class SocketAddr(ExonumField):
+        pass
+
+    class Uuid(ExonumField):
+        pass
+
+    # dyn size
     class vec(ExonumField):
         pass
 
     class str(ExonumField):
-        pass
-
-    class ip4addr(ExonumField):
         pass
 
 
