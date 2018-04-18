@@ -36,17 +36,16 @@ class ExonumSegment(ExonumField):
     sz = 8
     fmt = "<2I"
     T = None
+    item_size = 1
 
     def write(self, buf, pos):
-        pass
+        buf[pos: pos + self.sz] = struct.pack(self.fmt, len(buf), self.count())
+        buf += self.enc()
 
-
-class Str(ExonumSegment):
-    def item_sz(self):
-        return 1
-
-    def count(self):
-        return len(self.val.encode())
+    @classmethod
+    def read(cls, buf, offset):
+        pos, cnt = struct.unpack_from(cls.fmt, buf, offset=offset)
+        cls(cls.read_data(buf, pos, cnt))
 
 
 class Exonum:
@@ -148,15 +147,29 @@ class Exonum:
             data = struct.unpack_from(cls.fmt, buf, offset=offset)
             return cls(data)
 
+    class Str(ExonumSegment):
+        def count(self):
+            return len(self.val.encode())
 
-    class Vec(ExonumSegment):
-        pass
+        def enc(self):
+            return self.val.encode()
 
-    class Arr(Vec):
-        pass
+        @staticmethod
+        def read_data(buf, pos, cnt):
+            return buf[pos: pos + cnt].decode("utf-8")
 
-    class Str(ExonumField):
-        pass
+    class VecInternal(ExonumSegment):
+        def count(self):
+            return len(self.val)
+
+    @classmethod
+    def Vec(cls, T):
+        return type("Exonum.Vec<{}>".format(T.__name__),
+                    (cls.VecInternal, ),
+                    {"T": T, "item_size": T.sz})
+
+    # class Arr(Vec):
+    #     pass
 
 
 class ExonumBase:
@@ -211,3 +224,4 @@ if sys.version_info.major < 3 or \
 class Fuck(metaclass = ExonumMeta):
     addr = Exonum.SocketAddr
     first = Exonum.u64
+    hmm = Exonum.Str
