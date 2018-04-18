@@ -1,6 +1,8 @@
 import struct
 import sys
 
+import nanotime
+
 from types import FunctionType
 from collections import OrderedDict
 
@@ -18,9 +20,7 @@ class ExonumField:
 
     @classmethod
     def write(self, val):
-        print(self.fmt, val, struct.pack(self.fmt, val))
         return struct.pack(self.fmt, val)
-
 
 class Exonum:
     class boolean(ExonumField):
@@ -50,8 +50,33 @@ class Exonum:
     class i64(ExonumField):
         fmt = '<l'
 
+    class UnsupportedDateTime(Exception):
+        pass
+
     class DateTime(ExonumField):
         fmt = '<lI'
+
+        @classmethod
+        def write(self, val):
+            if isinstance(val, (float, int)):
+                t = nanotime.timestamp(val)
+            elif isinstance(val, DateTime):
+                t = nanotime.datetime(val)
+            elif isinstance(val, nanotime.nanotime):
+                t = val
+            else:
+                raise UnsupportedDateTime(
+                    "Type {} is not supported".format(type(val)))
+
+            sec = int(t.seconds())
+            nan = (t - nanotime.seconds(sec)).nanoseconds()
+            return struct.pack(self.fmt, sec, nan)
+
+        @classmethod
+        def read(self, buf, offset):
+            sec, nan = struct.unpack_from(self.fmt, buf, offset=offset)
+            return nanotime.seconds(sec) + nanotime.nanoseconds(nan)
+
 
     class SocketAddr(ExonumField):
         pass
@@ -67,16 +92,24 @@ class Exonum:
         pass
 
 
-def fields__init__(self, **kwargs):
-    for field in self.__exonum_fields__:
-        setattr(self, field, kwargs[field])
+class ExonumBase:
+    def __init__(self, **kwargs):
+        for field in self.__exonum_fields__:
+            setattr(self, field, kwargs[field])
 
-def binary(self):
-    b = []
-    for field in self.__exonum_fields__:
-        cls = getattr(self.__class__, field)
-        b.append(cls.write(getattr(self, field)))
-    return b''.join(b)
+    def binary(self):
+        b = []
+        for field in self.__exonum_fields__:
+            cls = getattr(self.__class__, field)
+            data = cls.write(getattr(self, field))
+            b.append(data)
+        return b''.join(b)
+
+    @classmethod
+    def read(cls, bytestring):
+        for field in self.__exonum_fields__:
+            pass
+
 
 class ExonumMeta(type):
     _exclude = set(dir(type))
@@ -85,10 +118,8 @@ class ExonumMeta(type):
                   if k not in self._exclude
                   and not isinstance(v, (FunctionType, classmethod, staticmethod))]
         classdict['__exonum_fields__'] = fields
-        cls = type.__new__(self, name, bases, classdict)
-        cls.__init__ = fields__init__
-        cls.binary = binary
-        return cls
+        return type(name, (ExonumBase, *bases), classdict)
+
 
 # https://www.python.org/dev/peps/pep-0520/
 if sys.version_info.major < 3 or \
@@ -99,3 +130,4 @@ if sys.version_info.major < 3 or \
 class Fuck(metaclass = ExonumMeta):
     first = Exonum.u8
     second = Exonum.u32
+    time = Exonum.DateTime
