@@ -2,6 +2,7 @@ import struct
 import sys
 
 import nanotime
+from datetime import datetime
 
 from types import FunctionType
 from collections import OrderedDict
@@ -11,16 +12,24 @@ from collections import OrderedDict
 SIGNATURE_LEN = 64  # bytes
 SERVICE_DATA_LEN = 10  # bytes
 
+
 class ExonumField:
+    sz = 1
     fmt = None
 
-    @classmethod
-    def read(self, buf, offset):
-        return struct.unpack_from(self.fmt, buf, offset=offset)
+    def __init__(self, val):
+        self.val = val
 
     @classmethod
+    def read(cls, buf, offset):
+        val, =  struct.unpack_from(cls.fmt, buf, offset=offset)
+        return cls(val)
+
     def write(self, val):
-        return struct.pack(self.fmt, val)
+        return struct.pack(self.fmt, self.val)
+
+    def __str__(self):
+        return "{} {}".format(self.__class__, self.val)
 
 class Exonum:
     class boolean(ExonumField):
@@ -30,52 +39,59 @@ class Exonum:
         fmt = '<B'
 
     class u16(ExonumField):
+        sz = 2
         fmt = '<H'
 
     class u32(ExonumField):
+        sz = 4
         fmt = '<I'
 
     class u64(ExonumField):
+        sz = 8
         fmt = '<L'
 
     class i8(ExonumField):
         fmt = '<b'
 
     class i16(ExonumField):
+        sz = 2
         fmt = '<h'
 
     class i32(ExonumField):
+        sz = 4
         fmt = '<i'
 
     class i64(ExonumField):
+        sz = 8
         fmt = '<l'
 
     class UnsupportedDateTime(Exception):
         pass
 
     class DateTime(ExonumField):
+        sz = 12
         fmt = '<lI'
 
-        @classmethod
-        def write(self, val):
+        def __init__(self, val):
             if isinstance(val, (float, int)):
-                t = nanotime.timestamp(val)
-            elif isinstance(val, DateTime):
-                t = nanotime.datetime(val)
+                self.val = nanotime.timestamp(val)
+            elif isinstance(val, datetime):
+                self.val = nanotime.datetime(val)
             elif isinstance(val, nanotime.nanotime):
-                t = val
+                self.val = val
             else:
-                raise UnsupportedDateTime(
+                raise Exonum.UnsupportedDateTime(
                     "Type {} is not supported".format(type(val)))
 
-            sec = int(t.seconds())
-            nan = (t - nanotime.seconds(sec)).nanoseconds()
+        def write(self):
+            sec = int(self.val.seconds())
+            nan = (self.val - nanotime.seconds(sec)).nanoseconds()
             return struct.pack(self.fmt, sec, nan)
 
         @classmethod
-        def read(self, buf, offset):
-            sec, nan = struct.unpack_from(self.fmt, buf, offset=offset)
-            return nanotime.seconds(sec) + nanotime.nanoseconds(nan)
+        def read(cls, buf, offset):
+            sec, nan = struct.unpack_from(cls.fmt, buf, offset=offset)
+            return cls(nanotime.seconds(sec) + nanotime.nanoseconds(nan))
 
 
     class SocketAddr(ExonumField):
@@ -97,18 +113,24 @@ class ExonumBase:
         for field in self.__exonum_fields__:
             setattr(self, field, kwargs[field])
 
-    def binary(self):
+    def write(self):
         b = []
         for field in self.__exonum_fields__:
-            cls = getattr(self.__class__, field)
-            data = cls.write(getattr(self, field))
+            data = getattr(self, field).write()
             b.append(data)
         return b''.join(b)
 
     @classmethod
     def read(cls, bytestring):
-        for field in self.__exonum_fields__:
-            pass
+        data = {}
+        offset = 0
+        for field in cls.__exonum_fields__:
+            fcls = getattr(cls, field)
+            val = fcls.read(bytestring, offset)
+            offset += fcls.sz
+            print(val)
+            data[field] = val
+        return cls(**data)
 
 
 class ExonumMeta(type):
