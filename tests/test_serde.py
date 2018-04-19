@@ -1,5 +1,5 @@
-from exonum.datatypes import ExonumMeta, Str, Vec, i64, u8, u16
-
+from exonum.datatypes import ExonumMeta, SocketAddr, Str, Vec, i64, u8, u16, Uuid
+from uuid import uuid4
 
 def test_simple():
     class X(metaclass=ExonumMeta):
@@ -92,5 +92,13 @@ def test_inner():
     assert str(y) == s
     assert str(y2) == s
 
-# def test_ip_uuid():
-#     class U(metaclass=ExonumMeta)
+
+def test_ip_uuid():
+    class U(metaclass=ExonumMeta):
+        soc = Vec(SocketAddr)
+        ids = Vec(Uuid)
+
+    u = U(soc=[("10.1.1.1", 8080), ("192.168.1.1", 9000)],
+          ids=[uuid4(), uuid4()])
+
+    b = u.to_bytes()
