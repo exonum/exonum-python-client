@@ -1,6 +1,4 @@
 from exonum.datatypes import *
-from exonum.serde import *
-
 
 def test_simple():
     class X(metaclass=ExonumMeta):
@@ -40,12 +38,25 @@ def test_simple_string():
 def test_vec():
     class X(metaclass=ExonumMeta):
         first = Vec(u16)
-        second = Vec(Str)
+        second = Str
 
     x1 = X(first = [1,2,3,4,5],
-           second = ["Foo", "boo", "фывапролдж!"])
+           second = "фывапролдж!")
     b = x1.to_bytes()
     x2 = X.read(b)
 
+    print(x2)
+
     assert x1.first == x2.first
     assert x1.second == x2.second
+
+def test_vec_from_rust():
+    class X(metaclass=ExonumMeta):
+        first = Vec(u16)
+        second = Str
+
+    with open("tests/test_data/boo.bin", "rb") as f:
+        x = X.read(f.read())
+
+    assert x.first = [65,1,63]
+    assert x.second = "Привет из exonum"

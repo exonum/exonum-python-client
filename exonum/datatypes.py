@@ -16,7 +16,10 @@ class ExonumField:
         self.val = val
 
     def __eq__(self, other):
-        return self.val == other.val
+        if hasattr(other, "val"):
+            return self.val == other.val
+        return self.val == other
+
 
     @classmethod
     def read(cls, buf, offset=0):
@@ -161,13 +164,39 @@ class Str(ExonumSegment):
     def read_data(buf, pos, cnt):
         return buf[pos: pos + cnt].decode("utf-8")
 
-class VecInternal(ExonumSegment):
+class VecSimple(ExonumSegment):
     def count(self):
         return len(self.val)
 
     def __getitem__(self, i):
         return self.val.__getitem__(i)
 
+    def __str__(self):
+        repr = ["{}".format(i) for i in self.val]
+        return "{} [{}]".format(self.__class__.__name__, ", ".join(repr))
+
+    @classmethod
+    def read_data(cls, buf, pos, cnt):
+        v = []
+        for _ in range(cnt):
+            t = cls.T.read(buf, offset=pos)
+            v.append(t)
+            pos += cls.T.sz
+        return v
+
+    def write(self, buf, pos):
+        buf[pos: pos + self.sz] = struct.pack(self.fmt, len(buf), self.count())
+        self.extend_buffer(buf)
+
+    def extend_buffer(self, buf):
+        data = bytearray(self.count() * self.T.sz)
+        offset = 0
+        for x in self.val:
+            struct.pack_into(self.T.fmt, data, offset, x)
+            offset += self.T.sz
+        buf += data
+
+class VecFields(VecSimple):
     @classmethod
     def read_data(cls, buf, pos, cnt):
         v = []
@@ -177,10 +206,6 @@ class VecInternal(ExonumSegment):
             v.append(t)
             pos += ExonumSegment.sz
         return v
-
-    def write(self, buf, pos):
-        buf[pos: pos + self.sz] = struct.pack(self.fmt, len(buf), self.count())
-        self.extend_buffer(buf)
 
     def extend_buffer(self, buf):
         pointers_sz = self.count() * 8  # FIXME
@@ -196,18 +221,19 @@ class VecInternal(ExonumSegment):
             data_start += self.T.sz
             start += 8
 
-
-    def __str__(self):
-        repr = ["{}".format(i) for i in self.val]
-        return "{} [{}]".format(self.__class__.__name__, ", ".join(repr))
-
 def Vec(T):
-    return type("Vec<{}>".format(T.__name__),
-                (VecInternal, ),
-                {"T": T, "item_size": T.sz})
+    if issubclass(T, ExonumBase):
+        return type("Vec<{}>".format(T.__name__),
+                    (VecFields, ),
+                    {"T": T, "item_size": T.sz})
 
-# class Arr(Vec):
-#     pass
+    if issubclass(T, ExonumSegment):
+        raise Exception("Not supported")
+
+    if issubclass(T, ExonumField):
+        return type("Vec<{}>".format(T.__name__),
+                    (VecSimple, ),
+                    {"T": T, "item_size": T.sz})
 
 class ExonumBase(ExonumField):
     def __init__(self, **kwargs):
