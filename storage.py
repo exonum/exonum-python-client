@@ -1,15 +1,13 @@
+import ipaddress
 import struct
 import sys
-import io
 
-import ipaddress
-import nanotime
+from collections import OrderedDict
 from datetime import datetime
+from types import FunctionType
 from uuid import UUID
 
-
-from types import FunctionType
-from collections import OrderedDict
+import nanotime
 
 
 class ExonumField:
@@ -45,7 +43,7 @@ class ExonumSegment(ExonumField):
     @classmethod
     def read(cls, buf, offset):
         pos, cnt = struct.unpack_from(cls.fmt, buf, offset=offset)
-        cls(cls.read_data(buf, pos, cnt))
+        return cls(cls.read_data(buf, pos, cnt))
 
 
 class Exonum:
@@ -113,7 +111,7 @@ class Exonum:
             return cls(nanotime.seconds(sec) + nanotime.nanoseconds(nan))
 
     class Uuid(ExonumField):
-        sz =16
+        sz = 16
         fmt = "<16B"
 
         def __init__(self, val):
@@ -162,6 +160,20 @@ class Exonum:
         def count(self):
             return len(self.val)
 
+        @classmethod
+        def read_data(cls, buf, pos, cnt):
+            v = []
+            for n in range(cnt):
+                offset, _ = struct.unpack_from(cls.fmt, buf, offset=pos)
+                t = cls.T.read(buf, offset=offset)
+                v.append(t)
+                pos += ExonumSegment.sz
+            return v
+
+        def __str__(self):
+            repr = ["{}".format(i) for i in self.val]
+            return "{} ({})".format(self.__class__.__name__, ", ".join(repr))
+
     @classmethod
     def Vec(cls, T):
         return type("Exonum.Vec<{}>".format(T.__name__),
@@ -171,13 +183,15 @@ class Exonum:
     # class Arr(Vec):
     #     pass
 
-
-class ExonumBase:
+class ExonumBase(ExonumField):
     def __init__(self, **kwargs):
-        sz = 0
         for field in self.__exonum_fields__:
             cls = getattr(self.__class__, field)
-            setattr(self, field,  cls(kwargs[field]))
+            if isinstance(kwargs[field], cls):
+                setattr(self, field,  kwargs[field])
+            else:
+                setattr(self, field,  cls(kwargs[field]))
+
 
     def write(self, buf, pos):
         for field in self.__exonum_fields__:
@@ -185,27 +199,33 @@ class ExonumBase:
             field.write(buf, pos)
             pos += field.sz
 
+    def __str__(self):
+        repr = []
+        for field in self.__exonum_fields__:
+            cls = getattr(self.__class__, field)
+            repr.append("{} = {}({})".format(field, cls.__name__, getattr(self, field).val))
+        return "{} ({})".format(self.__class__.__name__, ", ".join(repr))
+
+
     @classmethod
-    def read(cls, bytestring):
+    def read(cls, bytestring, offset=0):
         data = {}
-        offset = 0
         for field in cls.__exonum_fields__:
             fcls = getattr(cls, field)
             val = fcls.read(bytestring, offset)
             offset += fcls.sz
-            print(val)
             data[field] = val
         return cls(**data)
 
+_callables = (FunctionType, classmethod, staticmethod)
+_exclude = set(dir(type))
 
 class ExonumMeta(type):
-    _exclude = set(dir(type))
     def __new__(self, name, bases, classdict):
         fields = []
         sz = 0
         for k, v in classdict.items():
-            if (k not in self._exclude
-                    and not isinstance(v, (FunctionType, classmethod, staticmethod))):
+            if (k not in _exclude and not isinstance(v, _callables)):
                 fields.append(k)
                 sz += v.sz
 
@@ -221,7 +241,44 @@ if sys.version_info.major < 3 or \
     ExonumMeta.__prepare__  = classmethod(lambda *_: OrderedDict())
 
 
-class Fuck(metaclass = ExonumMeta):
-    addr = Exonum.SocketAddr
-    first = Exonum.u64
-    hmm = Exonum.Str
+
+if __name__ == '__main__':
+    class TwoIntegers(metaclass=ExonumMeta):
+        first = Exonum.u8
+        second = Exonum.u8
+
+    class Wow(metaclass=ExonumMeta):
+        z = Exonum.Vec(TwoIntegers)
+
+    class WowAdv(metaclass=ExonumMeta):
+        z = Exonum.Vec(TwoIntegers)
+        j = TwoIntegers
+
+    # with open("two_int.bin", 'rb') as f:
+    #     content = f.read()
+    #     print(TwoIntegers.read(content))
+
+    # [8, 0, 0, 0,
+    #  3, 0, 0, 0,
+    # 32, 0, 0, 0,  2, 0, 0, 0,
+    # 34, 0, 0, 0,  2, 0, 0, 0,
+    # 36, 0, 0, 0,  2, 0, 0, 0,
+    # 1,  2,
+    # 3,  4,
+    # 5,  6]
+
+    with open("wow.bin", 'rb') as f:
+        content = f.read()
+        w = Wow.read(content)
+        print(w.z)
+
+    # with open("wowx.bin", 'wb') as f:
+    #     a = Wow(z = ([TwoIntegers(first=1, second=2)]))
+    #     b = bytearray(a.sz)
+    #     a.write(b, 0)
+    #     f.write(a)
+
+    # with open("wow_adv.bin", 'rb') as f:
+    #     content = f.read()
+    #     w = WowAdv.read(content)
+    #     print(w.j.first)
