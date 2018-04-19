@@ -20,7 +20,6 @@ class ExonumField:
             return self.val == other.val
         return self.val == other
 
-
     @classmethod
     def read(cls, buf, offset=0):
         val, =  struct.unpack_from(cls.fmt, buf, offset=offset)
@@ -57,38 +56,48 @@ class ExonumSegment(ExonumField):
 class boolean(ExonumField):
     fmt = '<B'
 
+
 class u8(ExonumField):
     fmt = '<B'
+
 
 class u16(ExonumField):
     sz = 2
     fmt = '<H'
 
+
 class u32(ExonumField):
     sz = 4
     fmt = '<I'
+
 
 class u64(ExonumField):
     sz = 8
     fmt = '<Q'
 
+
 class i8(ExonumField):
     fmt = '<b'
+
 
 class i16(ExonumField):
     sz = 2
     fmt = '<h'
 
+
 class i32(ExonumField):
     sz = 4
     fmt = '<i'
+
 
 class i64(ExonumField):
     sz = 8
     fmt = '<q'
 
+
 class UnsupportedDatatype(Exception):
     pass
+
 
 class DateTime(ExonumField):
     sz = 12
@@ -102,7 +111,7 @@ class DateTime(ExonumField):
         elif isinstance(val, nanotime.nanotime):
             self.val = val
         else:
-            raise Exonum.UnsupportedDatatype(
+            raise UnsupportedDatatype(
                 "Type {} is not supported for initializing DateTime"
                 .format(type(val)))
 
@@ -116,6 +125,7 @@ class DateTime(ExonumField):
     def read(cls, buf, offset=0):
         sec, nan = struct.unpack_from(cls.fmt, buf, offset=offset)
         return cls(nanotime.seconds(sec) + nanotime.nanoseconds(nan))
+
 
 class Uuid(ExonumField):
     sz = 16
@@ -135,6 +145,7 @@ class Uuid(ExonumField):
         data, = struct.unpack_from(cls.fmt, buf, offset=offset)
         return cls(UUID(bytes=data))
 
+
 class SocketAddr(ExonumField):
     sz = 6
     fmt = "<4BH"
@@ -152,6 +163,7 @@ class SocketAddr(ExonumField):
         data = struct.unpack_from(cls.fmt, buf, offset=offset)
         return cls(data)
 
+
 class Str(ExonumSegment):
     def count(self):
         return len(self.val.encode())
@@ -162,6 +174,7 @@ class Str(ExonumSegment):
     @staticmethod
     def read_data(buf, pos, cnt):
         return buf[pos: pos + cnt].decode("utf-8")
+
 
 class VecSimple(ExonumSegment):
     def __init__(self, val):
@@ -201,6 +214,7 @@ class VecSimple(ExonumSegment):
             offset += self.T.sz
         buf += data
 
+
 class VecFields(VecSimple):
     @classmethod
     def read_data(cls, buf, pos, cnt):
@@ -226,6 +240,7 @@ class VecFields(VecSimple):
             data_start += self.T.sz
             start += 8
 
+
 def Vec(T):
     if issubclass(T, ExonumBase):
         return type("Vec<{}>".format(T.__name__),
@@ -239,6 +254,7 @@ def Vec(T):
         return type("Vec<{}>".format(T.__name__),
                     (VecSimple, ),
                     {"T": T})
+
 
 class ExonumBase(ExonumField):
     def __init__(self, **kwargs):
@@ -254,7 +270,7 @@ class ExonumBase(ExonumField):
             raise Exception("cant compare")
         for field in self.__exonum_fields__:
             if getattr(self, field) != getattr(other, field):
-                return Flase
+                return False
         return True
 
     def write(self, buf, pos):
@@ -266,10 +282,8 @@ class ExonumBase(ExonumField):
     def __str__(self):
         repr = []
         for field in self.__exonum_fields__:
-            cls = getattr(self.__class__, field)
             repr.append("{} = {}".format(field, getattr(self, field)))
         return "{} ({})".format(self.__class__.__name__, ", ".join(repr))
-
 
     @classmethod
     def read(cls, bytestring, offset=0):
@@ -280,6 +294,7 @@ class ExonumBase(ExonumField):
             offset += fcls.sz
             data[field] = val
         return cls(**data)
+
 
 class ExonumMeta(type):
     def __new__(self, name, bases, classdict):
@@ -300,4 +315,4 @@ class ExonumMeta(type):
 if sys.version_info.major < 3 or \
        (sys.version_info.major == 3 and sys.version_info.minor < 6):
     from collections import OrderedDict
-    ExonumMeta.__prepare__  = classmethod(lambda *_: OrderedDict())
+    ExonumMeta.__prepare__ = classmethod(lambda *_: OrderedDict())
