@@ -2,9 +2,7 @@ import ipaddress
 import struct
 import sys
 
-from collections import OrderedDict
 from datetime import datetime
-from types import FunctionType
 from uuid import UUID
 
 import nanotime
@@ -217,15 +215,12 @@ class ExonumBase(ExonumField):
             data[field] = val
         return cls(**data)
 
-_callables = (FunctionType, classmethod, staticmethod)
-_exclude = set(dir(type))
-
 class ExonumMeta(type):
     def __new__(self, name, bases, classdict):
         fields = []
         sz = 0
         for k, v in classdict.items():
-            if (k not in _exclude and not isinstance(v, _callables)):
+            if isinstance(v, type) and issubclass(v, ExonumField):
                 fields.append(k)
                 sz += v.sz
 
@@ -238,6 +233,7 @@ class ExonumMeta(type):
 # https://www.python.org/dev/peps/pep-0520/
 if sys.version_info.major < 3 or \
        (sys.version_info.major == 3 and sys.version_info.minor < 6):
+    from collections import OrderedDict
     ExonumMeta.__prepare__  = classmethod(lambda *_: OrderedDict())
 
 
