@@ -158,6 +158,9 @@ class Exonum:
         def count(self):
             return len(self.val)
 
+        def __getitem__(self, i):
+            return self.val.__getitem__(i)
+
         @classmethod
         def read_data(cls, buf, pos, cnt):
             v = []
@@ -308,3 +311,4 @@ if __name__ == '__main__':
         content = f.read()
         w = WowAdv.read(content)
         print(w)
+        print(w.z[0])
