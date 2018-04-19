@@ -43,7 +43,6 @@ class ExonumSegment(ExonumField):
     sz = 8
     fmt = "<2I"
     T = None
-    item_size = 1
 
     def write(self, buf, pos):
         buf[pos: pos + self.sz] = struct.pack(self.fmt, len(buf), self.count())
@@ -165,6 +164,12 @@ class Str(ExonumSegment):
         return buf[pos: pos + cnt].decode("utf-8")
 
 class VecSimple(ExonumSegment):
+    def __init__(self, val):
+        if isinstance(val[0], self.T):
+            self.val = val
+        else:
+            self.val = [self.T(x) for x in val]
+
     def count(self):
         return len(self.val)
 
@@ -192,7 +197,7 @@ class VecSimple(ExonumSegment):
         data = bytearray(self.count() * self.T.sz)
         offset = 0
         for x in self.val:
-            struct.pack_into(self.T.fmt, data, offset, x)
+            struct.pack_into(self.T.fmt, data, offset, x.val)
             offset += self.T.sz
         buf += data
 
@@ -225,7 +230,7 @@ def Vec(T):
     if issubclass(T, ExonumBase):
         return type("Vec<{}>".format(T.__name__),
                     (VecFields, ),
-                    {"T": T, "item_size": T.sz})
+                    {"T": T})
 
     if issubclass(T, ExonumSegment):
         raise Exception("Not supported")
@@ -233,7 +238,7 @@ def Vec(T):
     if issubclass(T, ExonumField):
         return type("Vec<{}>".format(T.__name__),
                     (VecSimple, ),
-                    {"T": T, "item_size": T.sz})
+                    {"T": T})
 
 class ExonumBase(ExonumField):
     def __init__(self, **kwargs):
@@ -243,6 +248,14 @@ class ExonumBase(ExonumField):
                 setattr(self, field,  kwargs[field])
             else:
                 setattr(self, field,  cls(kwargs[field]))
+
+    def __eq__(self, other):
+        if self.__class__ != other.__class__:
+            raise Exception("cant compare")
+        for field in self.__exonum_fields__:
+            if getattr(self, field) != getattr(other, field):
+                return Flase
+        return True
 
     def write(self, buf, pos):
         for field in self.__exonum_fields__:

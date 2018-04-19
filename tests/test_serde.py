@@ -29,7 +29,6 @@ def test_simple_string():
     b = x1.to_bytes()
     x2 = X.read(b)
 
-    print(x1)
     assert x1.first == x2.first
     assert x1.second == x2.second
     assert x1.third == x2.third
@@ -45,8 +44,6 @@ def test_vec():
     b = x1.to_bytes()
     x2 = X.read(b)
 
-    print(x2)
-
     assert x1.first == x2.first
     assert x1.second == x2.second
 
@@ -58,5 +55,32 @@ def test_vec_from_rust():
     with open("tests/test_data/boo.bin", "rb") as f:
         x = X.read(f.read())
 
-    assert x.first = [65,1,63]
-    assert x.second = "Привет из exonum"
+    assert x.first == [65,1,63]
+    assert x.second == "Привет из exonum"
+
+def test_inner():
+    class X(metaclass=ExonumMeta):
+        first = Vec(u16)
+        second = Str
+
+    class Y(metaclass=ExonumMeta):
+        k = i64
+        j = Vec(X)
+
+    y = Y(k = -1000000,
+          j = [X(first = [1,2,3,4,5], second = "x one"),
+               X(first = [6,7,8,9], second = "x two")])
+    b = y.to_bytes()
+    y2 = Y.read(b)
+
+    assert y.k == y2.k
+    assert y.j == y2.j
+
+    s = ("Y (k = i64(-1000000), "
+         "j = Vec<X> ["
+         "X (first = Vec<u16> [u16(1), u16(2), u16(3), u16(4), u16(5)], second = Str(x one)), "
+         "X (first = Vec<u16> [u16(6), u16(7), u16(8), u16(9)], second = Str(x two))"
+         "])")
+
+    assert str(y) == s
+    assert str(y2) == s
