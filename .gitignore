@@ -2,5 +2,5 @@
 __pycache__
 .pytest_cache
 Pipfile.lock
-*bin
+/*bin
 *log
