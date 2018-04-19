@@ -25,7 +25,7 @@ class ExonumField:
         buf[pos: pos + self.sz] = raw
 
     def __str__(self):
-        return "{} {}".format(self.__class__, self.val)
+        return "{}({})".format(self.__class__.__name__, self.val)
 
 
 class ExonumSegment(ExonumField):
@@ -36,7 +36,7 @@ class ExonumSegment(ExonumField):
 
     def write(self, buf, pos):
         buf[pos: pos + self.sz] = struct.pack(self.fmt, len(buf), self.count())
-        buf += self.enc()
+        self.extend_buffer(buf)
 
     @classmethod
     def read(cls, buf, offset):
@@ -147,8 +147,8 @@ class Exonum:
         def count(self):
             return len(self.val.encode())
 
-        def enc(self):
-            return self.val.encode()
+        def extend_buffer(self, buf):
+            buf += self.val.encode()
 
         @staticmethod
         def read_data(buf, pos, cnt):
@@ -168,9 +168,28 @@ class Exonum:
                 pos += ExonumSegment.sz
             return v
 
+        def write(self, buf, pos):
+            buf[pos: pos + self.sz] = struct.pack(self.fmt, len(buf), self.count())
+            self.extend_buffer(buf)
+
+        def extend_buffer(self, buf):
+            pointers_sz = self.count() * 8  # FIXME
+            data_sz = self.count() * self.T.sz
+            start = len(buf)
+            data_start = start + pointers_sz
+            buf += bytearray(pointers_sz + data_sz)
+
+            for el in self.val:
+                pointer = struct.pack(self.fmt, data_start, self.T.sz)
+                buf[start: start + self.sz] = pointer
+                el.write(buf, pos=data_start)
+                data_start += self.T.sz
+                start += 8
+            print(buf)
+
         def __str__(self):
             repr = ["{}".format(i) for i in self.val]
-            return "{} ({})".format(self.__class__.__name__, ", ".join(repr))
+            return "{} [{}]".format(self.__class__.__name__, ", ".join(repr))
 
     @classmethod
     def Vec(cls, T):
@@ -190,7 +209,6 @@ class ExonumBase(ExonumField):
             else:
                 setattr(self, field,  cls(kwargs[field]))
 
-
     def write(self, buf, pos):
         for field in self.__exonum_fields__:
             field = getattr(self, field)
@@ -201,7 +219,7 @@ class ExonumBase(ExonumField):
         repr = []
         for field in self.__exonum_fields__:
             cls = getattr(self.__class__, field)
-            repr.append("{} = {}({})".format(field, cls.__name__, getattr(self, field).val))
+            repr.append("{} = {}".format(field, getattr(self, field)))
         return "{} ({})".format(self.__class__.__name__, ", ".join(repr))
 
 
@@ -263,18 +281,30 @@ if __name__ == '__main__':
     # 3,  4,
     # 5,  6]
 
-    with open("wow.bin", 'rb') as f:
-        content = f.read()
-        w = Wow.read(content)
-        print(w.z)
-
-    # with open("wowx.bin", 'wb') as f:
-    #     a = Wow(z = ([TwoIntegers(first=1, second=2)]))
-    #     b = bytearray(a.sz)
-    #     a.write(b, 0)
-    #     f.write(a)
-
-    # with open("wow_adv.bin", 'rb') as f:
+    # with open("wow.bin", 'rb') as f:
     #     content = f.read()
-    #     w = WowAdv.read(content)
-    #     print(w.j.first)
+    #     w = Wow.read(content)
+    #     print(w.z)
+
+    with open("wowx.bin", 'wb') as f:
+        a = Wow(z = ([TwoIntegers(first=1, second=23)]))
+        b = bytearray(a.sz)
+        a.write(b, 0)
+        f.write(b)
+
+    with open("wowx.bin", 'rb') as f:
+        a = Wow.read(f.read())
+        print(a.z.val[0])
+
+    with open("wowx_adv.bin", 'wb') as f:
+        a = WowAdv(z = [TwoIntegers(first=1, second=23),
+                        TwoIntegers(first=76, second=56)],
+                   j = TwoIntegers(first=76, second=56))
+        b = bytearray(a.sz)
+        a.write(b, 0)
+        f.write(b)
+
+    with open("wowx_adv.bin", 'rb') as f:
+        content = f.read()
+        w = WowAdv.read(content)
+        print(w)
