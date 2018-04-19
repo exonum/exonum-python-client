@@ -5,6 +5,7 @@ name = "pypi"
 
 [packages]
 nanotime = "*"
+pysodium = "*"
 
 [dev-packages]
 jedi = "*"
@@ -12,7 +13,6 @@ rope = "*"
 "autopep8" = "*"
 yapf = "*"
 "flake8" = "*"
-ipython = "*"
 
 [requires]
 python_version = "3.6"
