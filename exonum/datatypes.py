@@ -1,12 +1,12 @@
 import ipaddress
 import struct
-import sys
 
 from datetime import datetime
 from uuid import UUID
 
 import nanotime
 
+from .util import make_class_ordered
 
 class ExonumField:
     sz = 1
@@ -296,7 +296,7 @@ class ExonumBase(ExonumField):
         return cls(**data)
 
 
-class ExonumMeta(type):
+class EncodingStruct(type):
     def __new__(self, name, bases, classdict):
         fields = []
         sz = 0
@@ -310,9 +310,4 @@ class ExonumMeta(type):
 
         return type(name, (ExonumBase, *bases), classdict)
 
-
-# https://www.python.org/dev/peps/pep-0520/
-if sys.version_info.major < 3 or \
-       (sys.version_info.major == 3 and sys.version_info.minor < 6):
-    from collections import OrderedDict
-    ExonumMeta.__prepare__ = classmethod(lambda *_: OrderedDict())
+make_class_ordered(EncodingStruct)

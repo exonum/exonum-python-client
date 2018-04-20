@@ -1,8 +1,8 @@
-from exonum.datatypes import ExonumMeta, SocketAddr, Str, Vec, i64, u8, u16, Uuid
+from exonum.datatypes import EncodingStruct, SocketAddr, Str, Vec, i64, u8, u16, Uuid
 from uuid import uuid4
 
 def test_simple():
-    class X(metaclass=ExonumMeta):
+    class X(metaclass=EncodingStruct):
         first = u8
         second = u8
         third = i64
@@ -17,7 +17,7 @@ def test_simple():
 
 
 def test_simple_string():
-    class X(metaclass=ExonumMeta):
+    class X(metaclass=EncodingStruct):
         first = Str
         second = u8
         third = i64
@@ -38,7 +38,7 @@ def test_simple_string():
 
 
 def test_vec():
-    class X(metaclass=ExonumMeta):
+    class X(metaclass=EncodingStruct):
         first = Vec(u16)
         second = Str
 
@@ -52,7 +52,7 @@ def test_vec():
 
 
 def test_vec_from_rust():
-    class X(metaclass=ExonumMeta):
+    class X(metaclass=EncodingStruct):
         first = Vec(u16)
         second = Str
 
@@ -64,11 +64,11 @@ def test_vec_from_rust():
 
 
 def test_inner():
-    class X(metaclass=ExonumMeta):
+    class X(metaclass=EncodingStruct):
         first = Vec(u16)
         second = Str
 
-    class Y(metaclass=ExonumMeta):
+    class Y(metaclass=EncodingStruct):
         k = i64
         j = Vec(X)
 
@@ -94,7 +94,7 @@ def test_inner():
 
 
 def test_ip_uuid():
-    class U(metaclass=ExonumMeta):
+    class U(metaclass=EncodingStruct):
         soc = Vec(SocketAddr)
         ids = Vec(Uuid)
 
