@@ -210,7 +210,7 @@ class VecSimple(ExonumSegment):
         data = bytearray(self.count() * self.T.sz)
         offset = 0
         for x in self.val:
-            struct.pack_into(self.T.fmt, data, offset, x.val)
+            x.write(data, offset)
             offset += self.T.sz
         buf += data
 
