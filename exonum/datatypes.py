@@ -7,6 +7,7 @@ from uuid import UUID
 import nanotime
 
 from .util import make_class_ordered
+from . import ExonumException
 
 class ExonumField:
     sz = 1
@@ -32,7 +33,7 @@ class ExonumField:
     def to_bytes(self):
         b = bytearray(self.sz)
         self.write(b, 0)
-        return b
+        return bytes(b)
 
     def __str__(self):
         return "{}({})".format(self.__class__.__name__, self.val)
@@ -95,9 +96,14 @@ class i64(ExonumField):
     fmt = '<q'
 
 
-class UnsupportedDatatype(Exception):
+class UnsupportedDatatype(ExonumException):
     pass
 
+class NotSupported(ExonumException):
+    pass
+
+class CantComare(ExonumException):
+    pass
 
 class DateTime(ExonumField):
     sz = 12
@@ -248,7 +254,7 @@ def Vec(T):
                     {"T": T})
 
     if issubclass(T, ExonumSegment):
-        raise Exception("Not supported")
+        raise NotSupported()
 
     if issubclass(T, ExonumField):
         return type("Vec<{}>".format(T.__name__),
@@ -267,7 +273,7 @@ class ExonumBase(ExonumField):
 
     def __eq__(self, other):
         if self.__class__ != other.__class__:
-            raise Exception("cant compare")
+            raise CantComare()
         for field in self.__exonum_fields__:
             if getattr(self, field) != getattr(other, field):
                 return False

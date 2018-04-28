@@ -1,1 +1,2 @@
-
+class ExonumException(Exception):
+    pass

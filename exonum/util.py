@@ -1,6 +1,5 @@
 import sys
 
-
 if sys.version_info.major < 3 or \
         (sys.version_info.major == 3 and sys.version_info.minor < 6):
     def make_class_ordered(cls):
