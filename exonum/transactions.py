@@ -1,13 +1,12 @@
-import sys
-
-from .util import make_class_ordered
-from .datatypes import ExonumBase
-from . import ExonumException
-
-from pysodium import crypto_sign_keypair, crypto_sign_detached, crypto_hash_sha256
 import struct
 
+from pysodium import crypto_sign_detached
+
+from . import ExonumException
+from .datatypes import ExonumBase
+
 SIGNATURE_LEN = 64
+
 
 class NotEncodingStruct(ExonumException):
     pass
@@ -34,6 +33,17 @@ def mk_tx(network_id, protocol_version, message_id, serivce_id):
         signature = crypto_sign_detached(data, secret_key)
 
         print(signature.hex(), len(signature))
+
+        message = {
+            "network_id": network_id,
+            "protocol_version": protocol_version,
+            "service_id": serivce_id,
+            "message_id": message_id,
+            "signature": signature.hex(),
+            "body": str(self)
+        }
+
+        return message
 
     return tx
 
