@@ -1,11 +1,10 @@
 import struct
 
-from pysodium import crypto_sign_detached
+from pysodium import crypto_sign_detached, crypto_sign_BYTES
+from codecs import encode
 
 from . import ExonumException
 from .datatypes import ExonumBase
-
-SIGNATURE_LEN = 64
 
 
 class NotEncodingStruct(ExonumException):
@@ -21,18 +20,25 @@ class NotImplementedYet(ExonumException):
 
 
 def mk_tx(network_id, protocol_version, message_id, serivce_id):
-    def tx(self, secret_key):
+    def tx(self, secret_key, hex=False):
         fmt = "<BBHHI"
-        data_len = self.sz + struct.calcsize(fmt) + SIGNATURE_LEN
-        data = struct.pack(fmt,
-                           network_id,
-                           protocol_version,
-                           message_id,
-                           serivce_id,
-                           data_len) + self.to_bytes()
+        header_len = struct.calcsize(fmt)
+        buf = bytearray(header_len + self.sz)
+        self.write(buf, header_len)
+        buf_sz = len(buf)
+        struct.pack_into(fmt,
+                         buf,
+                         0,
+                         network_id,
+                         protocol_version,
+                         message_id,
+                         serivce_id,
+                         buf_sz + crypto_sign_BYTES)
+        data = bytes(buf)
         signature = crypto_sign_detached(data, secret_key)
 
-        print(signature.hex(), len(signature))
+        if hex:
+            return data + signature
 
         message = {
             "network_id": network_id,
@@ -40,7 +46,7 @@ def mk_tx(network_id, protocol_version, message_id, serivce_id):
             "service_id": serivce_id,
             "message_id": message_id,
             "signature": signature.hex(),
-            "body": str(self)
+            "body": self.plain()
         }
 
         return message

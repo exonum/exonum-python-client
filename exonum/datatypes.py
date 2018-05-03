@@ -10,6 +10,21 @@ from .util import make_class_ordered
 from . import ExonumException
 
 
+class NotImplementedYet(ExonumException):
+    pass
+
+class UnsupportedDatatype(ExonumException):
+    pass
+
+
+class NotSupported(ExonumException):
+    pass
+
+
+class CantComare(ExonumException):
+    pass
+
+
 class ExonumField:
     sz = 1
     fmt = None
@@ -39,6 +54,8 @@ class ExonumField:
     def __str__(self):
         return "{}({})".format(self.__class__.__name__, self.val)
 
+    def plain(self):
+        self.val
 
 class ExonumSegment(ExonumField):
     sz = 8
@@ -104,6 +121,9 @@ class Hash(ExonumField):
     def __str__(self):
         return "{}({})".format(self.__class__.__name__, self.val.hex())
 
+    def plain(self):
+        return self.val.hex()
+
 
 class PublicKey(Hash):
     pass
@@ -112,18 +132,6 @@ class PublicKey(Hash):
 class Signature(Hash):
     sz = 64
     fmt = '64s'
-
-
-class UnsupportedDatatype(ExonumException):
-    pass
-
-
-class NotSupported(ExonumException):
-    pass
-
-
-class CantComare(ExonumException):
-    pass
 
 
 class DateTime(ExonumField):
@@ -153,6 +161,9 @@ class DateTime(ExonumField):
         sec, nan = struct.unpack_from(cls.fmt, buf, offset=offset)
         return cls(nanotime.seconds(sec) + nanotime.nanoseconds(nan))
 
+    def plain(self):
+        raise NotImplementedYet(self.__class__)
+
 
 class Uuid(ExonumField):
     sz = 16
@@ -172,6 +183,9 @@ class Uuid(ExonumField):
         data, = struct.unpack_from(cls.fmt, buf, offset=offset)
         return cls(UUID(bytes=data))
 
+    def plain(self):
+        return self.val.hex
+
 
 class SocketAddr(ExonumField):
     sz = 6
@@ -190,6 +204,9 @@ class SocketAddr(ExonumField):
         data = struct.unpack_from(cls.fmt, buf, offset=offset)
         return cls(data)
 
+    def plain(self):
+        raise NotImplementedYet(self.__class__)
+
 
 class Str(ExonumSegment):
     def count(self):
@@ -201,6 +218,9 @@ class Str(ExonumSegment):
     @staticmethod
     def read_data(buf, pos, cnt):
         return buf[pos: pos + cnt].decode("utf-8")
+
+    def plain(self):
+        return self.val
 
 
 class VecSimple(ExonumSegment):
@@ -240,6 +260,9 @@ class VecSimple(ExonumSegment):
             x.write(data, offset)
             offset += self.T.sz
         buf += data
+
+    def plain(self):
+        return [i.plain() for i in self.val]
 
 
 class VecFields(VecSimple):
@@ -322,6 +345,11 @@ class ExonumBase(ExonumField):
             data[field] = val
         return cls(**data)
 
+    def plain(self):
+        return {
+            k: getattr(self, k).plain()
+            for k in self.__exonum_fields__
+        }
 
 class EncodingStruct(type):
     def __new__(self, name, bases, classdict):
