@@ -9,6 +9,7 @@ import nanotime
 from .util import make_class_ordered
 from . import ExonumException
 
+
 class ExonumField:
     sz = 1
     fmt = None
@@ -96,14 +97,34 @@ class i64(ExonumField):
     fmt = '<q'
 
 
+class Hash(ExonumField):
+    sz = 32
+    fmt = '32s'
+
+    def __str__(self):
+        return "{}({})".format(self.__class__.__name__, self.val.hex())
+
+
+class PublicKey(Hash):
+    pass
+
+
+class Signature(Hash):
+    sz = 64
+    fmt = '64s'
+
+
 class UnsupportedDatatype(ExonumException):
     pass
+
 
 class NotSupported(ExonumException):
     pass
 
+
 class CantComare(ExonumException):
     pass
+
 
 class DateTime(ExonumField):
     sz = 12
@@ -315,5 +336,6 @@ class EncodingStruct(type):
         classdict['sz'] = sz
 
         return type(name, (ExonumBase, *bases), classdict)
+
 
 make_class_ordered(EncodingStruct)
