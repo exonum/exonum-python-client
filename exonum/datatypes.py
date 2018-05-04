@@ -7,22 +7,7 @@ from uuid import UUID
 import nanotime
 
 from .util import make_class_ordered
-from . import ExonumException
-
-
-class NotImplementedYet(ExonumException):
-    pass
-
-class UnsupportedDatatype(ExonumException):
-    pass
-
-
-class NotSupported(ExonumException):
-    pass
-
-
-class CantComare(ExonumException):
-    pass
+from .error import NotSupported, NotImplementedYet
 
 
 class ExonumField:

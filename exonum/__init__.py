@@ -1,2 +1,0 @@
-class ExonumException(Exception):
-    pass

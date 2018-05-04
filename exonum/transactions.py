@@ -3,20 +3,8 @@ import struct
 from pysodium import crypto_sign_detached, crypto_sign_BYTES
 from codecs import encode
 
-from . import ExonumException
+from .error import IllegalServiceId, NotEncodingStruct
 from .datatypes import ExonumBase
-
-
-class NotEncodingStruct(ExonumException):
-    pass
-
-
-class IllegalServiceId(ExonumException):
-    pass
-
-
-class NotImplementedYet(ExonumException):
-    pass
 
 
 def mk_tx(network_id, protocol_version, message_id, serivce_id):
