@@ -1,10 +1,13 @@
 import ipaddress
 import struct
+import sys
 
 from datetime import datetime
 from uuid import UUID
 
 import nanotime
+
+from itertools import chain
 
 from .util import make_class_ordered
 from .error import NotSupported, NotImplementedYet
@@ -338,17 +341,26 @@ class ExonumBase(ExonumField):
 
 class EncodingStruct(type):
     def __new__(self, name, bases, classdict):
-        fields = []
-        sz = 0
+        e_bases = [c for c in bases if issubclass(c, ExonumBase)]
+        fields = list(chain(*(c.__exonum_fields__ for c in e_bases)))
+        sz = sum(c.sz for c in e_bases)
+
         for k, v in classdict.items():
             if isinstance(v, type) and issubclass(v, ExonumField):
                 fields.append(k)
                 sz += v.sz
 
+
         classdict['__exonum_fields__'] = fields
         classdict['sz'] = sz
 
-        return type(name, (ExonumBase, *bases), classdict)
+        if not any(issubclass(c, ExonumBase) for c in bases):
+            return type(name, (ExonumBase, *bases), classdict)
+        else:
+            return type(name,  bases, classdict)
 
-
-make_class_ordered(EncodingStruct)
+if sys.version_info.major < 3 or \
+   (sys.version_info.major == 3 and sys.version_info.minor < 6):
+    # https://www.python.org/dev/peps/pep-0520/
+    from collections import OrderedDict
+    EncodingStruct.__prepare__ = classmethod(lambda *_: OrderedDict())
