@@ -42,7 +42,7 @@ class ExonumField:
         return "{}({})".format(self.__class__.__name__, self.val)
 
     def plain(self):
-        self.val
+        return self.val
 
 class ExonumSegment(ExonumField):
     sz = 8
@@ -59,9 +59,8 @@ class ExonumSegment(ExonumField):
         return cls(cls.read_data(buf, pos, cnt))
 
 
-class boolean(ExonumField):
+class bool(ExonumField):
     fmt = '<B'
-
 
 class u8(ExonumField):
     fmt = '<B'
@@ -132,14 +131,23 @@ class DateTime(ExonumField):
             self.val = nanotime.datetime(val)
         elif isinstance(val, nanotime.nanotime):
             self.val = val
+        elif (isinstance(val, dict)
+              and "nanos" in val
+              and "secs" in val):
+            self.val = (nanotime.seconds(int(val["secs"]))
+                        + nanotime.nanoseconds(int(val["nanos"])))
         else:
             raise UnsupportedDatatype(
                 "Type {} is not supported for initializing DateTime"
                 .format(type(val)))
 
-    def write(self, buf, pos):
+    def to_pair(self):
         sec = int(self.val.seconds())
         nan = (self.val - nanotime.seconds(sec)).nanoseconds()
+        return sec, nan
+
+    def write(self, buf, pos):
+        sec, nan = self.to_pair()
         raw = struct.pack(self.fmt, sec, nan)
         buf[pos: pos + self.sz] = raw
 
@@ -149,7 +157,8 @@ class DateTime(ExonumField):
         return cls(nanotime.seconds(sec) + nanotime.nanoseconds(nan))
 
     def plain(self):
-        raise NotImplementedYet(self.__class__)
+        sec, nan = self.to_pair()
+        return {"secs": str(sec), "nanos": nan}
 
 
 class Uuid(ExonumField):
