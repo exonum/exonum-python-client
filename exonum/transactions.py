@@ -1,7 +1,6 @@
 import struct
 
 from pysodium import crypto_sign_detached, crypto_sign_BYTES
-from codecs import encode
 
 from .error import IllegalServiceId, NotEncodingStruct
 from .datatypes import ExonumBase
@@ -11,9 +10,12 @@ def mk_tx(network_id, protocol_version, message_id, serivce_id):
     def tx(self, secret_key, hex=False):
         fmt = "<BBHHI"
         header_len = struct.calcsize(fmt)
+
         buf = bytearray(header_len + self.sz)
+
         self.write(buf, header_len)
         buf_sz = len(buf)
+
         struct.pack_into(fmt,
                          buf,
                          0,
@@ -22,6 +24,7 @@ def mk_tx(network_id, protocol_version, message_id, serivce_id):
                          message_id,
                          serivce_id,
                          buf_sz + crypto_sign_BYTES)
+
         data = bytes(buf)
         signature = crypto_sign_detached(data, secret_key)
 

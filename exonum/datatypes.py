@@ -9,7 +9,6 @@ import nanotime
 
 from itertools import chain
 
-from .util import make_class_ordered
 from .error import NotSupported, NotImplementedYet
 
 
