@@ -1,47 +1,46 @@
 import struct
 
-from pysodium import crypto_sign_detached, crypto_sign_BYTES
+from pysodium import crypto_sign_detached, crypto_sign_BYTES as SIGNATURE_SZ
 
 from .error import IllegalServiceId, NotEncodingStruct
-from .datatypes import ExonumBase
+from .datatypes import ExonumBase, EncodingStruct, u8, u16, u32
 
 
-def mk_tx(network_id, protocol_version, message_id, serivce_id):
+class Tx(metaclass=EncodingStruct):
+    network_id = u8
+    protocol_version = u8
+    message_id = u16
+    service_id = u16
+    payload_sz = u32
+    payload_sz_offset = struct.calcsize("<BBHH")
+
+
+def mk_tx(cls, **kwargs):
+    tx_cls = EncodingStruct(
+        'Tx{}'.format(cls.__name__),
+        (Tx, ),
+        {"body": cls})
+
     def tx(self, secret_key, hex=False):
-        fmt = "<BBHHI"
-        header_len = struct.calcsize(fmt)
+        tx = tx_cls(**kwargs, payload_sz=0, body=self)
 
-        buf = bytearray(header_len + self.sz)
-
-        self.write(buf, header_len)
-        buf_sz = len(buf)
-
-        struct.pack_into(fmt,
+        buf = bytearray(tx.sz)
+        tx.write(buf, 0)
+        real_size = len(buf) + SIGNATURE_SZ
+        struct.pack_into(tx.payload_sz.fmt,
                          buf,
-                         0,
-                         network_id,
-                         protocol_version,
-                         message_id,
-                         serivce_id,
-                         buf_sz + crypto_sign_BYTES)
-
+                         tx.payload_sz_offset,
+                         real_size)
         data = bytes(buf)
         signature = crypto_sign_detached(data, secret_key)
-
         if hex:
             return data + signature
 
-        message = {
-            "network_id": network_id,
-            "protocol_version": protocol_version,
-            "service_id": serivce_id,
-            "message_id": message_id,
-            "signature": signature.hex(),
-            "body": self.plain()
-        }
-
+        message = dict(
+            **kwargs,
+            signature=signature.hex(),
+            body=self.plain())
         return message
-
     return tx
 
 
@@ -67,10 +66,12 @@ class transactions():
         if not self.is_encoding_struct(cls):
             raise NotEncodingStruct()
 
-        setattr(cls, "tx", mk_tx(self.network_id,
-                                 self.protocol_version,
-                                 len(self.tx),
-                                 self.service_id))
+        setattr(cls, "tx",
+                mk_tx(cls,
+                      network_id=self.network_id,
+                      protocol_version=self.protocol_version,
+                      message_id=len(self.tx),
+                      service_id=self.service_id))
 
         self.tx.append(cls.__name__)
         return cls
