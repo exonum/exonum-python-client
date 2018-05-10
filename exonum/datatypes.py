@@ -1,6 +1,8 @@
 import ipaddress
+import decimal
 import struct
 import sys
+
 
 from datetime import datetime
 from uuid import UUID
@@ -10,6 +12,9 @@ import nanotime
 from itertools import chain
 
 from .error import NotSupported, NotImplementedYet
+from .decimal import (ctx as decimal_ctx,
+                      to_bytes as decimal_to_bytes,
+                      from_bytes as decimal_from_bytes)
 
 
 class ExonumField:
@@ -181,6 +186,28 @@ class Uuid(ExonumField):
 
     def plain(self):
         return self.val.hex
+
+
+class Decimal(ExonumField):
+    sz = 16
+    fmt = "<4I"
+
+    def __init__(self, val):
+        if not isinstance(val, decimal.Decimal):
+            self.val = decimal_ctx.create_decimal(val)
+        else:
+            self.val = val
+
+    def write(self, buf, pos):
+        buf[pos: pos + self.sz] = struct.pack(self.fmt, decimal_to_bytes(self.val))
+
+    @classmethod
+    def read(cls, buf, offset=0):
+        data, = struct.unpack_from(cls.fmt, buf, offset=offset)
+        return cls(decimal.Decimal())
+
+    def plain(self):
+        return str(self.val)
 
 
 class SocketAddr(ExonumField):
