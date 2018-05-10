@@ -3,6 +3,7 @@ import struct
 
 from .error import DecimalOverflow, NotImplementedYet
 
+SCALE_MASK = 0x00FF_0000
 SIGN_MASK = 0x8000_0000
 U32_MASK = 0xFFFF_FFFF
 SCALE_SHIFT = 16
@@ -45,37 +46,6 @@ def _mul(bits, m):
         raise DecimalOverflow()
 
 
-# def add_internal(value, by):
-#     carry = 0
-#     vl = len(value)
-#     bl = len(by)
-
-#     if vl >= bl:
-#         for i in range(bl):
-#             sum = value[i] + by[i] + carry
-#             value[i] = (sum & U32_MASK)
-#             carry = sum >> 32
-
-#         if vl > bl and carry > 0:
-#             for idx in range(bl, vl):
-#                 sum = value[idx] + carry
-#                 value[idx] = sum & U32_MASK
-#                 carry = sum >> 32
-
-#     elif vl + 1 == bl:
-#         for i in range(vl):
-#             sum = value[i] + by[i] + carry
-#             value[i] = (sum & U32_MASK)
-#             carry = sum >> 32
-#         carry += by[vl]
-
-#     else:
-#         raise DecimalInternalError(
-#             "Internal error: "
-#             "add using incompatible length arrays. {} {}".format(vl, bl))
-
-#     return carry
-
 def _add(value, by):
     to_add = by
     for i in range(len(value)):
@@ -87,6 +57,27 @@ def _add(value, by):
     else:
         raise DecimalOverflow()
 
+def _div(bits, divisor):
+    if divisor == 0:
+        raise ZeroDivisionError()
+
+    elif divisor == 1:
+        return 0
+    else:
+        remainder = 0;
+        for idx, b in reversed(list(enumerate(bits))):
+            temp = (remainder << 32) + b
+            remainder = temp % divisor
+            bits[idx] = temp // divisor
+    return remainder
+
+
+def scale(flags):
+    return (flags & SCALE_MASK) >> SCALE_SHIFT
+
+
+def is_negative(flags):
+    return flags & SIGN_MASK > 0
 
 def to_bytes(d):
     dt = d.as_tuple()
@@ -101,9 +92,22 @@ def to_bytes(d):
         _mul(data, 10)
         _add(data, digit)
 
-    flags = dt.exponent << SCALE_SHIFT
+    flags = abs(dt.exponent) << SCALE_SHIFT
 
     if dt.sign:
         flags |= SIGN_MASK
 
     return (flags, *data)
+
+
+def from_bytes(flags, *data):
+    data = list(data)
+    digits = []
+    while not all(x == 0 for x in data):
+        remainder = _div(data, 10);
+        digits.append(remainder)
+    digits.reverse()
+    sign = is_negative(flags)
+    exponent = scale(flags) * -1
+    dt = decimal.DecimalTuple(sign, digits, exponent)
+    return decimal.Decimal(dt)
