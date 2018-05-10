@@ -23,3 +23,9 @@ class NotSupported(ExonumException):
 
 class CantComare(ExonumException):
     pass
+
+
+class DecimalOverflow(ExonumException):
+    pass
+
+
