@@ -199,7 +199,7 @@ class Decimal(ExonumField):
             self.val = val
 
     def write(self, buf, pos):
-        buf[pos: pos + self.sz] = struct.pack(self.fmt, decimal_to_bytes(self.val))
+        buf[pos: pos + self.sz] = struct.pack(self.fmt, *decimal_to_bytes(self.val))
 
     @classmethod
     def read(cls, buf, offset=0):
