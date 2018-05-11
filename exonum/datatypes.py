@@ -315,7 +315,7 @@ def Vec(T):
 
 class ExonumBase(ExonumSegment):
     def count(self):
-        return 1
+        return 2
 
     def __init__(self, val=None, **kwargs):
         for field in self.__exonum_fields__:

@@ -3,33 +3,25 @@ import struct
 from pysodium import crypto_sign_detached, crypto_sign_BYTES as SIGNATURE_SZ
 
 from .error import IllegalServiceId, NotEncodingStruct
-from .datatypes import ExonumBase, EncodingStruct, u8, u16, u32
-
-
-class Tx(metaclass=EncodingStruct):
-    network_id = u8
-    protocol_version = u8
-    message_id = u16
-    service_id = u16
-    payload_sz = u32
-    payload_sz_offset = struct.calcsize("<BBHH")
+from .datatypes import ExonumBase
 
 
 def mk_tx(cls, **kwargs):
-    tx_cls = EncodingStruct(
-        'Tx{}'.format(cls.__name__),
-        (Tx, ),
-        {"body": cls})
+    header_fmt = "<BBHHI"
+    header_sz = struct.calcsize(header_fmt)
 
     def tx(self, secret_key, hex=False):
-        tx = tx_cls(**kwargs, payload_sz=0, body=self)
-
-        buf = bytearray(tx.sz)
-        tx.write(buf, 0)
+        buf = bytearray(header_sz)
+        self.extend_buffer(buf)
         real_size = len(buf) + SIGNATURE_SZ
-        struct.pack_into(tx.payload_sz.fmt,
+
+        struct.pack_into(header_fmt,
                          buf,
-                         tx.payload_sz_offset,
+                         0,
+                         kwargs["network_id"],
+                         kwargs["protocol_version"],
+                         kwargs["message_id"],
+                         kwargs["service_id"],
                          real_size)
         data = bytes(buf)
         signature = crypto_sign_detached(data, secret_key)
