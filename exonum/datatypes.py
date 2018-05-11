@@ -3,7 +3,6 @@ import decimal
 import struct
 import sys
 
-
 from datetime import datetime
 from uuid import UUID
 
@@ -11,11 +10,14 @@ import nanotime
 
 from itertools import chain
 
-from .error import NotSupported, NotImplementedYet
+from .error import NotSupported, NotImplementedYet, CantComare, UnsupportedDatatype
 from .decimal import (ctx as decimal_ctx,
                       to_bytes as decimal_to_bytes,
                       from_bytes as decimal_from_bytes)
 
+import logging
+log = logging.getLogger("exonum datatypes")
+dbg = log.debug
 
 class ExonumField:
     sz = 1
@@ -34,14 +36,9 @@ class ExonumField:
         val, =  struct.unpack_from(cls.fmt, buf, offset=offset)
         return cls(val)
 
-    def write(self, buf, pos):
+    def write(self, buf, offset):
         raw = struct.pack(self.fmt, self.val)
-        buf[pos: pos + self.sz] = raw
-
-    def to_bytes(self):
-        b = bytearray(self.sz)
-        self.write(b, 0)
-        return bytes(b)
+        buf[offset: offset + self.sz] = raw
 
     def __str__(self):
         return "{}({})".format(self.__class__.__name__, self.val)
@@ -54,14 +51,17 @@ class ExonumSegment(ExonumField):
     fmt = "<2I"
     T = None
 
-    def write(self, buf, pos):
-        buf[pos: pos + self.sz] = struct.pack(self.fmt, len(buf), self.count())
+    def write(self, buf, offset):
+        dbg("writing {} at offset {}".format(self, offset))
+        buf[offset: offset + self.sz] = struct.pack(self.fmt, len(buf), self.count())
         self.extend_buffer(buf)
 
     @classmethod
     def read(cls, buf, offset=0):
-        pos, cnt = struct.unpack_from(cls.fmt, buf, offset=offset)
-        return cls(cls.read_data(buf, pos, cnt))
+        offset, cnt = struct.unpack_from(cls.fmt, buf, offset=offset)
+
+        dbg("{} lays at position = {} count = {}".format(cls, offset, cnt))
+        return cls.read_buffer(buf, offset, cnt)
 
 
 class bool(ExonumField):
@@ -151,10 +151,10 @@ class DateTime(ExonumField):
         nan = (self.val - nanotime.seconds(sec)).nanoseconds()
         return sec, nan
 
-    def write(self, buf, pos):
+    def write(self, buf, offset):
         sec, nan = self.to_pair()
         raw = struct.pack(self.fmt, sec, nan)
-        buf[pos: pos + self.sz] = raw
+        buf[offset: offset + self.sz] = raw
 
     @classmethod
     def read(cls, buf, offset=0):
@@ -176,8 +176,8 @@ class Uuid(ExonumField):
         else:
             self.val = UUID(val)
 
-    def write(self, buf, pos):
-        buf[pos: pos + self.sz] = self.val.bytes
+    def write(self, buf, offset):
+        buf[offset: offset + self.sz] = self.val.bytes
 
     @classmethod
     def read(cls, buf, offset=0):
@@ -198,13 +198,14 @@ class Decimal(ExonumField):
         else:
             self.val = val
 
-    def write(self, buf, pos):
-        buf[pos: pos + self.sz] = struct.pack(self.fmt, *decimal_to_bytes(self.val))
+    def write(self, buf, offset):
+        buf[offset: offset + self.sz] = struct.pack(self.fmt, *decimal_to_bytes(self.val))
 
     @classmethod
     def read(cls, buf, offset=0):
         data, = struct.unpack_from(cls.fmt, buf, offset=offset)
-        return cls(decimal.Decimal())
+        val = decimal_from_bytes(*data)
+        return cls(decimal.Decimal(val))
 
     def plain(self):
         return str(self.val)
@@ -218,9 +219,9 @@ class SocketAddr(ExonumField):
         ip = ipaddress.IPv4Address(val[0])
         self.val = (ip, val[1])
 
-    def write(self, buf, pos):
+    def write(self, buf, offset):
         raw = self.val[0].packed + struct.pack("<H", self.val[1])
-        buf[pos: pos + self.sz] = raw
+        buf[offset: offset + self.sz] = raw
 
     @classmethod
     def read(cls, buf, offset=0):
@@ -238,15 +239,15 @@ class Str(ExonumSegment):
     def extend_buffer(self, buf):
         buf += self.val.encode()
 
-    @staticmethod
-    def read_data(buf, pos, cnt):
-        return buf[pos: pos + cnt].decode("utf-8")
+    @classmethod
+    def read_buffer(cls, buf, offset, cnt):
+        return cls(buf[offset: offset + cnt].decode("utf-8"))
 
     def plain(self):
         return self.val
 
 
-class VecSimple(ExonumSegment):
+class Vector(ExonumSegment):
     def __init__(self, val):
         if isinstance(val[0], self.T):
             self.val = val
@@ -264,73 +265,47 @@ class VecSimple(ExonumSegment):
         return "{} [{}]".format(self.__class__.__name__, ", ".join(repr))
 
     @classmethod
-    def read_data(cls, buf, pos, cnt):
+    def read_buffer(cls, buf, offset, cnt=0):
+        dbg("reading vector of sz {}".format(cnt))
         v = []
         for _ in range(cnt):
-            t = cls.T.read(buf, offset=pos)
+            t = cls.T.read(buf, offset=offset)
+            dbg("read {} at offset {}".format(t, offset))
             v.append(t)
-            pos += cls.T.sz
-        return v
+            offset += cls.T.sz
+        return cls(v)
 
-    def write(self, buf, pos):
-        buf[pos: pos + self.sz] = struct.pack(self.fmt, len(buf), self.count())
+    def write(self, buf, offset):
+        dbg("writing vector ({}) of sz {} at offset {}".format(self.T.__name__, self.count(), offset))
+        buf[offset: offset + self.sz] = struct.pack(self.fmt, len(buf), self.count())
         self.extend_buffer(buf)
 
     def extend_buffer(self, buf):
-        data = bytearray(self.count() * self.T.sz)
-        offset = 0
+        offset = len(buf)
+        buf += bytearray(self.count() * self.T.sz)
+
         for x in self.val:
-            x.write(data, offset)
+            dbg("writing  {} at offset {}".format(x, offset))
+            x.write(buf, offset)
             offset += self.T.sz
-        buf += data
 
     def plain(self):
         return [i.plain() for i in self.val]
 
 
-class VecFields(VecSimple):
-    @classmethod
-    def read_data(cls, buf, pos, cnt):
-        v = []
-        for n in range(cnt):
-            offset, _ = struct.unpack_from(cls.fmt, buf, offset=pos)
-            t = cls.T.read(buf, offset=offset)
-            v.append(t)
-            pos += ExonumSegment.sz
-        return v
-
-    def extend_buffer(self, buf):
-        pointers_sz = self.count() * 8  # FIXME
-        data_sz = self.count() * self.T.sz
-        start = len(buf)
-        data_start = start + pointers_sz
-        buf += bytearray(pointers_sz + data_sz)
-
-        for el in self.val:
-            pointer = struct.pack(self.fmt, data_start, self.T.sz)
-            buf[start: start + self.sz] = pointer
-            el.write(buf, pos=data_start)
-            data_start += self.T.sz
-            start += 8
-
-
 def Vec(T):
-    if issubclass(T, ExonumBase):
-        return type("Vec<{}>".format(T.__name__),
-                    (VecFields, ),
-                    {"T": T})
-
-    if issubclass(T, ExonumSegment):
-        raise NotSupported()
-
     if issubclass(T, ExonumField):
         return type("Vec<{}>".format(T.__name__),
-                    (VecSimple, ),
+                    (Vector, ),
                     {"T": T})
+    raise NotSupported()
 
 
-class ExonumBase(ExonumField):
-    def __init__(self, **kwargs):
+class ExonumBase(ExonumSegment):
+    def count(self):
+        return 1
+
+    def __init__(self, val=None, **kwargs):
         for field in self.__exonum_fields__:
             cls = getattr(self.__class__, field)
             if isinstance(kwargs[field], cls):
@@ -346,11 +321,13 @@ class ExonumBase(ExonumField):
                 return False
         return True
 
-    def write(self, buf, pos):
+    def extend_buffer(self, buf):
+        offset = len(buf)
+        buf += bytearray(self.fields_sz)
         for field in self.__exonum_fields__:
             field = getattr(self, field)
-            field.write(buf, pos)
-            pos += field.sz
+            field.write(buf, offset)
+            offset += field.sz
 
     def __str__(self):
         repr = []
@@ -359,14 +336,22 @@ class ExonumBase(ExonumField):
         return "{} ({})".format(self.__class__.__name__, ", ".join(repr))
 
     @classmethod
-    def read(cls, bytestring, offset=0):
+    def read_buffer(cls, bytestring, offset=0, sz=1):
+        dbg("read_buffer of ExonumBase sz {}".format(sz))
         data = {}
         for field in cls.__exonum_fields__:
             fcls = getattr(cls, field)
+            dbg("trying to read {} {} at offset {}".format(field, fcls, offset))
             val = fcls.read(bytestring, offset)
             offset += fcls.sz
+
             data[field] = val
         return cls(**data)
+
+    def to_bytes(self):
+        b = bytearray(0)
+        self.extend_buffer(b)
+        return bytes(b)
 
     def plain(self):
         return {
@@ -385,9 +370,8 @@ class EncodingStruct(type):
                 fields.append(k)
                 sz += v.sz
 
-
         classdict['__exonum_fields__'] = fields
-        classdict['sz'] = sz
+        classdict['fields_sz'] = sz
 
         if not any(issubclass(c, ExonumBase) for c in bases):
             return type(name, (ExonumBase, *bases), classdict)

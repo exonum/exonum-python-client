@@ -9,7 +9,7 @@ def test_simple():
 
     x1 = X(first=1, second=2, third=-658979879)
     b = x1.to_bytes()
-    x2 = X.read(b)
+    x2 = X.read_buffer(b)
 
     assert x1.first == x2.first
     assert x1.second == x2.second
@@ -29,8 +29,7 @@ def test_simple_string():
            fourth="یہ بھی ایک تار ہے")
 
     b = x1.to_bytes()
-    x2 = X.read(b)
-
+    x2 = X.read_buffer(b)
     assert x1.first == x2.first
     assert x1.second == x2.second
     assert x1.third == x2.third
@@ -45,7 +44,7 @@ def test_vec():
     x1 = X(first=[1, 2, 3, 4, 5],
            second="фывапролдж!")
     b = x1.to_bytes()
-    x2 = X.read(b)
+    x2 = X.read_buffer(b)
 
     assert x1.first == x2.first
     assert x1.second == x2.second
@@ -57,7 +56,7 @@ def test_vec_from_rust():
         second = Str
 
     with open("tests/test_data/boo.bin", "rb") as f:
-        x = X.read(f.read())
+        x = X.read_buffer(f.read())
 
     assert x.first == [65, 1, 63]
     assert x.second == "Привет из exonum"
@@ -76,7 +75,8 @@ def test_inner():
           j=[X(first=[1, 2, 3, 4, 5], second="x one"),
              X(first=[6, 7, 8, 9], second="x two")])
     b = y.to_bytes()
-    y2 = Y.read(b)
+
+    y2 = Y.read_buffer(b)
 
     assert y.k == y2.k
     assert y.j == y2.j
