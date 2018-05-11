@@ -207,7 +207,7 @@ class Decimal(ExonumField):
 
     @classmethod
     def read(cls, buf, offset=0):
-        data, = struct.unpack_from(cls.fmt, buf, offset=offset)
+        data = struct.unpack_from(cls.fmt, buf, offset=offset)
         val = decimal_from_bytes(*data)
         return cls(decimal.Decimal(val))
 

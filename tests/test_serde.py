@@ -1,4 +1,4 @@
-from exonum.datatypes import EncodingStruct, SocketAddr, Str, Vec, i64, u8, u16, Uuid
+from exonum.datatypes import EncodingStruct, SocketAddr, Str, Vec, i64, u8, u16, Uuid, Decimal
 from uuid import uuid4
 
 def test_simple():
@@ -102,3 +102,13 @@ def test_ip_uuid():
           ids=[uuid4(), uuid4()])
 
     b = u.to_bytes()
+    u2 = U.read_buffer(b)
+    assert u == u2
+
+def test_decimals():
+    class D(metaclass=EncodingStruct):
+        d = Decimal
+    d = D(d="192837.123")
+    b = d.to_bytes()
+    d2 = D.read_buffer(b)
+    assert d.d == d2.d
