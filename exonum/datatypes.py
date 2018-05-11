@@ -55,8 +55,8 @@ class ExonumSegment(ExonumField):
 
     def write(self, buf, offset):
         dbg("writing {} at offset {}".format(self, offset))
-        buf[offset: offset +
-            self.sz] = struct.pack(self.fmt, len(buf), self.count())
+        end = offset + self.sz
+        buf[offset: end] = struct.pack(self.fmt, len(buf), self.count())
         self.extend_buffer(buf)
 
     @classmethod
@@ -185,8 +185,7 @@ class Uuid(ExonumField):
 
     @classmethod
     def read(cls, buf, offset=0):
-        data, = struct.unpack_from(cls.fmt, buf, offset=offset)
-        return cls(UUID(bytes=data))
+        return cls(UUID(bytes=buf[offset: offset+cls.sz]))
 
     def plain(self):
         return self.val.hex
@@ -203,8 +202,8 @@ class Decimal(ExonumField):
             self.val = val
 
     def write(self, buf, offset):
-        buf[offset: offset +
-            self.sz] = struct.pack(self.fmt, *decimal_to_bytes(self.val))
+        end = offset + self.sz
+        buf[offset: end] = struct.pack(self.fmt, *decimal_to_bytes(self.val))
 
     @classmethod
     def read(cls, buf, offset=0):
@@ -221,17 +220,23 @@ class SocketAddr(ExonumField):
     fmt = "<4BH"
 
     def __init__(self, val):
-        ip = ipaddress.IPv4Address(val[0])
+        ip = val[0]
+        if not isinstance(val[0], ipaddress.IPv4Address):
+            ip = ipaddress.IPv4Address(val[0])
+
         self.val = (ip, val[1])
 
     def write(self, buf, offset):
         raw = self.val[0].packed + struct.pack("<H", self.val[1])
+        dbg(raw.hex())
         buf[offset: offset + self.sz] = raw
+
 
     @classmethod
     def read(cls, buf, offset=0):
+        # dbg(data[])
         data = struct.unpack_from(cls.fmt, buf, offset=offset)
-        return cls(data)
+        return cls(["{}.{}.{}.{}".format(*data), data[-1]])
 
     def plain(self):
         raise NotImplementedYet(self.__class__)
@@ -322,7 +327,7 @@ class ExonumBase(ExonumSegment):
 
     def __eq__(self, other):
         if self.__class__ != other.__class__:
-            raise CantComare()
+            raise CantComare(self.__class__, other.__class__)
         for field in self.__exonum_fields__:
             if getattr(self, field) != getattr(other, field):
                 return False
