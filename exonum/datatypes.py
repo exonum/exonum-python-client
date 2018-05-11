@@ -19,6 +19,7 @@ import logging
 log = logging.getLogger("exonum datatypes")
 dbg = log.debug
 
+
 class ExonumField:
     sz = 1
     fmt = None
@@ -46,6 +47,7 @@ class ExonumField:
     def plain(self):
         return self.val
 
+
 class ExonumSegment(ExonumField):
     sz = 8
     fmt = "<2I"
@@ -53,7 +55,8 @@ class ExonumSegment(ExonumField):
 
     def write(self, buf, offset):
         dbg("writing {} at offset {}".format(self, offset))
-        buf[offset: offset + self.sz] = struct.pack(self.fmt, len(buf), self.count())
+        buf[offset: offset +
+            self.sz] = struct.pack(self.fmt, len(buf), self.count())
         self.extend_buffer(buf)
 
     @classmethod
@@ -66,6 +69,7 @@ class ExonumSegment(ExonumField):
 
 class bool(ExonumField):
     fmt = '<B'
+
 
 class u8(ExonumField):
     fmt = '<B'
@@ -199,7 +203,8 @@ class Decimal(ExonumField):
             self.val = val
 
     def write(self, buf, offset):
-        buf[offset: offset + self.sz] = struct.pack(self.fmt, *decimal_to_bytes(self.val))
+        buf[offset: offset +
+            self.sz] = struct.pack(self.fmt, *decimal_to_bytes(self.val))
 
     @classmethod
     def read(cls, buf, offset=0):
@@ -276,8 +281,10 @@ class Vector(ExonumSegment):
         return cls(v)
 
     def write(self, buf, offset):
-        dbg("writing vector ({}) of sz {} at offset {}".format(self.T.__name__, self.count(), offset))
-        buf[offset: offset + self.sz] = struct.pack(self.fmt, len(buf), self.count())
+        dbg("writing vector ({}) of sz {} at offset {}".format(
+            self.T.__name__, self.count(), offset))
+        buf[offset: offset +
+            self.sz] = struct.pack(self.fmt, len(buf), self.count())
         self.extend_buffer(buf)
 
     def extend_buffer(self, buf):
@@ -359,6 +366,7 @@ class ExonumBase(ExonumSegment):
             for k in self.__exonum_fields__
         }
 
+
 class EncodingStruct(type):
     def __new__(self, name, bases, classdict):
         e_bases = [c for c in bases if issubclass(c, ExonumBase)]
@@ -377,6 +385,7 @@ class EncodingStruct(type):
             return type(name, (ExonumBase, *bases), classdict)
         else:
             return type(name,  bases, classdict)
+
 
 if sys.version_info.major < 3 or \
    (sys.version_info.major == 3 and sys.version_info.minor < 6):
