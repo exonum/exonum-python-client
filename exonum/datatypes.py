@@ -315,15 +315,20 @@ def Vec(T):
 
 class ExonumBase(ExonumSegment):
     def count(self):
-        return 2
+        return self.cnt
 
     def __init__(self, val=None, **kwargs):
         for field in self.__exonum_fields__:
             cls = getattr(self.__class__, field)
-            if isinstance(kwargs[field], cls):
-                setattr(self, field,  kwargs[field])
-            else:
-                setattr(self, field,  cls(kwargs[field]))
+            cnt = 0
+            field_ =  kwargs[field]
+            if not isinstance(field_, cls):
+                field_ = cls(field_)
+            cnt += field_.sz
+            if isinstance(field_, ExonumSegment):
+                cnt += field_.count()
+            setattr(self, field,  field_)
+        self.cnt = cnt
 
     def __eq__(self, other):
         if self.__class__ != other.__class__:
