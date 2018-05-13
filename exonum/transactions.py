@@ -4,7 +4,7 @@ from itertools import chain
 from pysodium import crypto_sign_detached, crypto_sign_BYTES as SIGNATURE_SZ
 
 from .error import IllegalServiceId, NotEncodingStruct
-from .datatypes import ExonumBase, EncodingStruct, TxHeader, Signature, u32
+from .datatypes import ExonumBase, EncodingStruct, TxHeader, u32
 
 
 def mk_tx(cls, **kwargs):
@@ -65,19 +65,38 @@ class transactions():
             for k in chain(cls.__exonum_fields__))
 
         tx_cls = EncodingStruct(cls.__name__, (), dict(tx))
+        message_id = len(self.tx)
 
         class Tx(tx_cls):
             def __init__(tx_self, *args, **kwargs):
                 if "message_id" not in kwargs:
-                    kwargs["network_id"] =  self.network_id
-                    kwargs["protocol_version"] =  self.protocol_version
-                    kwargs["message_id"] =  len(self.tx)
-                    kwargs["service_id"] =  self.service_id
-                    kwargs["payload_sz"] =  0
+                    kwargs["network_id"] = self.network_id
+                    kwargs["protocol_version"] = self.protocol_version
+                    kwargs["message_id"] = message_id
+                    kwargs["service_id"] = self.service_id
+                    kwargs["payload_sz"] = 0
                 super().__init__(tx_self, *args, **kwargs)
 
                 if "message_id" not in kwargs:
                     tx_self.payload_sz = u32(tx_self.cnt + SIGNATURE_SZ)
+
+            def tx(self, secret_key, hex=False):
+                data = bytes(self.to_bytes())
+                signature = crypto_sign_detached(data, secret_key)
+
+                if hex:
+                    return data + signature
+
+                meta_fields = {k for (k, _) in TxHeader}
+                plain = self.plain()
+                message = {k: plain[k]
+                           for k in meta_fields}
+                message["signature"] = signature.hex()
+                message["body"] = {k: v for k, v
+                                   in plain.items()
+                                   if k not in meta_fields}
+                del message["payload_sz"]
+                return message
 
         self.tx.append(cls.__name__)
         return Tx
