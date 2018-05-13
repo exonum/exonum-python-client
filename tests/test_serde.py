@@ -56,11 +56,24 @@ def test_vec_from_rust():
         second = Str
 
     with open("tests/test_data/boo.bin", "rb") as f:
-        x = X.read_buffer(f.read())
+        raw = f.read()
+    x = X.read_buffer(raw)
+
 
     assert x.first == [65, 1, 63]
     assert x.second == "Привет из exonum"
+    z = x.to_bytes()
+    assert raw == z
 
+
+# def test_segment_vector():
+#     class X(metaclass=EncodingStruct):
+#         f = Vec(Str)
+
+#     x = X(f=["am", "i", "working", "or", "what?"])
+#     raw = x.to_bytes()
+#     xx = X.read_buffer(raw)
+#     assert xx.f.val == x.f.val
 
 def test_inner():
     class X(metaclass=EncodingStruct):
@@ -71,11 +84,21 @@ def test_inner():
         k = i64
         j = Vec(X)
 
+    with open("tests/test_data/inner.bin", "rb") as f:
+        raw = f.read()
+    y_exonum = Y.read_buffer(raw)
+
     y = Y(k=-1000000,
           j=[X(first=[1, 2, 3, 4, 5], second="x one"),
-             X(first=[6, 7, 8, 9], second="x two")])
-    b = y.to_bytes()
+             X(first=[6, 7, 8, 9], second="x two")
+          ])
 
+    assert y_exonum.k == y.k
+    assert y_exonum.j[1].second.val ==  y.j[1].second.val
+
+    assert y_exonum == y
+
+    b = y.to_bytes()
     y2 = Y.read_buffer(b)
 
     assert y.k == y2.k

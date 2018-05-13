@@ -56,15 +56,18 @@ class ExonumSegment(ExonumField):
     def write(self, buf, offset):
         dbg("writing {} at offset {}".format(self, offset))
         end = offset + self.sz
-        buf[offset: end] = struct.pack(self.fmt, len(buf), self.count())
+        start = len(buf)
+
         self.extend_buffer(buf)
+
+        size = len(buf) - start
+        buf[offset: end] = struct.pack(self.fmt, start, size)
 
     @classmethod
     def read(cls, buf, offset=0):
-        offset, cnt = struct.unpack_from(cls.fmt, buf, offset=offset)
-
-        dbg("{} lays at position = {} count = {}".format(cls, offset, cnt))
-        return cls.read_buffer(buf, offset, cnt)
+        segm_offset, cnt = struct.unpack_from(cls.fmt, buf, offset=offset)
+        dbg("Segment {} lays at position = {} count = {}".format(cls, segm_offset, cnt))
+        return cls.read_buffer(buf, offset=segm_offset, cnt=cnt)
 
 
 class bool(ExonumField):
@@ -250,8 +253,9 @@ class Str(ExonumSegment):
         buf += self.val.encode()
 
     @classmethod
-    def read_buffer(cls, buf, offset, cnt):
-        return cls(buf[offset: offset + cnt].decode("utf-8"))
+    def read_buffer(cls, buf, offset=0, cnt=0):
+        return cls(buf[offset: offset+cnt].decode("utf-8"))
+
 
     def plain(self):
         return self.val
@@ -275,7 +279,7 @@ class Vector(ExonumSegment):
         return "{} [{}]".format(self.__class__.__name__, ", ".join(repr))
 
     @classmethod
-    def read_buffer(cls, buf, offset, cnt=0):
+    def read_buffer(cls, buf, offset=0, cnt=0):
         dbg("reading vector of sz {}".format(cnt))
         v = []
         for _ in range(cnt):
@@ -285,21 +289,24 @@ class Vector(ExonumSegment):
             offset += cls.T.sz
         return cls(v)
 
+
     def write(self, buf, offset):
         dbg("writing vector ({}) of sz {} at offset {}".format(
             self.T.__name__, self.count(), offset))
+
         buf[offset: offset +
             self.sz] = struct.pack(self.fmt, len(buf), self.count())
         self.extend_buffer(buf)
+
 
     def extend_buffer(self, buf):
         offset = len(buf)
         buf += bytearray(self.count() * self.T.sz)
 
         for x in self.val:
-            dbg("writing  {} at offset {}".format(x, offset))
             x.write(buf, offset)
             offset += self.T.sz
+
 
     def plain(self):
         return [i.plain() for i in self.val]
@@ -318,17 +325,17 @@ class ExonumBase(ExonumSegment):
         return self.cnt
 
     def __init__(self, val=None, **kwargs):
+        self.cnt = 0
+
         for field in self.__exonum_fields__:
             cls = getattr(self.__class__, field)
-            cnt = 0
             field_ =  kwargs[field]
             if not isinstance(field_, cls):
                 field_ = cls(field_)
-            cnt += field_.sz
-            if isinstance(field_, ExonumSegment):
-                cnt += field_.count()
+            self.cnt += field_.sz
+            if issubclass(cls, ExonumSegment):
+                self.cnt += field_.count()
             setattr(self, field,  field_)
-        self.cnt = cnt
 
     def __eq__(self, other):
         if self.__class__ != other.__class__:
@@ -339,12 +346,14 @@ class ExonumBase(ExonumSegment):
         return True
 
     def extend_buffer(self, buf):
-        offset = len(buf)
-        buf += bytearray(self.fields_sz)
+        tmp = bytearray(self.fields_sz)
+        offset = 0
         for field in self.__exonum_fields__:
             field = getattr(self, field)
-            field.write(buf, offset)
+            field.write(tmp, offset)
             offset += field.sz
+
+        buf += tmp
 
     def __str__(self):
         repr = []
@@ -353,20 +362,30 @@ class ExonumBase(ExonumSegment):
         return "{} ({})".format(self.__class__.__name__, ", ".join(repr))
 
     @classmethod
-    def read_buffer(cls, bytestring, offset=0, sz=1):
-        dbg("read_buffer of ExonumBase sz {}".format(sz))
+    def read(cls, buf, offset=0):
+        offset, cnt = struct.unpack_from(cls.fmt, buf, offset=offset)
+        dbg("{} lays at position = {} count = {}".format(cls, offset, cnt))
+        return cls.read_buffer(buf[offset: offset+cnt])
+
+    @classmethod
+    def read_buffer(cls, buf, offset=0, cnt=None):
+        if cnt is None:
+            cnt = len(buf)
+        segment = buf[offset:offset+cnt]
+        dbg("read_buffer of ExonumBase sz {}".format(cls.sz))
+        offset = 0
         data = {}
         for field in cls.__exonum_fields__:
             fcls = getattr(cls, field)
             dbg("trying to read {} {} at offset {}".format(field, fcls, offset))
-            val = fcls.read(bytestring, offset)
+            val = fcls.read(segment, offset)
             offset += fcls.sz
 
             data[field] = val
         return cls(**data)
 
     def to_bytes(self):
-        b = bytearray(0)
+        b = bytearray()
         self.extend_buffer(b)
         return bytes(b)
 
@@ -376,12 +395,10 @@ class ExonumBase(ExonumSegment):
             for k in self.__exonum_fields__
         }
 
-
 class EncodingStruct(type):
     def __new__(self, name, bases, classdict):
-        e_bases = [c for c in bases if issubclass(c, ExonumBase)]
-        fields = list(chain(*(c.__exonum_fields__ for c in e_bases)))
-        sz = sum(c.sz for c in e_bases)
+        fields = []
+        sz = 0
 
         for k, v in classdict.items():
             if isinstance(v, type) and issubclass(v, ExonumField):
@@ -391,10 +408,7 @@ class EncodingStruct(type):
         classdict['__exonum_fields__'] = fields
         classdict['fields_sz'] = sz
 
-        if not any(issubclass(c, ExonumBase) for c in bases):
-            return type(name, (ExonumBase, *bases), classdict)
-        else:
-            return type(name,  bases, classdict)
+        return type(name, (ExonumBase, *bases), classdict)
 
 
 if sys.version_info.major < 3 or \
@@ -402,3 +416,10 @@ if sys.version_info.major < 3 or \
     # https://www.python.org/dev/peps/pep-0520/
     from collections import OrderedDict
     EncodingStruct.__prepare__ = classmethod(lambda *_: OrderedDict())
+
+TxHeader = (
+    ("network_id", u8),
+    ("protocol_version", u8),
+    ("message_id", u16),
+    ("service_id", u16),
+    ("payload_sz", u32))

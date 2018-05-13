@@ -1,9 +1,10 @@
 import struct
 
+from itertools import chain
 from pysodium import crypto_sign_detached, crypto_sign_BYTES as SIGNATURE_SZ
 
 from .error import IllegalServiceId, NotEncodingStruct
-from .datatypes import ExonumBase
+from .datatypes import ExonumBase, EncodingStruct, TxHeader, Signature, u32
 
 
 def mk_tx(cls, **kwargs):
@@ -58,12 +59,25 @@ class transactions():
         if not self.is_encoding_struct(cls):
             raise NotEncodingStruct()
 
-        setattr(cls, "tx",
-                mk_tx(cls,
-                      network_id=self.network_id,
-                      protocol_version=self.protocol_version,
-                      message_id=len(self.tx),
-                      service_id=self.service_id))
+        tx = list(TxHeader)
+        tx.extend(
+            (k, getattr(cls, k))
+            for k in chain(cls.__exonum_fields__))
+
+        tx_cls = EncodingStruct(cls.__name__, (), dict(tx))
+
+        class Tx(tx_cls):
+            def __init__(tx_self, *args, **kwargs):
+                if "message_id" not in kwargs:
+                    kwargs["network_id"] =  self.network_id
+                    kwargs["protocol_version"] =  self.protocol_version
+                    kwargs["message_id"] =  len(self.tx)
+                    kwargs["service_id"] =  self.service_id
+                    kwargs["payload_sz"] =  0
+                super().__init__(tx_self, *args, **kwargs)
+
+                if "message_id" not in kwargs:
+                    tx_self.payload_sz = u32(tx_self.cnt + SIGNATURE_SZ)
 
         self.tx.append(cls.__name__)
-        return cls
+        return Tx
