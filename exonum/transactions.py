@@ -77,11 +77,14 @@ class transactions():
                     kwargs["payload_sz"] = 0
                 super().__init__(tx_self, *args, **kwargs)
 
-                if "message_id" not in kwargs:
-                    tx_self.payload_sz = u32(tx_self.cnt + SIGNATURE_SZ)
 
             def tx(self, secret_key, hex=False):
-                data = bytes(self.to_bytes())
+                data = bytearray(0)
+                self.extend_buffer(data)
+                sz = len(data) + SIGNATURE_SZ
+                struct.pack_into("<i", data, 6, sz)
+                data = bytes(data)
+
                 signature = crypto_sign_detached(data, secret_key)
 
                 if hex:

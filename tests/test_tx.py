@@ -34,7 +34,9 @@ class CreatePolicy(metaclass=exonum.EncodingStruct):
     content = Policy
     public_key = exonum.PublicKey
 
-
+skey = bytes.fromhex("b61cea151245c2be5d3f89977891e5127a0b4c522ca9760"
+                     "076cdd1f195f0525f692e5734b12d3446def47954c9d4d4"
+                     "ffcf6494d621e2a117e77c6ba07b093038")
 pkey = bytes.fromhex(
     "692e5734b12d3446def47954c9d4d4ffcf6494d621e2a117e77c6ba07b093038")
 
@@ -66,8 +68,9 @@ def test_tx_serialize():
 
     with open("./tests/test_data/bin2.bin", "rb") as f:
         data = f.read()
-    print("rs " + data[:-64].hex())
-    data = tx.to_bytes()
+
+    print("rs " + data.hex())
+    data = tx.tx(skey, hex=True)
     print("py " + data.hex())
 
     # assert tx == CreatePolicy.read_buffer(data)
