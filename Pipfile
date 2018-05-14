@@ -15,6 +15,7 @@ yapf = "*"
 "flake8" = "*"
 pytest = "*"
 ipython = "*"
+requests = "*"
 
 [requires]
 python_version = "3.6"

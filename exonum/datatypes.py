@@ -28,9 +28,12 @@ class ExonumField:
         self.val = val
 
     def __eq__(self, other):
-        if hasattr(other, "val"):
-            return self.val == other.val
-        return self.val == other
+        return (
+            (hasattr(other, "__class__")
+             and self.__class__ == other.__class__
+             and hasattr(other, "val")
+             and self.val == other.val)
+            or (self.val == other))
 
     @classmethod
     def read(cls, buf, offset=0):
@@ -66,7 +69,8 @@ class ExonumSegment(ExonumField):
     @classmethod
     def read(cls, buf, offset=0):
         segm_offset, cnt = struct.unpack_from(cls.fmt, buf, offset=offset)
-        dbg("Segment {} lays at position = {} count = {}".format(cls, segm_offset, cnt))
+        dbg("Segment {} lays at position = {} count = {}".format(
+            cls, segm_offset, cnt))
         return cls.read_buffer(buf, offset=segm_offset, cnt=cnt)
 
 
@@ -153,6 +157,14 @@ class DateTime(ExonumField):
                 "Type {} is not supported for initializing DateTime"
                 .format(type(val)))
 
+    def __eq__(self, other):
+        return (
+            (hasattr(other, "__class__")
+             and self.__class__ == other.__class__
+             and hasattr(other, "val")
+             and self.val.nanoseconds() == other.val.nanoseconds())
+            or (self.val == other))
+
     def to_pair(self):
         sec = int(self.val.seconds())
         nan = (self.val - nanotime.seconds(sec)).nanoseconds()
@@ -234,7 +246,6 @@ class SocketAddr(ExonumField):
         dbg(raw.hex())
         buf[offset: offset + self.sz] = raw
 
-
     @classmethod
     def read(cls, buf, offset=0):
         # dbg(data[])
@@ -255,7 +266,6 @@ class Str(ExonumSegment):
     @classmethod
     def read_buffer(cls, buf, offset=0, cnt=0):
         return cls(buf[offset: offset+cnt].decode("utf-8"))
-
 
     def plain(self):
         return self.val
@@ -289,7 +299,6 @@ class Vector(ExonumSegment):
             offset += cls.T.sz
         return cls(v)
 
-
     def write(self, buf, offset):
         dbg("writing vector ({}) of sz {} at offset {}".format(
             self.T.__name__, self.count(), offset))
@@ -298,7 +307,6 @@ class Vector(ExonumSegment):
             self.sz] = struct.pack(self.fmt, len(buf), self.count())
         self.extend_buffer(buf)
 
-
     def extend_buffer(self, buf):
         offset = len(buf)
         buf += bytearray(self.count() * self.T.sz)
@@ -306,7 +314,6 @@ class Vector(ExonumSegment):
         for x in self.val:
             x.write(buf, offset)
             offset += self.T.sz
-
 
     def plain(self):
         return [i.plain() for i in self.val]
@@ -329,7 +336,7 @@ class ExonumBase(ExonumSegment):
 
         for field in self.__exonum_fields__:
             cls = getattr(self.__class__, field)
-            field_ =  kwargs[field]
+            field_ = kwargs[field]
             if not isinstance(field_, cls):
                 field_ = cls(field_)
             self.cnt += field_.sz
@@ -394,6 +401,7 @@ class ExonumBase(ExonumSegment):
             k: getattr(self, k).plain()
             for k in self.__exonum_fields__
         }
+
 
 class EncodingStruct(type):
     def __new__(self, name, bases, classdict):

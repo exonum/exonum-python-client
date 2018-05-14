@@ -3,9 +3,10 @@ import exonum.transactions as tx
 
 import decimal
 from datetime import datetime
-
+import nanotime
 
 transactions = tx.transactions(service_id=250)
+
 
 class Policy(metaclass=exonum.EncodingStruct):
     policy_type = exonum.Str
@@ -34,46 +35,47 @@ class CreatePolicy(metaclass=exonum.EncodingStruct):
     content = Policy
     public_key = exonum.PublicKey
 
+
 skey = bytes.fromhex("b61cea151245c2be5d3f89977891e5127a0b4c522ca9760"
                      "076cdd1f195f0525f692e5734b12d3446def47954c9d4d4"
                      "ffcf6494d621e2a117e77c6ba07b093038")
 pkey = bytes.fromhex(
     "692e5734b12d3446def47954c9d4d4ffcf6494d621e2a117e77c6ba07b093038")
 
+
 def test_tx_serialize():
     p = Policy(
-        policy_type = "New",
-        unique_id = "uniq_id",
-        insured_name = "name",
-        insured_state = "state",
-        zip_code = "zip",
-        industry_sector = "sector",
-        annual_revenue = "revenue",
-        total_lives = 1,
-        inception = datetime(2014, 7, 8, 9, 10, 11),
-        expiry = datetime(2014, 7, 8, 9, 10, 11),
-        limit = 2,
-        excess = 3,
-        currency = "usd",
-        gross_premium_no_ipt = 4,
-        tax = decimal.Decimal("123.456789"),
-        tax_ammount = 5,
-        risk_management_fee = 6,
-        commision = 7,
-        net_premium_due = 8)
+        policy_type="New",
+        unique_id="uniq_id",
+        insured_name="name",
+        insured_state="state",
+        zip_code="zip",
+        industry_sector="sector",
+        annual_revenue="revenue",
+        total_lives=1,
+        inception=datetime(2014, 7, 8, 9, 10, 11),
+        expiry=datetime(2014, 7, 8, 9, 10, 11),
+        limit=2,
+        excess=3,
+        currency="usd",
+        gross_premium_no_ipt=4,
+        tax=decimal.Decimal("123.456789"),
+        tax_ammount=5,
+        risk_management_fee=6,
+        commision=7,
+        net_premium_due=8)
 
     tx = CreatePolicy(
-        content = p,
-        public_key = pkey)
+        content=p,
+        public_key=pkey)
 
-    with open("./tests/test_data/bin2.bin", "rb") as f:
-        data = f.read()
-
-    print("rs " + data.hex())
     data = tx.tx(skey, hex=True)
-    print("py " + data.hex())
 
-    # assert tx == CreatePolicy.read_buffer(data)
+    # dropping signature for now
+    tx2 = CreatePolicy.read_buffer(data[:-64])
+
+    for f in CreatePolicy.content.__exonum_fields__:
+        assert getattr(tx.content, f) == getattr(tx2.content, f)
 
 
 def test_tx_deserialize():

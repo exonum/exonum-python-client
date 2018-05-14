@@ -77,7 +77,6 @@ class transactions():
                     kwargs["payload_sz"] = 0
                 super().__init__(tx_self, *args, **kwargs)
 
-
             def tx(self, secret_key, hex=False):
                 data = bytearray(0)
                 self.extend_buffer(data)
