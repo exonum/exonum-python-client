@@ -14,7 +14,7 @@ from ._decimal import ctx as decimal_ctx
 from ._decimal import from_bytes as decimal_from_bytes
 from ._decimal import to_bytes as decimal_to_bytes
 from .error import (CantComare, NotImplementedYet, NotSupported,
-                    UnsupportedDatatype)
+                    UnsupportedDatatype, IllegalUsage)
 
 log = logging.getLogger("exonum datatypes")
 dbg = log.debug
@@ -449,6 +449,13 @@ class EncodingStruct(type):
         sz = 0
 
         for k, v in six.iteritems(classdict):
+            if isinstance(v, type) and issubclass(v, ExonumField):
+                raise IllegalUsage(
+                    "{}: {} - "
+                    "One cant use ExonumField this way.\n"
+                    "You should initialize it in class definition.\n"
+                    "ex: {} = {}()".format(name, k, k, v.__name__))
+            
             if isinstance(v, ExonumField):
                 classdict[k] = v.__class__
                 fields.append((k, v))

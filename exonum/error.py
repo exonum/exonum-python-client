@@ -1,7 +1,9 @@
 # coding: utf-8
 
+
 class ExonumException(Exception):
     pass
+
 
 class NotEncodingStruct(ExonumException):
     pass
@@ -31,3 +33,5 @@ class DecimalOverflow(ExonumException):
     pass
 
 
+class IllegalUsage(ExonumException):
+    pass
