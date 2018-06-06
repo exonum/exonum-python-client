@@ -1,10 +1,13 @@
+# coding: utf-8
 import struct
-
+from copy import copy
 from itertools import chain
-from pysodium import crypto_sign_detached, crypto_sign_BYTES as SIGNATURE_SZ
 
+from pysodium import crypto_sign_BYTES as SIGNATURE_SZ
+from pysodium import crypto_sign_detached
+
+from .datatypes import EncodingStruct, ExonumBase, TxHeader
 from .error import IllegalServiceId, NotEncodingStruct
-from .datatypes import ExonumBase, EncodingStruct, TxHeader, u32
 
 
 def mk_tx(cls, **kwargs):
@@ -28,16 +31,14 @@ def mk_tx(cls, **kwargs):
         signature = crypto_sign_detached(data, secret_key)
         if hex:
             return data + signature
-
-        message = dict(
-            **kwargs,
-            signature=signature.hex(),
-            body=self.plain())
+        message = copy(kwargs)
+        message["signature"] = signature.hex()
+        message["body"] = self.plain()
         return message
     return tx
 
 
-class transactions():
+class transactions(object):
     def __init__(self,
                  service_id=-1,
                  protocol_version=0,
@@ -64,7 +65,7 @@ class transactions():
             (k, getattr(cls, k))
             for k in chain(cls.__exonum_fields__))
 
-        tx_cls = EncodingStruct(cls.__name__, (), dict(tx))
+        tx_cls = EncodingStruct(cls.__name__, (), {k: v() for k, v in tx})
         message_id = len(self.tx)
 
         class Tx(tx_cls):
@@ -75,7 +76,7 @@ class transactions():
                     kwargs["message_id"] = message_id
                     kwargs["service_id"] = self.service_id
                     kwargs["payload_sz"] = 0
-                super().__init__(tx_self, *args, **kwargs)
+                tx_cls.__init__(tx_self, *args, **kwargs)
 
             def tx(self, secret_key, hex=False):
                 data = bytearray(0)

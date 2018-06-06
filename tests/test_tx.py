@@ -1,46 +1,58 @@
+# coding: utf-8
+
+import codecs
+import decimal
+from datetime import datetime
+
+from six import with_metaclass
+
 import exonum.datatypes as exonum
 import exonum.transactions as tx
 
-import decimal
-from datetime import datetime
-import nanotime
-
 transactions = tx.transactions(service_id=250)
 
+# py3
+# class Policy(metaclass=exonum.EncodingStruct):
+#    ...
 
-class Policy(metaclass=exonum.EncodingStruct):
-    policy_type = exonum.Str
-    unique_id = exonum.Str
-    insured_name = exonum.Str
-    insured_state = exonum.Str
-    zip_code = exonum.Str
-    industry_sector = exonum.Str
-    annual_revenue = exonum.Str
-    total_lives = exonum.u16
-    inception = exonum.DateTime
-    expiry = exonum.DateTime
-    limit = exonum.u16
-    excess = exonum.u16
-    currency = exonum.Str
-    gross_premium_no_ipt = exonum.u16
-    tax = exonum.Decimal
-    tax_ammount = exonum.u16
-    risk_management_fee = exonum.u16
-    commision = exonum.u16
-    net_premium_due = exonum.u16
+# py2
+# class Policy(object):
+#     __metaclass__ = exonum.EncodingStruct
+#     ...
+
+class Policy(with_metaclass(exonum.EncodingStruct)):
+    policy_type = exonum.Str()
+    unique_id = exonum.Str()
+    insured_name = exonum.Str()
+    insured_state = exonum.Str()
+    zip_code = exonum.Str()
+    industry_sector = exonum.Str()
+    annual_revenue = exonum.Str()
+    total_lives = exonum.u16()
+    inception = exonum.DateTime()
+    expiry = exonum.DateTime()
+    limit = exonum.u16()
+    excess = exonum.u16()
+    currency = exonum.Str()
+    gross_premium_no_ipt = exonum.u16()
+    tax = exonum.Decimal()
+    tax_ammount = exonum.u16()
+    risk_management_fee = exonum.u16()
+    commision = exonum.u16()
+    net_premium_due = exonum.u16()
 
 
 @transactions
-class CreatePolicy(metaclass=exonum.EncodingStruct):
-    content = Policy
-    public_key = exonum.PublicKey
+class CreatePolicy(with_metaclass(exonum.EncodingStruct)):
+    content = Policy()
+    public_key = exonum.PublicKey()
 
 
-skey = bytes.fromhex("b61cea151245c2be5d3f89977891e5127a0b4c522ca9760"
+skey = codecs.decode("b61cea151245c2be5d3f89977891e5127a0b4c522ca9760"
                      "076cdd1f195f0525f692e5734b12d3446def47954c9d4d4"
-                     "ffcf6494d621e2a117e77c6ba07b093038")
-pkey = bytes.fromhex(
-    "692e5734b12d3446def47954c9d4d4ffcf6494d621e2a117e77c6ba07b093038")
+                     "ffcf6494d621e2a117e77c6ba07b093038", "hex")
+pkey = codecs.decode(
+    "692e5734b12d3446def47954c9d4d4ffcf6494d621e2a117e77c6ba07b093038", "hex")
 
 
 def test_tx_serialize():

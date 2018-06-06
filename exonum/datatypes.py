@@ -1,31 +1,39 @@
-import ipaddress
+# coding: utf-8
 import decimal
+import ipaddress
+import logging
 import struct
-import sys
-
 from datetime import datetime
+from itertools import count
 from uuid import UUID
 
 import nanotime
+import six
 
-from itertools import chain
+from ._decimal import ctx as decimal_ctx
+from ._decimal import from_bytes as decimal_from_bytes
+from ._decimal import to_bytes as decimal_to_bytes
+from .error import (CantComare, NotImplementedYet, NotSupported,
+                    UnsupportedDatatype)
 
-from .error import NotSupported, NotImplementedYet, CantComare, UnsupportedDatatype
-from .decimal import (ctx as decimal_ctx,
-                      to_bytes as decimal_to_bytes,
-                      from_bytes as decimal_from_bytes)
-
-import logging
 log = logging.getLogger("exonum datatypes")
 dbg = log.debug
 
 
-class ExonumField:
+@six.python_2_unicode_compatible
+class ExonumField(object):
     sz = 1
     fmt = None
+    _counter = count()
 
-    def __init__(self, val):
-        self.val = val
+    def _set_order(self):
+        self._order = next(ExonumField._counter)
+
+    def __init__(self, *val):
+        if len(val) == 0:
+            self._set_order()
+            return
+        self.val = val[0]
 
     def __eq__(self, other):
         return (
@@ -34,6 +42,9 @@ class ExonumField:
              and hasattr(other, "val")
              and self.val == other.val)
             or (self.val == other))
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     @classmethod
     def read(cls, buf, offset=0):
@@ -45,7 +56,7 @@ class ExonumField:
         buf[offset: offset + self.sz] = raw
 
     def __str__(self):
-        return "{}({})".format(self.__class__.__name__, self.val)
+        return u"{}({})".format(self.__class__.__name__, self.val)
 
     def plain(self):
         return self.val
@@ -116,12 +127,13 @@ class i64(ExonumField):
     fmt = '<q'
 
 
+@six.python_2_unicode_compatible
 class Hash(ExonumField):
     sz = 32
     fmt = '32s'
 
     def __str__(self):
-        return "{}({})".format(self.__class__.__name__, self.val.hex())
+        return u"{}({})".format(self.__class__.__name__, self.val.hex())
 
     def plain(self):
         return self.val.hex()
@@ -140,7 +152,11 @@ class DateTime(ExonumField):
     sz = 12
     fmt = '<qI'
 
-    def __init__(self, val):
+    def __init__(self, *val):
+        if len(val) == 0:
+            self._set_order()
+            return
+        val = val[0]
         if isinstance(val, (float, int)):
             self.val = nanotime.timestamp(val)
         elif isinstance(val, datetime):
@@ -182,14 +198,18 @@ class DateTime(ExonumField):
 
     def plain(self):
         sec, nan = self.to_pair()
-        return {"secs": str(sec), "nanos": nan}
+        return {"secs": "{}".format(sec), u"nanos": nan}
 
 
 class Uuid(ExonumField):
     sz = 16
     fmt = "<16B"
 
-    def __init__(self, val):
+    def __init__(self, *val):
+        if len(val) == 0:
+            self._set_order()
+            return
+        val = val[0]
         if isinstance(val, UUID):
             self.val = val
         else:
@@ -210,7 +230,11 @@ class Decimal(ExonumField):
     sz = 16
     fmt = "<4I"
 
-    def __init__(self, val):
+    def __init__(self, *val):
+        if len(val) == 0:
+            self._set_order()
+            return
+        val = val[0]
         if not isinstance(val, decimal.Decimal):
             self.val = decimal_ctx.create_decimal(val)
         else:
@@ -227,14 +251,19 @@ class Decimal(ExonumField):
         return cls(decimal.Decimal(val))
 
     def plain(self):
-        return str(self.val)
+        return u"{}".format(self.val)
 
 
 class SocketAddr(ExonumField):
     sz = 6
     fmt = "<4BH"
 
-    def __init__(self, val):
+    def __init__(self, *val):
+        if len(val) == 0:
+            self._set_order()
+            return
+        val = val[0]
+
         ip = val[0]
         if not isinstance(val[0], ipaddress.IPv4Address):
             ip = ipaddress.IPv4Address(val[0])
@@ -243,7 +272,7 @@ class SocketAddr(ExonumField):
 
     def write(self, buf, offset):
         raw = self.val[0].packed + struct.pack("<H", self.val[1])
-        dbg(raw.hex())
+
         buf[offset: offset + self.sz] = raw
 
     @classmethod
@@ -258,10 +287,10 @@ class SocketAddr(ExonumField):
 
 class Str(ExonumSegment):
     def count(self):
-        return len(self.val.encode())
+        return len(self.val.encode("utf-8"))
 
     def extend_buffer(self, buf):
-        buf += self.val.encode()
+        buf += self.val.encode("utf-8")
 
     @classmethod
     def read_buffer(cls, buf, offset=0, cnt=0):
@@ -271,8 +300,14 @@ class Str(ExonumSegment):
         return self.val
 
 
+@six.python_2_unicode_compatible
 class Vector(ExonumSegment):
-    def __init__(self, val):
+    def __init__(self, *val):
+        if len(val) == 0:
+            self._set_order()
+            return
+        val = val[0]
+
         if isinstance(val[0], self.T):
             self.val = val
         else:
@@ -323,7 +358,7 @@ def Vec(T):
     if issubclass(T, ExonumField):
         return type("Vec<{}>".format(T.__name__),
                     (Vector, ),
-                    {"T": T})
+                    {"T": T})()
     raise NotSupported()
 
 
@@ -332,6 +367,10 @@ class ExonumBase(ExonumSegment):
         return self.cnt
 
     def __init__(self, val=None, **kwargs):
+        if val is None and len(kwargs) == 0:
+            self._set_order()
+            return
+
         self.cnt = 0
 
         for field in self.__exonum_fields__:
@@ -365,8 +404,8 @@ class ExonumBase(ExonumSegment):
     def __str__(self):
         repr = []
         for field in self.__exonum_fields__:
-            repr.append("{} = {}".format(field, getattr(self, field)))
-        return "{} ({})".format(self.__class__.__name__, ", ".join(repr))
+            repr.append(u"{} = {}".format(field, getattr(self, field)))
+        return u"{} ({})".format(self.__class__.__name__, u", ".join(repr))
 
     @classmethod
     def read(cls, buf, offset=0):
@@ -384,7 +423,8 @@ class ExonumBase(ExonumSegment):
         data = {}
         for field in cls.__exonum_fields__:
             fcls = getattr(cls, field)
-            dbg("trying to read {} {} at offset {}".format(field, fcls, offset))
+            dbg("trying to read {} {} at offset {}"
+                .format(field, fcls, offset))
             val = fcls.read(segment, offset)
             offset += fcls.sz
 
@@ -408,22 +448,21 @@ class EncodingStruct(type):
         fields = []
         sz = 0
 
-        for k, v in classdict.items():
-            if isinstance(v, type) and issubclass(v, ExonumField):
-                fields.append(k)
+        for k, v in six.iteritems(classdict):
+            if isinstance(v, ExonumField):
+                classdict[k] = v.__class__
+                fields.append((k, v))
                 sz += v.sz
 
-        classdict['__exonum_fields__'] = fields
+        fields.sort(key=lambda v: v[1]._order)
+        classdict['__exonum_fields__'] = [k for k, _ in fields]
         classdict['fields_sz'] = sz
 
-        return type(name, (ExonumBase, *bases), classdict)
+        # py2 compat
+        _bases = list(bases)
+        _bases.insert(0, ExonumBase)
+        return type(name, tuple(_bases), classdict)
 
-
-if sys.version_info.major < 3 or \
-   (sys.version_info.major == 3 and sys.version_info.minor < 6):
-    # https://www.python.org/dev/peps/pep-0520/
-    from collections import OrderedDict
-    EncodingStruct.__prepare__ = classmethod(lambda *_: OrderedDict())
 
 TxHeader = (
     ("network_id", u8),

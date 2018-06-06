@@ -1,11 +1,11 @@
+# coding: utf-8
 import decimal
-import struct
 
 from .error import DecimalOverflow, NotImplementedYet
 
-SCALE_MASK = 0x00FF_0000
-SIGN_MASK = 0x8000_0000
-U32_MASK = 0xFFFF_FFFF
+SCALE_MASK = 0x00FF0000
+SIGN_MASK = 0x80000000
+U32_MASK = 0xFFFFFFFF
 SCALE_SHIFT = 16
 MAX_PRECISION = 28
 
@@ -57,6 +57,7 @@ def _add(value, by):
     else:
         raise DecimalOverflow()
 
+
 def _div(bits, divisor):
     if divisor == 0:
         raise ZeroDivisionError()
@@ -64,7 +65,7 @@ def _div(bits, divisor):
     elif divisor == 1:
         return 0
     else:
-        remainder = 0;
+        remainder = 0
         for idx, b in reversed(list(enumerate(bits))):
             temp = (remainder << 32) + b
             remainder = temp % divisor
@@ -79,6 +80,7 @@ def scale(flags):
 def is_negative(flags):
     return flags & SIGN_MASK > 0
 
+
 def to_bytes(d):
     dt = d.as_tuple()
     if dt.exponent > 0:
@@ -86,7 +88,7 @@ def to_bytes(d):
 
     digits = dt.digits
 
-    data = [0,0,0]
+    data = [0, 0, 0]
 
     for digit in digits:
         _mul(data, 10)
@@ -97,14 +99,16 @@ def to_bytes(d):
     if dt.sign:
         flags |= SIGN_MASK
 
-    return (flags, *data)
+    # py2 compat
+    data.insert(0, flags)
+    return data
 
 
 def from_bytes(flags, *data):
     data = list(data)
     digits = []
     while not all(x == 0 for x in data):
-        remainder = _div(data, 10);
+        remainder = _div(data, 10)
         digits.append(remainder)
     digits.reverse()
     sign = is_negative(flags)

@@ -1,11 +1,17 @@
-from exonum.datatypes import EncodingStruct, SocketAddr, Str, Vec, i64, u8, u16, Uuid, Decimal
+# coding: utf-8
 from uuid import uuid4
 
+from six import with_metaclass
+
+from exonum.datatypes import (Decimal, EncodingStruct, SocketAddr, Str, Uuid,
+                              Vec, i64, u8, u16)
+
+
 def test_simple():
-    class X(metaclass=EncodingStruct):
-        first = u8
-        second = u8
-        third = i64
+    class X(with_metaclass(EncodingStruct)):
+        first = u8()
+        second = u8()
+        third = i64()
 
     x1 = X(first=1, second=2, third=-658979879)
     b = x1.to_bytes()
@@ -17,16 +23,16 @@ def test_simple():
 
 
 def test_simple_string():
-    class X(metaclass=EncodingStruct):
-        first = Str
-        second = u8
-        third = i64
-        fourth = Str
+    class X(with_metaclass(EncodingStruct)):
+        first = Str()
+        second = u8()
+        third = i64()
+        fourth = Str()
 
-    x1 = X(first="Это строка",
+    x1 = X(first=u"Это строка",
            second=2,
            third=-658979879,
-           fourth="یہ بھی ایک تار ہے")
+           fourth=u"یہ بھی ایک تار ہے")
 
     b = x1.to_bytes()
     x2 = X.read_buffer(b)
@@ -37,12 +43,12 @@ def test_simple_string():
 
 
 def test_vec():
-    class X(metaclass=EncodingStruct):
+    class X(with_metaclass(EncodingStruct)):
         first = Vec(u16)
-        second = Str
+        second = Str()
 
     x1 = X(first=[1, 2, 3, 4, 5],
-           second="фывапролдж!")
+           second=u"фывапролдж!")
     b = x1.to_bytes()
     x2 = X.read_buffer(b)
 
@@ -51,37 +57,36 @@ def test_vec():
 
 
 def test_vec_from_rust():
-    class X(metaclass=EncodingStruct):
+    class X(with_metaclass(EncodingStruct)):
         first = Vec(u16)
-        second = Str
+        second = Str()
 
     with open("tests/test_data/boo.bin", "rb") as f:
         raw = f.read()
     x = X.read_buffer(raw)
 
-
     assert x.first == [65, 1, 63]
-    assert x.second == "Привет из exonum"
+    assert x.second == u"Привет из exonum"
     z = x.to_bytes()
     assert raw == z
 
 
 # def test_segment_vector():
-#     class X(metaclass=EncodingStruct):
+#     class X(with_metaclass(EncodingStruct)):
 #         f = Vec(Str)
 
-#     x = X(f=["am", "i", "working", "or", "what?"])
+#     x = X(f=[u"am", u"i", u"working", u"or", u"what?"])
 #     raw = x.to_bytes()
 #     xx = X.read_buffer(raw)
 #     assert xx.f.val == x.f.val
 
 def test_inner():
-    class X(metaclass=EncodingStruct):
+    class X(with_metaclass(EncodingStruct)):
         first = Vec(u16)
-        second = Str
+        second = Str()
 
-    class Y(metaclass=EncodingStruct):
-        k = i64
+    class Y(with_metaclass(EncodingStruct)):
+        k = i64()
         j = Vec(X)
 
     with open("tests/test_data/inner.bin", "rb") as f:
@@ -89,13 +94,11 @@ def test_inner():
     y_exonum = Y.read_buffer(raw)
 
     y = Y(k=-1000000,
-          j=[X(first=[1, 2, 3, 4, 5], second="x one"),
-             X(first=[6, 7, 8, 9], second="x two")
-          ])
+          j=[X(first=[1, 2, 3, 4, 5], second=u"x one"),
+             X(first=[6, 7, 8, 9], second=u"x two")])
 
     assert y_exonum.k == y.k
-    assert y_exonum.j[1].second.val ==  y.j[1].second.val
-
+    assert y_exonum.j[1].second.val == y.j[1].second.val
     assert y_exonum == y
 
     b = y.to_bytes()
@@ -104,7 +107,7 @@ def test_inner():
     assert y.k == y2.k
     assert y.j == y2.j
 
-    s = ("Y (k = i64(-1000000), "
+    s = (u"Y (k = i64(-1000000), "
          "j = Vec<X> ["
          "X (first = Vec<u16> [u16(1), u16(2), u16(3), u16(4), u16(5)], "
          "second = Str(x one)), "
@@ -117,7 +120,7 @@ def test_inner():
 
 
 def test_ip_uuid():
-    class U(metaclass=EncodingStruct):
+    class U(with_metaclass(EncodingStruct)):
         soc = Vec(SocketAddr)
         ids = Vec(Uuid)
 
@@ -128,9 +131,10 @@ def test_ip_uuid():
     u2 = U.read_buffer(b)
     assert u == u2
 
+
 def test_decimals():
-    class D(metaclass=EncodingStruct):
-        d = Decimal
+    class D(with_metaclass(EncodingStruct)):
+        d = Decimal()
     d = D(d="192837.123")
     b = d.to_bytes()
     d2 = D.read_buffer(b)
