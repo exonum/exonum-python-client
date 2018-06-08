@@ -1,4 +1,5 @@
 # coding: utf-8
+import codecs
 import decimal
 import ipaddress
 import logging
@@ -147,10 +148,10 @@ class Hash(ExonumField):
     fmt = '32s'
 
     def __str__(self):
-        return u"{}({})".format(self.__class__.__name__, self.val.hex())
+        return u"{}({})".format(self.__class__.__name__, self.plain())
 
     def plain(self):
-        return self.val.hex()
+        return codecs.encode(self.val, "hex").decode("utf-8")
 
 
 class PublicKey(Hash):

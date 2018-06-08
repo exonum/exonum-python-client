@@ -1,4 +1,5 @@
 # coding: utf-8
+import codecs 
 import struct
 from copy import copy
 from itertools import chain
@@ -32,7 +33,7 @@ def mk_tx(cls, **kwargs):
         if hex:
             return data + signature
         message = copy(kwargs)
-        message["signature"] = signature.hex()
+        message["signature"] = codecs.encode(signature, "hex").decode("utf-8")
         message["body"] = self.plain()
         return message
     return tx
@@ -94,7 +95,7 @@ class transactions(object):
                 plain = self.plain()
                 message = {k: plain[k]
                            for k in meta_fields}
-                message["signature"] = signature.hex()
+                message["signature"] = codecs.encode(signature, "hex").decode("utf-8")
                 message["body"] = {k: v for k, v
                                    in plain.items()
                                    if k not in meta_fields}
