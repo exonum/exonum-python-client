@@ -103,7 +103,21 @@ class u32(ExonumField):
     fmt = '<I'
 
 
-class u64(ExonumField):
+class ExonumBigInt(ExonumField):
+    sz = None
+    fmt = None
+
+    def __init__(self, *val):
+        if len(val) == 0:
+            self._set_order()
+            return
+        self.val = int(val[0])
+
+    def plain(self):
+        return "{}".format(self.val)
+
+
+class u64(ExonumBigInt):
     sz = 8
     fmt = '<Q'
 
@@ -122,7 +136,7 @@ class i32(ExonumField):
     fmt = '<i'
 
 
-class i64(ExonumField):
+class i64(ExonumBigInt):
     sz = 8
     fmt = '<q'
 
