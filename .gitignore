@@ -1,6 +1,9 @@
-.venv
+.venv*
 __pycache__
+.cache
 .pytest_cache
 Pipfile.lock
 /*bin
 *log
+*pyc
+.tox

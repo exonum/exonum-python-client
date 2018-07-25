@@ -8,14 +8,12 @@ nanotime = "*"
 pysodium = "*"
 
 [dev-packages]
-jedi = "*"
-rope = "*"
-"autopep8" = "*"
-yapf = "*"
-"flake8" = "*"
 pytest = "*"
 ipython = "*"
 requests = "*"
+tox = "*"
+black = "*"
+tox-pyenv = "*"
 
-[requires]
-python_version = "3.6"
+[pipenv]
+allow_prereleases = true
