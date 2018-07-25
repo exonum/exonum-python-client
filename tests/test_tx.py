@@ -20,6 +20,7 @@ transactions = tx.transactions(service_id=250)
 #     __metaclass__ = exonum.EncodingStruct
 #     ...
 
+
 class Policy(with_metaclass(exonum.EncodingStruct)):
     policy_type = exonum.Str()
     unique_id = exonum.Str()
@@ -48,11 +49,15 @@ class CreatePolicy(with_metaclass(exonum.EncodingStruct)):
     public_key = exonum.PublicKey()
 
 
-skey = codecs.decode("b61cea151245c2be5d3f89977891e5127a0b4c522ca9760"
-                     "076cdd1f195f0525f692e5734b12d3446def47954c9d4d4"
-                     "ffcf6494d621e2a117e77c6ba07b093038", "hex")
+skey = codecs.decode(
+    "b61cea151245c2be5d3f89977891e5127a0b4c522ca9760"
+    "076cdd1f195f0525f692e5734b12d3446def47954c9d4d4"
+    "ffcf6494d621e2a117e77c6ba07b093038",
+    "hex",
+)
 pkey = codecs.decode(
-    "692e5734b12d3446def47954c9d4d4ffcf6494d621e2a117e77c6ba07b093038", "hex")
+    "692e5734b12d3446def47954c9d4d4ffcf6494d621e2a117e77c6ba07b093038", "hex"
+)
 
 
 def test_tx_serialize():
@@ -75,11 +80,10 @@ def test_tx_serialize():
         tax_ammount=5,
         risk_management_fee=6,
         commision=7,
-        net_premium_due=8)
+        net_premium_due=8,
+    )
 
-    tx = CreatePolicy(
-        content=p,
-        public_key=pkey)
+    tx = CreatePolicy(content=p, public_key=pkey)
 
     data = tx.tx(skey, hex=True)
 
