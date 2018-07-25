@@ -50,7 +50,7 @@ def _add(value, by):
     to_add = by
     for i in range(len(value)):
         sum = value[i] + by
-        value[i] = (sum & U32_MASK)
+        value[i] = sum & U32_MASK
         to_add = sum >> 32
         if to_add == 0:
             break
