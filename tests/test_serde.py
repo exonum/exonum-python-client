@@ -1,8 +1,17 @@
 # coding: utf-8
 from uuid import uuid4
 from six import with_metaclass
-from exonum.datatypes import (Decimal, EncodingStruct, SocketAddr, Str, Uuid,
-                              Vec, i64, u8, u16)
+from exonum.datatypes import (
+    Decimal,
+    EncodingStruct,
+    SocketAddr,
+    Str,
+    Uuid,
+    Vec,
+    i64,
+    u8,
+    u16,
+)
 
 
 def test_simple():
@@ -73,7 +82,6 @@ def test_segment_vector():
     raw = x.to_bytes()
     xx = X.read_buffer(raw)
     assert xx.f.val == x.f.val
-
 
 
 def test_inner():

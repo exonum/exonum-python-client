@@ -96,7 +96,7 @@ class transactions(object):
                     k: v for k, v in plain.items() if k not in meta_fields
                 }
                 del message["payload_sz"]
-                del message['network_id']  # Redundant field in JSON
+                del message["network_id"]  # Redundant field in JSON
                 return message
 
             def hash(self, secret_key):
