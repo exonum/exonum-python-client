@@ -5,5 +5,7 @@ __pycache__
 Pipfile.lock
 /*bin
 *log
-*pyc
+*.pyc
+.vscode
+.idea/
 .tox

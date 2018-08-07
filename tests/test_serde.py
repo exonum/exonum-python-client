@@ -1,8 +1,6 @@
 # coding: utf-8
 from uuid import uuid4
-
 from six import with_metaclass
-
 from exonum.datatypes import (
     Decimal,
     EncodingStruct,
@@ -76,14 +74,14 @@ def test_vec_from_rust():
     assert raw == z
 
 
-# def test_segment_vector():
-#     class X(with_metaclass(EncodingStruct)):
-#         f = Vec(Str)
+def test_segment_vector():
+    class X(with_metaclass(EncodingStruct)):
+        f = Vec(Str)
 
-#     x = X(f=[u"am", u"i", u"working", u"or", u"what?"])
-#     raw = x.to_bytes()
-#     xx = X.read_buffer(raw)
-#     assert xx.f.val == x.f.val
+    x = X(f=[u"am", u"i", u"working", u"or", u"what?"])
+    raw = x.to_bytes()
+    xx = X.read_buffer(raw)
+    assert xx.f.val == x.f.val
 
 
 def test_inner():

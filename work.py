@@ -1,8 +1,8 @@
-from uuid import uuid4
-
+import json
 import exonum.transactions as tx
 import exonum.datatypes as exonum
 
+from uuid import uuid4
 from pysodium import crypto_sign_keypair
 
 from importlib import reload
@@ -33,12 +33,11 @@ secret_key = bytes.fromhex(
 
 @transactions
 class CreateUser(metaclass=exonum.EncodingStruct):
-    public_key = exonum.PublicKey
-    name = exonum.Str
+    public_key = exonum.PublicKey()
+    name = exonum.Str()
 
 
 a = CreateUser(public_key=public_key, name="Me")
 
-import json
-
 print(json.dumps(a.tx(secret_key), indent=2))
+print("tx hash:", a.hash(secret_key))
