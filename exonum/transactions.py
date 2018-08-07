@@ -68,7 +68,11 @@ class transactions(object):
         class Tx(tx_cls):
             def __init__(tx_self, *args, **kwargs):
                 if "message_id" not in kwargs:
-                    kwargs["network_id"] = 0  # network_id field doesn't use anymore but place is reserved with value 0
+                    kwargs[
+                        "network_id"
+                    ] = (
+                        0
+                    )  # network_id field doesn't use anymore but place is reserved with value 0
                     kwargs["protocol_version"] = self.protocol_version
                     kwargs["message_id"] = message_id
                     kwargs["service_id"] = self.service_id
@@ -95,7 +99,9 @@ class transactions(object):
                     k: v for k, v in plain.items() if k not in meta_fields
                 }
                 del message["payload_sz"]
-                del message["network_id"]  # network_id field doesn't use anymore in JSON
+                del message[
+                    "network_id"
+                ]  # network_id field doesn't use anymore in JSON
                 return message
 
             def hash(self, secret_key):
