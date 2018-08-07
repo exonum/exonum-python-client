@@ -24,7 +24,7 @@ def mk_tx(cls, **kwargs):
             header_fmt,
             buf,
             0,
-            kwargs["network_id"],
+            0,  # network_id field doesn't use anymore but place is reserved with value 0
             kwargs["protocol_version"],
             kwargs["message_id"],
             kwargs["service_id"],
@@ -43,13 +43,12 @@ def mk_tx(cls, **kwargs):
 
 
 class transactions(object):
-    def __init__(self, service_id=-1, protocol_version=0, network_id=0):
+    def __init__(self, service_id=-1, protocol_version=0):
         if service_id < 0:
             raise IllegalServiceId()
 
         self.service_id = service_id
         self.protocol_version = protocol_version
-        self.network_id = network_id
         self.tx = []
 
     @staticmethod
@@ -69,7 +68,7 @@ class transactions(object):
         class Tx(tx_cls):
             def __init__(tx_self, *args, **kwargs):
                 if "message_id" not in kwargs:
-                    kwargs["network_id"] = self.network_id
+                    kwargs["network_id"] = 0  # network_id field doesn't use anymore but place is reserved with value 0
                     kwargs["protocol_version"] = self.protocol_version
                     kwargs["message_id"] = message_id
                     kwargs["service_id"] = self.service_id
@@ -96,7 +95,7 @@ class transactions(object):
                     k: v for k, v in plain.items() if k not in meta_fields
                 }
                 del message["payload_sz"]
-                del message["network_id"]  # Redundant field in JSON
+                del message["network_id"]  # network_id field doesn't use anymore in JSON
                 return message
 
             def hash(self, secret_key):
