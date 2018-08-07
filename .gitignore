@@ -1,5 +1,6 @@
-.venv
+.venv*
 __pycache__
+.cache
 .pytest_cache
 Pipfile.lock
 /*bin
@@ -7,3 +8,4 @@ Pipfile.lock
 *.pyc
 .vscode
 .idea/
+.tox

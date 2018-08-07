@@ -24,9 +24,11 @@ transactions = tx.transactions(service_id=521)
 # a.tx(secret_key)
 
 public_key = bytes.fromhex(
-    "0f17189c062e7f3fbb47a21834d41e4d5c5388dd7db38c4de1ce732971a38ef9")
+    "0f17189c062e7f3fbb47a21834d41e4d5c5388dd7db38c4de1ce732971a38ef9"
+)
 secret_key = bytes.fromhex(
-    "5520c351b7760aedeef32687918eb2587ab515e4ae0eeef271a0f0a99f1df3710f17189c062e7f3fbb47a21834d41e4d5c5388dd7db38c4de1ce732971a38ef9")
+    "5520c351b7760aedeef32687918eb2587ab515e4ae0eeef271a0f0a99f1df3710f17189c062e7f3fbb47a21834d41e4d5c5388dd7db38c4de1ce732971a38ef9"
+)
 
 
 @transactions
@@ -38,4 +40,5 @@ class CreateUser(metaclass=exonum.EncodingStruct):
 a = CreateUser(public_key=public_key, name="Me")
 
 import json
+
 print(json.dumps(a.tx(secret_key), indent=2))
