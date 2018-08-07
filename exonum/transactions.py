@@ -5,7 +5,7 @@ from copy import copy
 from itertools import chain
 
 from pysodium import crypto_sign_BYTES as SIGNATURE_SZ
-from pysodium import crypto_sign_detached
+from pysodium import crypto_sign_detached, crypto_hash_sha256
 
 from .datatypes import EncodingStruct, ExonumBase, TxHeader
 from .error import IllegalServiceId, NotEncodingStruct
@@ -100,7 +100,13 @@ class transactions(object):
                                    in plain.items()
                                    if k not in meta_fields}
                 del message["payload_sz"]
+                del message['network_id']  # Redundant field in JSON
                 return message
+
+            def hash(self, secret_key):
+                tx_bytes = self.tx(secret_key, hex=True)
+                tx_hash = crypto_hash_sha256(tx_bytes)
+                return codecs.encode(tx_hash, "hex").decode("utf-8")
 
         self.tx.append(cls.__name__)
         return Tx

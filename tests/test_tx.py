@@ -11,6 +11,7 @@ import exonum.transactions as tx
 
 transactions = tx.transactions(service_id=250)
 
+
 # py3
 # class Policy(metaclass=exonum.EncodingStruct):
 #    ...
