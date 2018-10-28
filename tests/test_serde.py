@@ -8,6 +8,7 @@ from exonum.datatypes import (
     Str,
     Uuid,
     Vec,
+    Option,
     i64,
     u8,
     u16,
@@ -149,3 +150,17 @@ def test_decimals():
     b = d.to_bytes()
     d2 = D.read_buffer(b)
     assert d.d == d2.d
+
+
+def test_option():
+    class O(with_metaclass(EncodingStruct)):
+        a = Option(Str)
+        b = Option(Str)
+        c = Option(i64)
+        d = Option(u8)
+
+    o = O(a=None, b="abc", c=1, d=None)
+
+    b = o.to_bytes()
+    o2 = O.read_buffer(b)
+    assert o == o2
