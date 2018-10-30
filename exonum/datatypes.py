@@ -380,6 +380,70 @@ def Vec(T):
     raise NotSupported()
 
 
+@six.python_2_unicode_compatible
+class Opt(ExonumSegment):
+    def __init__(self, *val):
+        if len(val) == 0:
+            self._set_order()
+            return
+
+        val = val[0]
+        if val:
+            if isinstance(val, self.T):
+                self.val = val
+            else:
+                self.val = self.T(val)
+        else:
+            self.val = None
+
+    def count(self):
+        return 1 if self.val else 0
+
+    def __str__(self):
+        v = self.val
+        repr = "{}".format(v) if v else "None"
+        return "{} [{}]".format(self.__class__.__name__, ", ".join(repr))
+
+    @classmethod
+    def read_buffer(cls, buf, offset=0, cnt=0):
+        dbg("reading Opt of sz {}".format(cnt))
+        if cnt == 1:
+            t = cls.T.read(buf, offset=offset)
+            dbg("read {} at offset {}".format(t, offset))
+            return cls(t)
+        else:
+            assert cnt == 0, "One argument expected"
+            return cls(None)
+
+    def write(self, buf, offset):
+        dbg(
+            "writing Opt ({}) of sz {} at offset {}".format(
+                self.T.__name__, self.count(), offset
+            )
+        )
+        buf[offset : offset + self.sz] = struct.pack(self.fmt, len(buf), self.count())
+        self.extend_buffer(buf)
+
+    def extend_buffer(self, buf):
+        offset = len(buf)
+        buf += bytearray(self.count() * self.T.sz)
+        if self.val:
+            self.val.write(buf, offset)
+            offset += self.T.sz
+
+    def plain(self):
+        if self.val:
+            return self.val.plain()
+        else:
+            return None
+
+
+def Option(T):
+    if issubclass(T, ExonumField):
+        return type("Option<{}>".format(T.__name__), (Opt,), {"T": T})()
+    raise NotSupported()
+
+
 class ExonumBase(ExonumSegment):
     def count(self):
         return self.cnt
