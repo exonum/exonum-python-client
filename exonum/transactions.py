@@ -1,113 +1,73 @@
-# coding: utf-8
-import codecs
-import struct
-from copy import copy
-from itertools import chain
+from codecs import encode
+from struct import pack
+from os import urandom
+from pysodium import crypto_sign_keypair, crypto_sign_detached, crypto_hash_sha256
+import inspect
 
-from pysodium import crypto_sign_BYTES as SIGNATURE_SZ
-from pysodium import crypto_sign_detached, crypto_hash_sha256
+MESSAGE_CLASS = 0
+MESSAGE_TYPE = 0
 
-from .datatypes import EncodingStruct, ExonumBase, TxHeader
-from .error import IllegalServiceId, NotEncodingStruct
+def linenumber_of_member(proto_module, m):
+    proto_source = inspect.getsource(proto_module)
+    pos = proto_source.find("name='{}'".format(m))
+    assert pos != -1
+    return pos
 
+class MsgIndex:
+    messages = {}
+    def __init__(self, messages):
+        for pos, proto_type in enumerate(messages) :
+            self.messages[proto_type[1]] = int(pos)
 
-def mk_tx(cls, **kwargs):
-    header_fmt = "<BBHHI"
-    header_sz = struct.calcsize(header_fmt)
-
-    def tx(self, secret_key, hex=False):
-        buf = bytearray(header_sz)
-        self.extend_buffer(buf)
-        real_size = len(buf) + SIGNATURE_SZ
-
-        struct.pack_into(
-            header_fmt,
-            buf,
-            0,
-            0,  # network_id field doesn't use anymore but place is reserved with value 0
-            kwargs["protocol_version"],
-            kwargs["message_id"],
-            kwargs["service_id"],
-            real_size,
-        )
-        data = bytes(buf)
-        signature = crypto_sign_detached(data, secret_key)
-        if hex:
-            return data + signature
-        message = copy(kwargs)
-        message["signature"] = codecs.encode(signature, "hex").decode("utf-8")
-        message["body"] = self.plain()
-        return message
-
-    return tx
+    def id(self, msg):
+        pos = self.messages.get(type(msg))
+        assert pos is not None
+        return pos
 
 
-class transactions(object):
-    def __init__(self, service_id=-1, protocol_version=0):
-        if service_id < 0:
-            raise IllegalServiceId()
-
+class ExonumClient:
+    def __init__(self, proto_module, service_id):
         self.service_id = service_id
-        self.protocol_version = protocol_version
-        self.tx = []
 
-    @staticmethod
-    def is_encoding_struct(cls):
-        return isinstance(cls, type) and issubclass(cls, ExonumBase)
+        messages = []
+        for name, obj in inspect.getmembers(proto_module):
+            if inspect.isclass(obj):
+                messages.append((name, obj))
+        messages.sort(key=lambda x: linenumber_of_member(proto_module, x[0]))
+        self.messages = MsgIndex(messages)
 
-    def __call__(self, cls):
-        if not self.is_encoding_struct(cls):
-            raise NotEncodingStruct()
+    def new_tx(self, tx_message, public_key, secret_key):
+        msg_buffer = {
+            'author': public_key,
+            'message_class': pack("<B", MESSAGE_CLASS),
+            'message_type': pack("<B", MESSAGE_TYPE),
+            'message_id': pack("<H", self.messages.id(tx_message)),
+            'service_id': pack("<H", self.service_id),
+            'body': b''.join([tx_message.SerializeToString()])
+        }
 
-        tx = list(TxHeader)
-        tx.extend((k, getattr(cls, k)) for k in chain(cls.__exonum_fields__))
+        full_data = b''.join([public_key,                   # author
+                              pack("<B", MESSAGE_CLASS),    # message_class
+                              pack("<B", MESSAGE_TYPE),     # message_type
+                              pack("<H", self.service_id),  # service_id
+                              pack("<H", self.messages.id(tx_message)),    # message_id
+                              b''.join([tx_message.SerializeToString()])]) # body
 
-        tx_cls = EncodingStruct(cls.__name__, (), {k: v() for k, v in tx})
-        message_id = len(self.tx)
+        signature = self.gen_signature(full_data, secret_key)
+        data = b''.join([full_data, signature])
+        signed_tx_body =  encode(data, 'hex').decode("utf-8")
 
-        class Tx(tx_cls):
-            def __init__(tx_self, *args, **kwargs):
-                if "message_id" not in kwargs:
-                    kwargs[
-                        "network_id"
-                    ] = (
-                        0
-                    )  # network_id field doesn't use anymore but place is reserved with value 0
-                    kwargs["protocol_version"] = self.protocol_version
-                    kwargs["message_id"] = message_id
-                    kwargs["service_id"] = self.service_id
-                    kwargs["payload_sz"] = 0
-                tx_cls.__init__(tx_self, *args, **kwargs)
+        params = {
+            "tx_body": signed_tx_body,
+        }
+        return params
 
-            def tx(self, secret_key, hex=False):
-                data = bytearray(0)
-                self.extend_buffer(data)
-                sz = len(data) + SIGNATURE_SZ
-                struct.pack_into("<i", data, 6, sz)
-                data = bytes(data)
+    def gen_keypair(self):
+        return crypto_sign_keypair()
 
-                signature = crypto_sign_detached(data, secret_key)
+    def gen_hash(self):
+        return crypto_hash_sha256(urandom(256))
 
-                if hex:
-                    return data + signature
+    def gen_signature(self, data, secret_key):
+        return crypto_sign_detached(data, secret_key)
 
-                meta_fields = {k for (k, _) in TxHeader}
-                plain = self.plain()
-                message = {k: plain[k] for k in meta_fields}
-                message["signature"] = codecs.encode(signature, "hex").decode("utf-8")
-                message["body"] = {
-                    k: v for k, v in plain.items() if k not in meta_fields
-                }
-                del message["payload_sz"]
-                del message[
-                    "network_id"
-                ]  # network_id field doesn't use anymore in JSON
-                return message
-
-            def hash(self, secret_key):
-                tx_bytes = self.tx(secret_key, hex=True)
-                tx_hash = crypto_hash_sha256(tx_bytes)
-                return codecs.encode(tx_hash, "hex").decode("utf-8")
-
-        self.tx.append(cls.__name__)
-        return Tx
