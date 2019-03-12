@@ -1,43 +1,61 @@
-import json
-import exonum.transactions as tx
-import exonum.datatypes as exonum
-
-from uuid import uuid4
-from pysodium import crypto_sign_keypair
-
-from importlib import reload
-
-reload(exonum)
-reload(tx)
-
-transactions = tx.transactions(service_id=521)
+from time import sleep
+from exonum.client import ExonumClient
+from exonum.message import ExonumMessage, gen_keypair, encode
+from protobuf3.message import Message
+from protobuf3.fields import StringField, BytesField, UInt64Field, MessageField
 
 
-# @transactions
-# class Test(metaclass=exonum.EncodingStruct):
-#     x = exonum.Uuid
-#     y = exonum.u64
+class CreateWallet(Message):
+    name = StringField(field_number=1, required=True)
 
 
-# public_key, secret_key = crypto_sign_keypair()
-# a = Test(x=uuid4(), y=12345890)
-# a.tx(secret_key)
+class Transfer(Message):
+    class PublicKey(Message):
+        data = BytesField(field_number=1, required=True)
 
-public_key = bytes.fromhex(
-    "0f17189c062e7f3fbb47a21834d41e4d5c5388dd7db38c4de1ce732971a38ef9"
-)
-secret_key = bytes.fromhex(
-    "5520c351b7760aedeef32687918eb2587ab515e4ae0eeef271a0f0a99f1df3710f17189c062e7f3fbb47a21834d41e4d5c5388dd7db38c4de1ce732971a38ef9"
-)
+    to = MessageField(field_number=1, required=True, message_cls=PublicKey)
+    amount = UInt64Field(field_number=2, required=True)
+    seed = UInt64Field(field_number=3, required=True)
 
 
-@transactions
-class CreateUser(metaclass=exonum.EncodingStruct):
-    public_key = exonum.PublicKey()
-    name = exonum.Str()
+def create_wallet_msg(name):
+    msg = CreateWallet()
+    msg.name = name
+    return msg
 
 
-a = CreateUser(public_key=public_key, name="Me")
+client = ExonumClient("cryptocurrency", "localhost", 9081)
 
-print(json.dumps(a.tx(secret_key), indent=2))
-print("tx hash:", a.hash(secret_key))
+alice_message = create_wallet_msg("Alice")
+bob_message = create_wallet_msg("Bob")
+
+alice_keys = gen_keypair()
+alice_tx = ExonumMessage(128, 2, alice_message.encode_to_bytes())
+alice_tx.sign(alice_keys)
+
+bob_keys = gen_keypair()
+bob_tx = ExonumMessage(128, 2, bob_message.encode_to_bytes())
+bob_tx.sign(bob_keys)
+
+client.send_transaction(alice_tx)
+client.send_transaction(bob_tx)
+sleep(2)
+
+print(client.get_tx_info(alice_tx.hash()))
+print(client.get_tx_info(bob_tx.hash()))
+
+transfer_msg = Transfer()
+transfer_msg.to.data = alice_tx.author()
+transfer_msg.amount = 10
+transfer_msg.seed = 0
+transfer_tx = ExonumMessage(128, 0, transfer_msg.encode_to_bytes())
+transfer_tx.sign(bob_keys)
+client.send_transaction(transfer_tx)
+sleep(2)
+print(client.get_tx_info(transfer_tx.hash()))
+
+print(client.get_service("wallets/info?pub_key=" + encode(alice_keys[0])))
+
+print(client.health_info())
+print(client.mempool())
+print(client.user_agent())
