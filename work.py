@@ -1,4 +1,4 @@
-from time import sleep
+import json
 from exonum.client import ExonumClient
 from exonum.message import ExonumMessage, gen_keypair, encode
 from protobuf3.message import Message
@@ -24,38 +24,70 @@ def create_wallet_msg(name):
     return msg
 
 
-client = ExonumClient("cryptocurrency", "localhost", 9081)
+def event_handler(data):
+    print(data)
+    h = json.loads(data)["height"]
+    print("block at height: {} was committing".format(h))
 
-alice_message = create_wallet_msg("Alice")
-bob_message = create_wallet_msg("Bob")
 
-alice_keys = gen_keypair()
-alice_tx = ExonumMessage(128, 2, alice_message.encode_to_bytes())
-alice_tx.sign(alice_keys)
+def create_wallet_from_proto(name):
+    from proto.cryptocurrency_pb2 import CreateWallet
 
-bob_keys = gen_keypair()
-bob_tx = ExonumMessage(128, 2, bob_message.encode_to_bytes())
-bob_tx.sign(bob_keys)
+    msg = CreateWallet()
+    msg.name = name
+    return msg
 
-client.send_transaction(alice_tx)
-client.send_transaction(bob_tx)
-sleep(2)
 
-print(client.get_tx_info(alice_tx.hash()))
-print(client.get_tx_info(bob_tx.hash()))
+def main():
+    try:
+        client = ExonumClient("cryptocurrency", "192.168.1.177", 9081)
+        subscriber = client.create_subscriber()
 
-transfer_msg = Transfer()
-transfer_msg.to.data = alice_tx.author()
-transfer_msg.amount = 10
-transfer_msg.seed = 0
-transfer_tx = ExonumMessage(128, 0, transfer_msg.encode_to_bytes())
-transfer_tx.sign(bob_keys)
-client.send_transaction(transfer_tx)
-sleep(2)
-print(client.get_tx_info(transfer_tx.hash()))
+        alice_message = create_wallet_msg("Alice")
+        bob_message = create_wallet_from_proto("Bob")
 
-print(client.get_service("wallets/info?pub_key=" + encode(alice_keys[0])))
+        alice_keys = gen_keypair()
+        alice_tx = ExonumMessage(128, 2, alice_message)
+        alice_tx.sign(alice_keys)
 
-print(client.health_info())
-print(client.mempool())
-print(client.user_agent())
+        bob_keys = gen_keypair()
+        bob_tx = ExonumMessage(128, 2, bob_message)
+        bob_tx.sign(bob_keys)
+
+        client.send_transactions([alice_tx, bob_tx])
+
+        subscriber.wait_for_event()
+
+        print(client.get_tx_info(alice_tx.hash()))
+        print(client.get_tx_info(bob_tx.hash()))
+
+        subscriber.set_handler(event_handler)
+        subscriber.run()
+
+        transfer_msg = Transfer()
+        transfer_msg.to.data = alice_tx.author()
+        transfer_msg.amount = 10
+        transfer_msg.seed = 0
+        transfer_tx = ExonumMessage(128, 0, transfer_msg)
+        transfer_tx.sign(bob_keys)
+
+        client.send_transaction(transfer_tx)
+
+        subscriber.wait_for_event()
+
+        print(client.get_tx_info(transfer_tx.hash()))
+
+        print(client.get_service("wallets/info?pub_key=" + encode(alice_keys[0])))
+
+        print(client.health_info())
+        print(client.mempool())
+        print(transfer_tx.hash())
+        print(client.user_agent())
+        subscriber.stop()
+        print("Bye, demo is over...")
+    except KeyboardInterrupt:
+        subscriber.stop()
+
+
+if __name__ == "__main__":
+    main()

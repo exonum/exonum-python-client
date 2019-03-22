@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from distutils.core import setup
 
-install_requires = ["pysodium", "requests"]
+install_requires = ["protobuf3", "pysodium", "requests", "websocket-client-py3"]
 
 python_requires = ">=3.4"
 
