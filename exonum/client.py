@@ -40,7 +40,7 @@ class Subscriber(object):
                 if self.handler:
                     self.handler(data)
 
-    def wait_for_event(self):
+    def wait_for_new_block(self):
         if self.is_running:
             print("Subscriber is already running...")
         else:

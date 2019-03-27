@@ -3,6 +3,24 @@ import codecs
 from struct import pack
 from protobuf3.message import Message
 from pysodium import crypto_sign_keypair, crypto_hash_sha256, crypto_sign_detached
+from importlib import import_module
+
+
+class MessageGenerator(object):
+    def __init__(self, pb_module, service_id):
+        self.service_id = service_id
+        self.message_ids = dict()
+        self.module = pb_module
+        for i, message in enumerate(pb_module.DESCRIPTOR.message_types_by_name):
+            self.message_ids[message] = i
+
+    def create_message(self, tx_name, **kwargs):
+        cls = getattr(import_module(self.module.__name__), tx_name)
+        msg = cls()
+        for field, value in kwargs.items():
+            setattr(msg, field, value)
+
+        return ExonumMessage(self.service_id, self.message_ids[tx_name], msg)
 
 
 class ExonumMessage(object):
@@ -10,16 +28,19 @@ class ExonumMessage(object):
         self.author_ = None
         self.service_id = service_id
         self.message_id = message_id
-        self.payload = (
-            msg.encode_to_bytes()
-            if isinstance(msg, Message)
-            else msg.SerializeToString()
-        )
+        self.data = msg
+        self.payload = None
         self.raw = bytearray()
 
     def sign(self, keys):
         pk, sk = keys
         self.author_ = pk
+
+        self.payload = (
+            self.data.encode_to_bytes()
+            if isinstance(self.data, Message)
+            else self.data.SerializeToString()
+        )
 
         self.raw.extend(pk)
         self.raw.extend(pack("<B", 0))  # 0 and 0 it's tag and class of TX message
@@ -30,6 +51,8 @@ class ExonumMessage(object):
         self.raw.extend(
             crypto_sign_detached(bytes(self.raw), sk)
         )  # calculating signature
+
+        return self
 
     def to_json(self):
         return json.dumps({"tx_body": encode(self.raw)}, indent=4)
