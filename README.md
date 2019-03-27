@@ -85,7 +85,7 @@ The following example shows how to create the transaction message.
 ```python
 msg_generator = MessageGenerator(proto.cryptocurrency_pb2, 128)
 tx_message = msg_generator.create_message("CreateWallet", name="Alice")
-key_pair = gen_kaypair()
+key_pair = gen_keypair()
 signed_message = tx_message.sign(key_pair)
 ```
 
