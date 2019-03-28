@@ -69,7 +69,7 @@ python3 -m exonum -e exonum -s exonum/examples/cryptocurrency/src/proto -o clien
 ```python
 import proto.cryptocurrency_pb2
 from exonum.client import ExonumClient
-from exonum.message import MessageGenerator, gen_keypair, encode
+from exonum.message import MessageGenerator, gen_keypair
 
 client = ExonumClient("cryptocurrency", "localhost", 8080, 8081, False)
 ```
