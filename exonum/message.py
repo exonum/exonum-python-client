@@ -25,7 +25,7 @@ class MessageGenerator(object):
 
 class ExonumMessage(object):
     def __init__(self, service_id, message_id, msg):
-        self.author_ = None
+        self.author = None
         self.service_id = service_id
         self.message_id = message_id
         self.data = msg
@@ -34,7 +34,7 @@ class ExonumMessage(object):
 
     def sign(self, keys):
         pk, sk = keys
-        self.author_ = pk
+        self.author = pk
 
         self.payload = (
             self.data.encode_to_bytes()
@@ -61,8 +61,8 @@ class ExonumMessage(object):
         tx_hash = crypto_hash_sha256(bytes(self.raw))
         return encode(tx_hash)
 
-    def author(self):
-        return self.author_
+    def get_author(self):
+        return self.author
 
 
 def gen_keypair():

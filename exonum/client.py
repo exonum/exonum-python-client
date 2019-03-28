@@ -30,15 +30,14 @@ class Subscriber(object):
             self.is_running = True
             self.thread.setDaemon(True)
             self.thread.start()
-        except Exception as e:
+        except RuntimeError as e:
             print(e)
 
     def _event_processing(self):
         while self.is_running:
             data = self.ws_client.recv()
-            if data:
-                if self.handler:
-                    self.handler(data)
+            if data and self.handler:
+                self.handler(data)
 
     def wait_for_new_block(self):
         if self.is_running:
@@ -83,7 +82,7 @@ class ExonumClient(object):
             return {"error": str(e)}
 
     def send_transactions(self, txs):
-        [self.send_transaction(tx) for tx in txs]
+        return [self.send_transaction(tx) for tx in txs]
 
     def get_block(self, height):
         return get(
@@ -93,7 +92,19 @@ class ExonumClient(object):
     def get_blocks(
         self, count=None, latest=None, skip_empty_blocks=False, add_blocks_time=False
     ):
-        pass
+        blocks_url = BLOCKS_URL.format(self.schema, self.hostname, self.public_api_port)
+        params = dict()
+
+        if count:
+            params["count"] = count
+        if latest:
+            params["latest"] = latest
+        if skip_empty_blocks:
+            params["skip_empty_blocks"] = "true"
+        if add_blocks_time:
+            params["add_blocks_time"] = "true"
+
+        return get(blocks_url, params=params)
 
     def get_tx_info(self, tx_hash):
         return get(
@@ -135,10 +146,10 @@ class ExonumClient(object):
             print(e)
 
 
-def get(url):
+def get(url, params=None):
     global body
     try:
-        response = requests.get(url)
+        response = requests.get(url, params=params)
         body = response.json()
     except Exception as e:
         body = {"error": str(e)}
