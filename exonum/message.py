@@ -71,3 +71,7 @@ def gen_keypair():
 
 def encode(bytes):
     return codecs.encode(bytes, "hex").decode("utf-8")
+
+
+def hash(data):
+    return crypto_hash_sha256(data)

@@ -90,13 +90,12 @@ class ExonumClient(object):
         )
 
     def get_blocks(
-        self, count=None, latest=None, skip_empty_blocks=False, add_blocks_time=False
+        self, count, latest=None, skip_empty_blocks=False, add_blocks_time=False
     ):
         blocks_url = BLOCKS_URL.format(self.schema, self.hostname, self.public_api_port)
         params = dict()
+        params["count"] = count
 
-        if count:
-            params["count"] = count
         if latest:
             params["latest"] = latest
         if skip_empty_blocks:
@@ -151,7 +150,7 @@ def get(url, params=None):
     try:
         response = requests.get(url, params=params)
         body = response.json()
-    except Exception as e:
-        body = {"error": str(e)}
+    except json.decoder.JSONDecodeError:
+        body = {"error": response.text}
     finally:
         return json.dumps(body, indent=4)
