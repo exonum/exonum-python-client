@@ -24,7 +24,7 @@ def main():
         # Creation Bob's wallet
         bob_keys = gen_keypair()
         bob_msg = msg_generator.create_message("CreateWallet", name="Bob")
-        client.send_transaction(bob_msg.sign(alice_keys))
+        client.send_transaction(bob_msg.sign(bob_keys))
         subscriber.wait_for_new_block()
         print(client.get_tx_info(bob_msg.hash()))
 
