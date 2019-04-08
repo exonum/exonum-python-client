@@ -77,7 +77,7 @@ class ExonumClient(object):
                 data=tx.to_json(),
                 headers={"content-type": "application/json"},
             )
-            return response.text
+            return response
         except Exception as e:
             return {"error": str(e)}
 
@@ -148,9 +148,6 @@ class ExonumClient(object):
 def get(url, params=None):
     global body
     try:
-        response = requests.get(url, params=params)
-        body = response.json()
-    except json.decoder.JSONDecodeError:
-        body = {"error": response.text}
-    finally:
-        return json.dumps(body, indent=4)
+        return requests.get(url, params=params)
+    except requests.exceptions.ConnectionError as e:
+        raise e
