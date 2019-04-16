@@ -46,6 +46,8 @@ class Subscriber(object):
             self.ws_client.recv()
 
     def stop(self):
+        if not self.is_running:
+            return
         self.is_running = False
         if self.thread.isAlive():
             self.thread.join()
