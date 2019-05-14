@@ -50,7 +50,7 @@ def find_protoc():
 
 
 def find_proto_files(path):
-    return " ".join(filter(lambda file: file.endswith(".proto"), os.listdir(path)))
+    return [file for file in os.listdir(path) if file.endwith(".proto")] 
 
 
 def modify_file(path):
@@ -86,10 +86,10 @@ def main():
         path_to_protoc,
         EXONUM_PROTO_PATH.format(args.exonum_sources),
         SERVICE_PROTO_PATH.format(args.service_path),
-        find_proto_files(args.service_path),
         HELPERS_PROTO,
         "--python_out={}".format(args.output),
     ]
+    protoc_args.extend(find_proto_files(args.service_path))
     protoc_process = subprocess.Popen(
         protoc_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
     )
