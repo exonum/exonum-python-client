@@ -50,7 +50,7 @@ def find_protoc():
 
 
 def find_proto_files(path):
-    return [file for file in os.listdir(path) if file.endwith(".proto")] 
+    return [file for file in os.listdir(path) if file.endswith(".proto")]
 
 
 def modify_file(path):
