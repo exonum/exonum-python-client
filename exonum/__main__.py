@@ -103,7 +103,7 @@ def main():
 
     modules = [proto_path.replace(".proto", "") for proto_path in proto_files]
     for file in filter(lambda f: f.endswith(".py"), os.listdir(args.output)):
-        modify_file("{}/{}".format(args.output, file), proto_files)
+        modify_file("{}/{}".format(args.output, file), modules)
 
 
 if __name__ == "__main__":
