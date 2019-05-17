@@ -53,18 +53,18 @@ def find_proto_files(path):
     return [file for file in os.listdir(path) if file.endswith(".proto")]
 
 
-def modify_file(path):
+def modify_file(path, modules):
     with open(path, "rt") as file_in:
         file_content = file_in.readlines()
 
     with open(path, "wt") as file_out:
         for line in file_content:
-            file_out.write(
-                line.replace(
-                    "import helpers_pb2 as helpers__pb2",
-                    "from . import helpers_pb2 as helpers__pb2",
+            for module in modules:
+                line = line.replace(
+                    "import {}_pb2 ".format(module),
+                    "from . import {}_pb2 ".format(module),
                 )
-            )
+            file_out.write(line)
 
 
 def create_dir_if_not_exist(path):
@@ -86,10 +86,11 @@ def main():
         path_to_protoc,
         EXONUM_PROTO_PATH.format(args.exonum_sources),
         SERVICE_PROTO_PATH.format(args.service_path),
-        HELPERS_PROTO,
         "--python_out={}".format(args.output),
     ]
-    protoc_args.extend(find_proto_files(args.service_path))
+    proto_files = find_proto_files(args.service_path)
+    proto_files.append(HELPERS_PROTO)
+    protoc_args.extend(proto_files)
     protoc_process = subprocess.Popen(
         protoc_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
     )
@@ -100,8 +101,9 @@ def main():
         out, err = protoc_process.communicate()
         print("Error acquired while compiling files: {}".format(err.decode("utf-8")))
 
+    modules = [proto_path.replace(".proto", "") for proto_path in proto_files]
     for file in filter(lambda f: f.endswith(".py"), os.listdir(args.output)):
-        modify_file("{}/{}".format(args.output, file))
+        modify_file("{}/{}".format(args.output, file), proto_files)
 
 
 if __name__ == "__main__":
