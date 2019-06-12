@@ -1,51 +1,43 @@
-import proto.cryptocurrency_pb2
-from exonum.client import ExonumClient
-from exonum.message import MessageGenerator, gen_keypair, encode
+import json
+import exonum.transactions as tx
+import exonum.datatypes as exonum
+
+from uuid import uuid4
+from pysodium import crypto_sign_keypair
+
+from importlib import reload
+
+reload(exonum)
+reload(tx)
+
+transactions = tx.transactions(service_id=521)
 
 
-def event_handler(data):
-    print(data)
+# @transactions
+# class Test(metaclass=exonum.EncodingStruct):
+#     x = exonum.Uuid
+#     y = exonum.u64
 
 
-def main():
-    try:
-        # Creation client, subscriber and message generator
-        client = ExonumClient("cryptocurrency", "192.168.1.177", 9081)
-        subscriber = client.create_subscriber()
-        msg_generator = MessageGenerator(proto.cryptocurrency_pb2, 128)
+# public_key, secret_key = crypto_sign_keypair()
+# a = Test(x=uuid4(), y=12345890)
+# a.tx(secret_key)
 
-        # Creation Alice's wallet
-        alice_keys = gen_keypair()
-        alice_msg = msg_generator.create_message("CreateWallet", name="Alice")
-        client.send_transaction(alice_msg.sign(alice_keys))
-        subscriber.wait_for_new_block()
-        print(client.get_tx_info(alice_msg.hash()))
-
-        # Creation Bob's wallet
-        bob_keys = gen_keypair()
-        bob_msg = msg_generator.create_message("CreateWallet", name="Bob")
-        client.send_transaction(bob_msg.sign(bob_keys))
-        subscriber.wait_for_new_block()
-        print(client.get_tx_info(bob_msg.hash()))
-
-        # Transfer funds from Bob's wallet to Alice's
-        transfer_msg = msg_generator.create_message("Transfer", amount=10, seed=12345)
-        transfer_msg.data.to.data = alice_keys[0]
-        print(client.send_transaction(transfer_msg.sign(bob_keys)))
-        subscriber.wait_for_new_block()
-        print(client.get_tx_info(transfer_msg.hash()))
-
-        print(client.get_service("wallets/info?pub_key=" + encode(alice_keys[0])))
-        print(client.health_info())
-        print(client.mempool())
-        print(client.user_agent())
-
-        subscriber.stop()
-
-        print("Bye, demo is over...")
-    except KeyboardInterrupt:
-        subscriber.stop()
+public_key = bytes.fromhex(
+    "0f17189c062e7f3fbb47a21834d41e4d5c5388dd7db38c4de1ce732971a38ef9"
+)
+secret_key = bytes.fromhex(
+    "5520c351b7760aedeef32687918eb2587ab515e4ae0eeef271a0f0a99f1df3710f17189c062e7f3fbb47a21834d41e4d5c5388dd7db38c4de1ce732971a38ef9"
+)
 
 
-if __name__ == "__main__":
-    main()
+@transactions
+class CreateUser(metaclass=exonum.EncodingStruct):
+    public_key = exonum.PublicKey()
+    name = exonum.Str()
+
+
+a = CreateUser(public_key=public_key, name="Me")
+
+print(json.dumps(a.tx(secret_key), indent=2))
+print("tx hash:", a.hash(secret_key))
