@@ -5,6 +5,14 @@ from protobuf3.message import Message
 from pysodium import crypto_sign_keypair, crypto_hash_sha256, crypto_sign_detached
 from importlib import import_module
 
+MINIMUM_TX_BODY_LENGTH_HEX = 204  # It calculated as first 76 metadata bytes plus signature with 128 bytes length
+PUBLIC_KEY_LENGTH_HEX = 64
+SIGNATURE_LENGTH_HEX = 128
+SERVICE_ID_START_POSITION_TX = 68
+MESSAGE_ID_START_POSITION_TX = 72
+PROTO_MESSAGE_START_POSITION_TX = 76
+U16_LENGTH_HEX = 4
+
 
 class MessageGenerator(object):
     def __init__(self, pb_module, service_id):
@@ -66,15 +74,20 @@ class ExonumMessage(object):
         return self.author
 
     @classmethod
-    def from_hex(cls, tx_hex, proto_class=None, min_length=204):
+    def from_hex(cls, tx_hex, proto_class=None, min_length=MINIMUM_TX_BODY_LENGTH_HEX):
         if len(tx_hex) < min_length:
             return None
         try:
-            author = bytes.fromhex(tx_hex[:64])
-            service_id = int(tx_hex[68:72])
-            message_id = int(tx_hex[72:76])
-            signature = bytes.fromhex(tx_hex[-128:])
-            payload = bytes.fromhex(tx_hex[76:-128])
+            author = bytes.fromhex(tx_hex[:PUBLIC_KEY_LENGTH_HEX])
+            service_id = int(tx_hex[SERVICE_ID_START_POSITION_TX:
+                                    SERVICE_ID_START_POSITION_TX +
+                                    U16_LENGTH_HEX])
+            message_id = int(tx_hex[MESSAGE_ID_START_POSITION_TX:
+                                    MESSAGE_ID_START_POSITION_TX +
+                                    U16_LENGTH_HEX])
+            signature = bytes.fromhex(tx_hex[-SIGNATURE_LENGTH_HEX:])
+            payload = bytes.fromhex(tx_hex[PROTO_MESSAGE_START_POSITION_TX:
+                                           -SIGNATURE_LENGTH_HEX])
         except (ValueError, IndexError):
             return None
 
