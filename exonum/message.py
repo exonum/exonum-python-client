@@ -30,6 +30,7 @@ class ExonumMessage(object):
         self.message_id = message_id
         self.data = msg
         self.payload = None
+        self.signature = None
         self.raw = bytearray()
 
     def sign(self, keys):
@@ -63,6 +64,31 @@ class ExonumMessage(object):
 
     def get_author(self):
         return self.author
+
+    @classmethod
+    def from_hex(cls, tx_hex, proto_class=None, min_length=204):
+        if len(tx_hex) < min_length:
+            return None
+        try:
+            author = bytes.fromhex(tx_hex[:64])
+            service_id = int(tx_hex[68:72])
+            message_id = int(tx_hex[72:76])
+            signature = bytes.fromhex(tx_hex[-128:])
+            payload = bytes.fromhex(tx_hex[76:-128])
+        except (ValueError, IndexError):
+            return None
+
+        message = None
+        if proto_class:
+            message = proto_class()
+            # Possible throws exception
+            message.ParseFromString(payload)
+
+        exonum_message = ExonumMessage(service_id, message_id, message)
+        exonum_message.signature = signature
+        exonum_message.author = author
+        exonum_message.payload = payload
+        return exonum_message
 
 
 def gen_keypair():
