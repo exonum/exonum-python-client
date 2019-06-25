@@ -1,9 +1,17 @@
 import json
 import codecs
-from struct import pack
-from protobuf3.message import Message
+from struct import pack, unpack
+
 from pysodium import crypto_sign_keypair, crypto_hash_sha256, crypto_sign_detached
 from importlib import import_module
+
+MINIMUM_TX_BODY_LENGTH_HEX = 204  # It calculated as first 76 metadata bytes plus signature with 128 bytes length
+PUBLIC_KEY_LENGTH_HEX = 64
+SIGNATURE_LENGTH_HEX = 128
+SERVICE_ID_START_POSITION_TX = 68
+MESSAGE_ID_START_POSITION_TX = 72
+PROTO_MESSAGE_START_POSITION_TX = 76
+U16_LENGTH_HEX = 4
 
 
 class MessageGenerator(object):
@@ -30,17 +38,14 @@ class ExonumMessage(object):
         self.message_id = message_id
         self.data = msg
         self.payload = None
+        self.signature = None
         self.raw = bytearray()
 
     def sign(self, keys):
         pk, sk = keys
         self.author = pk
 
-        self.payload = (
-            self.data.encode_to_bytes()
-            if isinstance(self.data, Message)
-            else self.data.SerializeToString()
-        )
+        self.payload = self.data.SerializeToString()
 
         self.raw.extend(pk)
         self.raw.extend(pack("<B", 0))  # 0 and 0 it's tag and class of TX message
@@ -63,6 +68,34 @@ class ExonumMessage(object):
 
     def get_author(self):
         return self.author
+
+    @classmethod
+    def from_hex(cls, tx_hex, proto_class, min_length=MINIMUM_TX_BODY_LENGTH_HEX):
+        if len(tx_hex) < min_length:
+            return None
+        try:
+            author = bytes.fromhex(tx_hex[:PUBLIC_KEY_LENGTH_HEX])
+            service_id = unpack("<H", codecs.decode(tx_hex[SERVICE_ID_START_POSITION_TX:
+                                                           SERVICE_ID_START_POSITION_TX +
+                                                           U16_LENGTH_HEX], "hex"))[0]
+            message_id = unpack("<H", codecs.decode(tx_hex[MESSAGE_ID_START_POSITION_TX:
+                                                           MESSAGE_ID_START_POSITION_TX +
+                                                           U16_LENGTH_HEX], "hex"))[0]
+            signature = bytes.fromhex(tx_hex[-SIGNATURE_LENGTH_HEX:])
+            payload = bytes.fromhex(tx_hex[PROTO_MESSAGE_START_POSITION_TX:
+                                           -SIGNATURE_LENGTH_HEX])
+        except (ValueError, IndexError):
+            return None
+
+        message = proto_class()
+        # Possible throws exception
+        message.ParseFromString(payload)
+
+        exonum_message = ExonumMessage(service_id, message_id, message)
+        exonum_message.signature = signature
+        exonum_message.author = author
+        exonum_message.payload = payload
+        return exonum_message
 
 
 def gen_keypair():
