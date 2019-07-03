@@ -2,12 +2,13 @@ import json
 import codecs
 from struct import pack, unpack
 
-from pysodium import crypto_sign_keypair, crypto_hash_sha256, crypto_sign_detached
+from pysodium import crypto_sign_keypair, crypto_hash_sha256, crypto_sign_detached, crypto_sign_verify_detached
 from importlib import import_module
 
 MINIMUM_TX_BODY_LENGTH_HEX = 204  # It calculated as first 76 metadata bytes plus signature with 128 bytes length
 PUBLIC_KEY_LENGTH_HEX = 64
 SIGNATURE_LENGTH_HEX = 128
+SIGNATURE_LENGTH_BYTES = SIGNATURE_LENGTH_HEX // 2
 SERVICE_ID_START_POSITION_TX = 68
 MESSAGE_ID_START_POSITION_TX = 72
 PROTO_MESSAGE_START_POSITION_TX = 76
@@ -42,6 +43,8 @@ class ExonumMessage(object):
         self.raw = bytearray()
 
     def sign(self, keys):
+        # Makes possible resign same message
+        self.raw = bytearray()
         pk, sk = keys
         self.author = pk
 
@@ -53,10 +56,14 @@ class ExonumMessage(object):
         self.raw.extend(pack("<H", self.service_id))
         self.raw.extend(pack("<H", self.message_id))
         self.raw.extend(self.payload)
+        # Make same field as for parsing
+        self.signature = crypto_sign_detached(bytes(self.raw), sk)
         self.raw.extend(
-            crypto_sign_detached(bytes(self.raw), sk)
+            self.signature
         )  # calculating signature
 
+        # Makes all internal bytes types equal bytes
+        self.raw = bytes(self.raw)
         return self
 
     def to_json(self):
@@ -68,6 +75,18 @@ class ExonumMessage(object):
 
     def get_author(self):
         return self.author
+
+    def validate(self):
+        """
+        Validates message
+        Checks tx signature is correct
+        :return: bool
+        """
+        try:
+            crypto_sign_verify_detached(self.signature, self.raw[:-SIGNATURE_LENGTH_BYTES], self.author)
+        except ValueError:
+            return False
+        return True
 
     @classmethod
     def from_hex(cls, tx_hex, proto_class, min_length=MINIMUM_TX_BODY_LENGTH_HEX):
@@ -84,6 +103,7 @@ class ExonumMessage(object):
             signature = bytes.fromhex(tx_hex[-SIGNATURE_LENGTH_HEX:])
             payload = bytes.fromhex(tx_hex[PROTO_MESSAGE_START_POSITION_TX:
                                            -SIGNATURE_LENGTH_HEX])
+            raw = bytes.fromhex(tx_hex)
         except (ValueError, IndexError):
             return None
 
@@ -95,6 +115,7 @@ class ExonumMessage(object):
         exonum_message.signature = signature
         exonum_message.author = author
         exonum_message.payload = payload
+        exonum_message.raw = raw
         return exonum_message
 
 
