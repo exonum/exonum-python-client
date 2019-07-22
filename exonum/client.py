@@ -1,4 +1,5 @@
 import json
+import os
 import requests
 from websocket import WebSocket
 from threading import Thread
@@ -10,6 +11,11 @@ SYSTEM_URL = "{}://{}:{}/api/system/v1/{}"
 TX_URL = "{}://{}:{}/api/explorer/v1/transactions"
 WEBSOCKET_URI = "ws://{}:{}/api/explorer/v1/blocks/subscribe"
 
+def find_protoc():
+    if PROTOC_ENV_NAME in os.environ:
+        return os.getenv(PROTOC_ENV_NAME)
+    else:
+        return shutil.which("protoc")
 
 class Subscriber(object):
     def __init__(self, address, port):
@@ -56,7 +62,7 @@ class Subscriber(object):
 
 class ExonumClient(object):
     def __init__(
-        self, service_name, hostname, public_api_port=80, private_api_port=81, ssl=False
+        self, service_name, hostname, public_api_port=80, private_api_port=81, ssl=False, proto_dir='proto'
     ):
         self.schema = "https" if ssl else "http"
         self.hostname = hostname
@@ -67,6 +73,63 @@ class ExonumClient(object):
         self.service_url = SERVICE_URL.format(
             self.schema, hostname, public_api_port, service_name
         )
+        self.proto_dir = proto_dir
+
+        if not os.path.exists(self.proto_dir):
+            os.makedirs(self.proto_dir)
+
+    def _get_main_proto_sources(self):
+        return get(
+            SYSTEM_URL.format(
+                self.schema, self.hostname, self.public_api_port, "proto-sources"
+            )
+        )
+
+    def _get_proto_sources_for_service(self, runtime_id, service_name):
+        params = {
+            'artifact': '{}:{}'.format(runtime_id, service_name)
+        }
+        return get(
+            SYSTEM_URL.format(
+                self.schema, self.hostname, self.public_api_port, "proto-sources"
+            ), params=params
+        )
+
+    def _save_proto_file(self, path, file_content):
+        os.mkdir(path)
+        with open(path, "wt") as file_out:
+            for line in file_content:
+                for module in modules:
+                    line = line.replace(
+                        "import {}_pb2 ".format(module),
+                        "from . import {}_pb2 ".format(module),
+                    )
+                file_out.write(line)
+
+    def _save_files(self, path, files):
+        for proto_file in files:
+            file_name = proto_file['name']
+            file_content = proto_file['content']
+            file_path = os.path.join(path, file_name)
+            self._save_proto_file(file_path, file_content)
+
+    def load_main_proto_files(self):
+        proto_contents = self._get_main_proto_sources()
+
+        # Save proto_sources in proto/main directory
+        main_dir = os.path.join(self.proto_dir, 'proto', 'main')
+        self._save_files(main_dir, proto_contents)
+
+        # TODO call protoc to compile proto sources
+
+    def load_service_proto_files(self, runtime_id, service_name):
+        proto_contents = self._get_proto_sources_for_service(runtime_id, service_name)
+
+        # Save proto_sources in proto/service_name directory
+        service_dir = os.path.join(self.proto_dir, 'proto', 'service_name')
+        self._save_files(service_dir, proto_contents)
+
+        # TODO call protoc to compile proto sources
 
     """Send transaction into Exonum node via REST IPI. 
         msg - A prepared message
@@ -145,6 +208,14 @@ class ExonumClient(object):
             return subscriber
         except Exception as e:
             print(e)
+
+    def _get_services(self):
+        return get(
+            SYSTEM_URL.format(
+                self.schema, self.hostname, self.public_api_port, "services"
+            )
+        )
+
 
 
 def get(url, params=None):
