@@ -98,13 +98,7 @@ class ExonumClient(object):
     def _save_proto_file(self, path, file_content):
         os.mkdir(path)
         with open(path, "wt") as file_out:
-            for line in file_content:
-                for module in modules:
-                    line = line.replace(
-                        "import {}_pb2 ".format(module),
-                        "from . import {}_pb2 ".format(module),
-                    )
-                file_out.write(line)
+            file_out.write(file_content)
 
     def _save_files(self, path, files):
         for proto_file in files:
