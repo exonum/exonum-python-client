@@ -108,11 +108,11 @@ class ExonumClient(object):
         # TODO error handling
         proto_contents = self._get_main_proto_sources().json()
 
-        # Save proto_sources in proto/main directory
+        # Save proto_sources in proto/main directory.
         main_dir = os.path.join(self.proto_dir, 'proto', 'main')
         self._save_files(main_dir, proto_contents)
 
-        # TODO call protoc to compile proto sources
+        # Call protoc to compile proto sources.
         proto_dir = os.path.join(self.proto_dir, 'python', 'main')
         self.protoc.compile_main(main_dir, proto_dir)
 
@@ -121,10 +121,13 @@ class ExonumClient(object):
         proto_contents = self._get_proto_sources_for_service(runtime_id, service_name).json()
 
         # Save proto_sources in proto/service_name directory
-        service_dir = os.path.join(self.proto_dir, 'proto', 'service_name')
+        service_dir = os.path.join(self.proto_dir, 'proto', service_name)
         self._save_files(service_dir, proto_contents)
 
         # TODO call protoc to compile proto sources
+        main_dir = os.path.join(self.proto_dir, 'proto', 'main')
+        proto_dir = os.path.join(self.proto_dir, 'python', service_name)
+        self.protoc.compile_service(main_dir, service_dir, proto_dir)
 
     """Send transaction into Exonum node via REST IPI. 
         msg - A prepared message
@@ -223,3 +226,4 @@ def get(url, params=None):
 if __name__ == '__main__':
     client = ExonumClient('a', hostname='127.0.0.1', public_api_port=8080, private_api_port=8081)
     client.load_main_proto_files()
+    client.load_service_proto_files(0, 'exonum-supervisor/0.11.0')
