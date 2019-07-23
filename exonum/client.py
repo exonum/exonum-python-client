@@ -4,18 +4,14 @@ import requests
 from websocket import WebSocket
 from threading import Thread
 
+from protoc import Protoc
+
 BLOCK_URL = "{}://{}:{}/api/explorer/v1/block?height={}"
 BLOCKS_URL = "{}://{}:{}/api/explorer/v1/blocks"
 SERVICE_URL = "{}://{}:{}/api/services/{}/v1/"
 SYSTEM_URL = "{}://{}:{}/api/system/v1/{}"
 TX_URL = "{}://{}:{}/api/explorer/v1/transactions"
 WEBSOCKET_URI = "ws://{}:{}/api/explorer/v1/blocks/subscribe"
-
-def find_protoc():
-    if PROTOC_ENV_NAME in os.environ:
-        return os.getenv(PROTOC_ENV_NAME)
-    else:
-        return shutil.which("protoc")
 
 class Subscriber(object):
     def __init__(self, address, port):
@@ -74,6 +70,7 @@ class ExonumClient(object):
             self.schema, hostname, public_api_port, service_name
         )
         self.proto_dir = proto_dir
+        self.protoc = Protoc()
 
         if not os.path.exists(self.proto_dir):
             os.makedirs(self.proto_dir)
@@ -96,11 +93,11 @@ class ExonumClient(object):
         )
 
     def _save_proto_file(self, path, file_content):
-        os.mkdir(path)
         with open(path, "wt") as file_out:
             file_out.write(file_content)
 
     def _save_files(self, path, files):
+        os.makedirs(path)
         for proto_file in files:
             file_name = proto_file['name']
             file_content = proto_file['content']
@@ -108,16 +105,20 @@ class ExonumClient(object):
             self._save_proto_file(file_path, file_content)
 
     def load_main_proto_files(self):
-        proto_contents = self._get_main_proto_sources()
+        # TODO error handling
+        proto_contents = self._get_main_proto_sources().json()
 
         # Save proto_sources in proto/main directory
         main_dir = os.path.join(self.proto_dir, 'proto', 'main')
         self._save_files(main_dir, proto_contents)
 
         # TODO call protoc to compile proto sources
+        proto_dir = os.path.join(self.proto_dir, 'python', 'main')
+        self.protoc.compile_main(main_dir, proto_dir)
 
     def load_service_proto_files(self, runtime_id, service_name):
-        proto_contents = self._get_proto_sources_for_service(runtime_id, service_name)
+        # TODO error handling
+        proto_contents = self._get_proto_sources_for_service(runtime_id, service_name).json()
 
         # Save proto_sources in proto/service_name directory
         service_dir = os.path.join(self.proto_dir, 'proto', 'service_name')
@@ -218,3 +219,7 @@ def get(url, params=None):
         return requests.get(url, params=params)
     except requests.exceptions.ConnectionError as e:
         raise e
+
+if __name__ == '__main__':
+    client = ExonumClient('a', hostname='127.0.0.1', public_api_port=8080, private_api_port=8081)
+    client.load_main_proto_files()
