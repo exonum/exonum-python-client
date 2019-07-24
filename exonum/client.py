@@ -129,6 +129,13 @@ class ExonumClient(object):
         proto_dir = os.path.join(self.proto_dir, 'python', service_name)
         self.protoc.compile(service_dir, proto_dir, include=main_dir)
 
+    def available_services(self):
+        return get(
+            SYSTEM_URL.format(
+                self.schema, self.hostname, self.public_api_port, "services"
+            )
+        )
+
     """Send transaction into Exonum node via REST IPI. 
         msg - A prepared message
     """
@@ -206,14 +213,6 @@ class ExonumClient(object):
             return subscriber
         except Exception as e:
             print(e)
-
-    def _get_services(self):
-        return get(
-            SYSTEM_URL.format(
-                self.schema, self.hostname, self.public_api_port, "services"
-            )
-        )
-
 
 
 def get(url, params=None):
