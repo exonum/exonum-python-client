@@ -114,7 +114,7 @@ class ExonumClient(object):
 
         # Call protoc to compile proto sources.
         proto_dir = os.path.join(self.proto_dir, 'python', 'main')
-        self.protoc.compile_main(main_dir, proto_dir)
+        self.protoc.compile(main_dir, proto_dir)
 
     def load_service_proto_files(self, runtime_id, service_name):
         # TODO error handling
@@ -127,7 +127,7 @@ class ExonumClient(object):
         # TODO call protoc to compile proto sources
         main_dir = os.path.join(self.proto_dir, 'proto', 'main')
         proto_dir = os.path.join(self.proto_dir, 'python', service_name)
-        self.protoc.compile_service(main_dir, service_dir, proto_dir)
+        self.protoc.compile(service_dir, proto_dir, include=main_dir)
 
     """Send transaction into Exonum node via REST IPI. 
         msg - A prepared message

@@ -34,39 +34,24 @@ class Protoc:
                     )
                 file_out.write(line)
 
-    def compile_main(self, path_in, path_out):
+    def compile(self, path_in, path_out, include=None):
         os.makedirs(path_out)
 
-        protoc_args = [
-            self.protoc_path,
-            "--proto_path={}".format(path_in),
-            "--python_out={}".format(path_out),
-        ]
-        proto_files = find_proto_files(path_in)
-        protoc_args.extend(proto_files)
-        protoc_process = subprocess.Popen(
-            protoc_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
-        code = protoc_process.wait()
-        if code == 0:
-            print("Proto files were compiled successfully")
+        protoc_args = None
+        if include:
+            protoc_args = [
+                self.protoc_path,
+                "--proto_path={}".format(path_in),
+                "--proto_path={}".format(include),
+                "--python_out={}".format(path_out),
+            ]
         else:
-            out, err = protoc_process.communicate()
-            print("Error acquired while compiling files: {}".format(err.decode("utf-8")))
-
-        modules = [proto_path.replace(".proto", "") for proto_path in proto_files]
-        for file in filter(lambda f: f.endswith(".py"), os.listdir(path_out)):
-            self._modify_file("{}/{}".format(path_out, file), modules)
-
-    def compile_service(self, include, path_in, path_out):
-        os.makedirs(path_out)
-
-        protoc_args = [
-            self.protoc_path,
-            "--proto_path={}".format(path_in),
-            "--proto_path={}".format(include),
-            "--python_out={}".format(path_out),
-        ]
+            protoc_args = [
+                self.protoc_path,
+                "--proto_path={}".format(path_in),
+                "--python_out={}".format(path_out),
+            ]
+        
         proto_files = find_proto_files(path_in)
         protoc_args.extend(proto_files)
         protoc_process = subprocess.Popen(
