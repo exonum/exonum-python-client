@@ -74,6 +74,8 @@ class ExonumClient(object):
 
         if not os.path.exists(self.proto_dir):
             os.makedirs(self.proto_dir)
+            init_file_path = os.path.join(self.proto_dir, '__init__.py')
+            open(init_file_path, 'a').close()
 
     def _get_main_proto_sources(self):
         return get(
@@ -135,6 +137,13 @@ class ExonumClient(object):
                 self.schema, self.hostname, self.public_api_port, "services"
             )
         )
+
+    def _import_main_module(self, module_name):
+        import importlib
+
+        service = importlib.import_module('proto.python.main.{}_pb2'.format(module_name))
+
+        return service
 
     """Send transaction into Exonum node via REST IPI. 
         msg - A prepared message
@@ -226,3 +235,6 @@ if __name__ == '__main__':
     client = ExonumClient('a', hostname='127.0.0.1', public_api_port=8080, private_api_port=8081)
     client.load_main_proto_files()
     client.load_service_proto_files(0, 'exonum-supervisor/0.11.0')
+
+    main_module = client._import_main_module('consensus')
+    print(dir(main_module))

@@ -37,6 +37,12 @@ class Protoc:
     def compile(self, path_in, path_out, include=None):
         os.makedirs(path_out)
 
+        init_file_path = 'proto/python/__init__.py'
+        open(init_file_path, 'a').close()
+
+        init_file_path = os.path.join(path_out, '__init__.py')
+        open(init_file_path, 'a').close()
+
         protoc_args = None
         if include:
             protoc_args = [
