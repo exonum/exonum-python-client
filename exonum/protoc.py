@@ -59,6 +59,8 @@ class Protoc:
             ]
         
         proto_files = find_proto_files(path_in)
+        if include:
+            proto_files.extend(find_proto_files(include))
         protoc_args.extend(proto_files)
         protoc_process = subprocess.Popen(
             protoc_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE

@@ -143,9 +143,18 @@ class ExonumClient(object):
     def _import_main_module(self, module_name):
         import importlib
 
-        service = importlib.import_module('proto.python.main.{}_pb2'.format(module_name))
+        module = importlib.import_module('proto.python.main.{}_pb2'.format(module_name))
 
-        return service
+        return module
+
+    def _import_service_module(self, service_name, module_name):
+        import importlib
+
+        service_module_name = re.sub(r'[-. /]', '_', service_name)
+        module = importlib.import_module('proto.python.{}.{}_pb2'.format(service_module_name, module_name))
+
+        return module
+
 
     """Send transaction into Exonum node via REST IPI. 
         msg - A prepared message
@@ -239,4 +248,6 @@ if __name__ == '__main__':
     client.load_service_proto_files(0, 'exonum-supervisor/0.11.0')
 
     main_module = client._import_main_module('consensus')
-    print(dir(main_module))
+
+    service_module = client._import_service_module('exonum-supervisor/0.11.0', 'service')
+    print(dir(service_module))
