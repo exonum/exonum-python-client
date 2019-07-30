@@ -1,6 +1,7 @@
 import json
 import os
 import requests
+import re
 from websocket import WebSocket
 from threading import Thread
 
@@ -123,12 +124,13 @@ class ExonumClient(object):
         proto_contents = self._get_proto_sources_for_service(runtime_id, service_name).json()
 
         # Save proto_sources in proto/service_name directory
-        service_dir = os.path.join(self.proto_dir, 'proto', service_name)
+        service_module_name = re.sub(r'[-. /]', '_', service_name)
+        service_dir = os.path.join(self.proto_dir, 'proto', service_module_name)
         self._save_files(service_dir, proto_contents)
 
         # TODO call protoc to compile proto sources
         main_dir = os.path.join(self.proto_dir, 'proto', 'main')
-        proto_dir = os.path.join(self.proto_dir, 'python', service_name)
+        proto_dir = os.path.join(self.proto_dir, 'python', service_module_name)
         self.protoc.compile(service_dir, proto_dir, include=main_dir)
 
     def available_services(self):
