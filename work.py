@@ -1,6 +1,6 @@
 import proto.cryptocurrency_pb2
-from exonum.client import ExonumClient
-from exonum.message import MessageGenerator, gen_keypair, encode
+from exonum_app.client import ExonumClient
+from exonum_app.message import MessageGenerator, gen_keypair, encode
 
 
 def event_handler(data):
