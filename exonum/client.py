@@ -64,7 +64,7 @@ class ExonumClient(object):
     def __init__(
         self, service_name, hostname, public_api_port=80, private_api_port=81, ssl=False
     ):
-        # TODO add a warning that object should be created via "with"
+        # TODO add a warning that object should be created via "with".
         self.schema = "https" if ssl else "http"
         self.hostname = hostname
         self.public_api_port = public_api_port
@@ -77,24 +77,24 @@ class ExonumClient(object):
         self.protoc = Protoc()
 
     def __enter__(self):
-        # Create directory for temprorary files
+        # Create directory for temprorary files.
         self.proto_dir = tempfile.mkdtemp(prefix='exonum_client_')
 
-        # Create folder for python files output
+        # Create folder for python files output.
         python_modules_path = os.path.join(self.proto_dir, 'exonum_modules')
         os.makedirs(python_modules_path)
 
-        # Create __init__ file in the exonum_modules directory
+        # Create __init__ file in the exonum_modules directory.
         init_file_path = os.path.join(python_modules_path, '__init__.py')
         open(init_file_path, 'a').close()
 
-        # Add directory with exonum_modules into python path
+        # Add directory with exonum_modules into python path.
         sys.path.append(self.proto_dir)
         
         return self
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
-        # Remove generated temporary directory
+        # Remove generated temporary directory.
         shutil.rmtree(self.proto_dir)
 
     def _get_main_proto_sources(self):
@@ -142,12 +142,12 @@ class ExonumClient(object):
         # TODO error handling
         proto_contents = self._get_proto_sources_for_service(runtime_id, service_name).json()
 
-        # Save proto_sources in proto/service_name directory
+        # Save proto_sources in proto/service_name directory.
         service_module_name = re.sub(r'[-. /]', '_', service_name)
         service_dir = os.path.join(self.proto_dir, 'proto', service_module_name)
         self._save_files(service_dir, proto_contents)
 
-        # TODO call protoc to compile proto sources
+        # Call protoc to compile proto sources.
         main_dir = os.path.join(self.proto_dir, 'proto', 'main')
         proto_dir = os.path.join(self.proto_dir, 'exonum_modules', service_module_name)
         self.protoc.compile(service_dir, proto_dir, include=main_dir)
