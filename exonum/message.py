@@ -17,9 +17,10 @@ U16_LENGTH_HEX = 4
 
 
 class MessageGenerator:
-    def __init__(self, service_name):
-        # TODO this instance should have not only pb_module for service, but other pb_modules for creating tx
-        # Creating of the tx should not use setattr, but CopyFrom (maybe recursively)?
+    def __init__(self, runtime_id, service_id, service_name):
+        self.runtime_id = runtime_id
+        self.service_id = service_id
+
         self.service_name = service_name
         self.message_ids = dict()
 
@@ -33,41 +34,56 @@ class MessageGenerator:
         for field, value in kwargs.items():
             setattr(msg, field, value)
 
-        return ExonumMessage(self.service_id, self.message_ids[tx_name], msg)
+        return ExonumMessage(self.runtime_id, self.service_id, self.message_ids[tx_name], msg)
 
 
 class ExonumMessage:
-    def __init__(self, service_id, message_id, msg):
+    def __init__(self, runtime_id, service_id, message_id, msg):
         self.author = None
         self.service_id = service_id
         self.message_id = message_id
-        self.data = msg
+        self.msg = msg
         self.payload = None
         self.signature = None
         self.raw = bytearray()
 
+        self._build_message()
+
+    def _build_message(self):
+        runtime_mod = ModuleManager.import_main_module('runtime')
+        consensus_mod = ModuleManager.import_main_module('consensus')
+
+        serialized_msg = self.msg.SerializeToString()
+
+        call_info = runtime_mod.CallInfo()
+        call_info.instance_id = self.service_id
+        call_info.method_id = self.message_id
+
+        any_tx = runtime_mod.AnyTx()
+        any_tx.call_info.CopyFrom(call_info)
+        any_tx.payload = self.data.SerializeToString()
+
+        exonum_message = consensus_mod.ExonumMessage()
+        exonum_message.any_tx.CopyFrom(any_tx)
+
+        self.payload = exonum_message.SerializeToString()
+
     def sign(self, keys):
-        # Makes possible resign same message
-        self.raw = bytearray()
         pk, sk = keys
-        self.author = pk
 
-        self.payload = self.data.SerializeToString()
+        consensus_mod = ModuleManager.import_main_module('consensus')
+        helpers_mod = ModuleManager.import_main_module('helpers')
 
-        self.raw.extend(pk)
-        self.raw.extend(pack("<B", 0))  # 0 and 0 it's tag and class of TX message
-        self.raw.extend(pack("<B", 0))
-        self.raw.extend(pack("<H", self.service_id))
-        self.raw.extend(pack("<H", self.message_id))
-        self.raw.extend(self.payload)
-        # Make same field as for parsing
-        self.signature = crypto_sign_detached(bytes(self.raw), sk)
-        self.raw.extend(
-            self.signature
-        )  # calculating signature
+        signed_message = consensus_mod.SignedMessage()
+        signed_message.payload = self.payload
+        signed_message.author.CopyFrom(helpers_mod.PublicKey(data=pk))
+
+        signature = bytes(crypto_sign_detached(signed_message.payload, sk))
+
+        signed_message.signature.CopyFrom(helpers_mod.Signature(data=signature))
 
         # Makes all internal bytes types equal bytes
-        self.raw = bytes(self.raw)
+        self.raw = bytes(signed_message.SerializeToString())
         return self
 
     def to_json(self):
