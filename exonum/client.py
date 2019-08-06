@@ -9,6 +9,7 @@ from websocket import WebSocket
 from threading import Thread
 
 from protoc import Protoc
+from message import MessageGenerator
 
 BLOCK_URL = "{}://{}:{}/api/explorer/v1/block?height={}"
 BLOCKS_URL = "{}://{}:{}/api/explorer/v1/blocks"
@@ -159,22 +160,6 @@ class ExonumClient(object):
             )
         )
 
-    def _import_main_module(self, module_name):
-        import importlib
-
-        module = importlib.import_module('exonum_modules.main.{}_pb2'.format(module_name))
-
-        return module
-
-    def _import_service_module(self, service_name, module_name):
-        import importlib
-
-        service_module_name = re.sub(r'[-. /]', '_', service_name)
-        module = importlib.import_module('exonum_modules.{}.{}_pb2'.format(service_module_name, module_name))
-
-        return module
-
-
     """Send transaction into Exonum node via REST IPI. 
         msg - A prepared message
     """
@@ -262,11 +247,13 @@ def get(url, params=None):
         raise e
 
 if __name__ == '__main__':
+    from module_manager import ModuleManager
+
     with ExonumClient('a', hostname='127.0.0.1', public_api_port=8080, private_api_port=8081) as client:
         client.load_main_proto_files()
         client.load_service_proto_files(0, 'exonum-supervisor/0.11.0')
 
-        main_module = client._import_main_module('consensus')
+        main_module = ModuleManager.import_main_module('consensus')
 
-        service_module = client._import_service_module('exonum-supervisor/0.11.0', 'service')
+        service_module = ModuleManager.import_service_module('exonum-supervisor/0.11.0', 'service')
         print(dir(service_module))

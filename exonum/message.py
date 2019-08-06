@@ -3,7 +3,8 @@ import codecs
 from struct import pack, unpack
 
 from pysodium import crypto_sign_keypair, crypto_hash_sha256, crypto_sign_detached, crypto_sign_verify_detached
-from importlib import import_module
+
+from module_manager import ModuleManager
 
 MINIMUM_TX_BODY_LENGTH_HEX = 204  # It calculated as first 76 metadata bytes plus signature with 128 bytes length
 PUBLIC_KEY_LENGTH_HEX = 64
@@ -15,16 +16,19 @@ PROTO_MESSAGE_START_POSITION_TX = 76
 U16_LENGTH_HEX = 4
 
 
-class MessageGenerator(object):
-    def __init__(self, pb_module, service_id):
-        self.service_id = service_id
+class MessageGenerator:
+    def __init__(self, service_name):
+        # TODO this instance should have not only pb_module for service, but other pb_modules for creating tx
+        # Creating of the tx should not use setattr, but CopyFrom (maybe recursively)?
+        self.service_name = service_name
         self.message_ids = dict()
-        self.module = pb_module
-        for i, message in enumerate(pb_module.DESCRIPTOR.message_types_by_name):
+
+        self.service_module = ModuleManager.import_service_module(service_name, 'service')
+        for i, message in enumerate(self.service_module.DESCRIPTOR.message_types_by_name):
             self.message_ids[message] = i
 
     def create_message(self, tx_name, **kwargs):
-        cls = getattr(import_module(self.module.__name__), tx_name)
+        cls = getattr(self.service_module, tx_name)
         msg = cls()
         for field, value in kwargs.items():
             setattr(msg, field, value)
@@ -32,7 +36,7 @@ class MessageGenerator(object):
         return ExonumMessage(self.service_id, self.message_ids[tx_name], msg)
 
 
-class ExonumMessage(object):
+class ExonumMessage:
     def __init__(self, service_id, message_id, msg):
         self.author = None
         self.service_id = service_id
