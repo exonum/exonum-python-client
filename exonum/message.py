@@ -38,7 +38,7 @@ class MessageGenerator:
 
 
 class ExonumMessage:
-    def __init__(self, runtime_id, service_id, message_id, msg):
+    def __init__(self, service_id, message_id, msg):
         self.author = None
         self.service_id = service_id
         self.message_id = message_id
@@ -70,6 +70,7 @@ class ExonumMessage:
 
     def sign(self, keys):
         pk, sk = keys
+        self.author = pk
 
         consensus_mod = ModuleManager.import_main_module('consensus')
         helpers_mod = ModuleManager.import_main_module('helpers')
@@ -82,7 +83,6 @@ class ExonumMessage:
 
         signed_message.signature.CopyFrom(helpers_mod.Signature(data=signature))
 
-        # Makes all internal bytes types equal bytes
         self.raw = bytes(signed_message.SerializeToString())
         return self
 
@@ -103,40 +103,78 @@ class ExonumMessage:
         :return: bool
         """
         try:
-            crypto_sign_verify_detached(self.signature, self.raw[:-SIGNATURE_LENGTH_BYTES], self.author)
+            consensus_mod = ModuleManager.import_main_module('consensus')
+
+            signed_msg = consensus_mod.SignedMessage()
+            signed_msg.ParseFromString(self.raw)
+
+            crypto_sign_verify_detached(self.signature, signed_msg.payload, self.author)
         except ValueError:
             return False
         return True
 
-    @classmethod
-    def from_hex(cls, tx_hex, proto_class, min_length=MINIMUM_TX_BODY_LENGTH_HEX):
-        if len(tx_hex) < min_length:
-            return None
-        try:
-            author = bytes.fromhex(tx_hex[:PUBLIC_KEY_LENGTH_HEX])
-            service_id = unpack("<H", codecs.decode(tx_hex[SERVICE_ID_START_POSITION_TX:
-                                                           SERVICE_ID_START_POSITION_TX +
-                                                           U16_LENGTH_HEX], "hex"))[0]
-            message_id = unpack("<H", codecs.decode(tx_hex[MESSAGE_ID_START_POSITION_TX:
-                                                           MESSAGE_ID_START_POSITION_TX +
-                                                           U16_LENGTH_HEX], "hex"))[0]
-            signature = bytes.fromhex(tx_hex[-SIGNATURE_LENGTH_HEX:])
-            payload = bytes.fromhex(tx_hex[PROTO_MESSAGE_START_POSITION_TX:
-                                           -SIGNATURE_LENGTH_HEX])
-            raw = bytes.fromhex(tx_hex)
-        except (ValueError, IndexError):
-            return None
+    @staticmethod
+    def from_hex(tx_hex, service_name, tx_name, min_length=MINIMUM_TX_BODY_LENGTH_HEX):
+        consensus_mod = ModuleManager.import_main_module('consensus')
+        runtime_mod = ModuleManager.import_main_module('runtime')
+        service_mod = ModuleManager.import_service_module(service_name, 'service')
+        transaction_class = getattr(self.service_module, tx_name)
 
-        message = proto_class()
-        # Possible throws exception
-        message.ParseFromString(payload)
+        tx_raw = bytes.fromhex(tx_hex)
 
-        exonum_message = ExonumMessage(service_id, message_id, message)
+        signed_msg = consensus_mod.SignedMessage()
+        signed_msg.ParseFromString(tx_raw)
+
+        exonum_msg = consensus_mod.ExonumMessage()
+        exonum_msg.any_tx.ParseFromString(signed_msg.payload)
+
+        any_tx = exonum_msg.any_tx
+
+        decoded_msg = transaction_class()
+        decoded_msg.ParseFromString(any_tx.payload)
+
+        # TODO check correctness of the data getting
+        service_id = any_tx.call_info.instance_id
+        message_id = any_tx.call_info.method_id
+        signature = signed_msg.signature[:]
+        author = signed_msg.author[:]
+
+        exonum_message = ExonumMessage(service_id, message_id, decoded_msg)
         exonum_message.signature = signature
         exonum_message.author = author
-        exonum_message.payload = payload
-        exonum_message.raw = raw
+        exonum_message.raw = tx_raw
+        exonum_message.payload = signed_msg.payload
+        exonum_message.raw = tx_raw
+
         return exonum_message
+
+        # if len(tx_hex) < min_length:
+        #     return None
+        # try:
+        #     author = bytes.fromhex(tx_hex[:PUBLIC_KEY_LENGTH_HEX])
+        #     service_id = unpack("<H", codecs.decode(tx_hex[SERVICE_ID_START_POSITION_TX:
+        #                                                    SERVICE_ID_START_POSITION_TX +
+        #                                                    U16_LENGTH_HEX], "hex"))[0]
+        #     message_id = unpack("<H", codecs.decode(tx_hex[MESSAGE_ID_START_POSITION_TX:
+        #                                                    MESSAGE_ID_START_POSITION_TX +
+        #                                                    U16_LENGTH_HEX], "hex"))[0]
+        #     signature = bytes.fromhex(tx_hex[-SIGNATURE_LENGTH_HEX:])
+        #     payload = bytes.fromhex(tx_hex[PROTO_MESSAGE_START_POSITION_TX:
+        #                                    -SIGNATURE_LENGTH_HEX])
+        #     raw = bytes.fromhex(tx_hex)
+        # except (ValueError, IndexError):
+        #     return None
+
+        # message = proto_class()
+        # # Possible throws exception
+        # message.ParseFromString(payload)
+
+        # exonum_message = ExonumMessage(service_id, message_id, message)
+        # exonum_message.signature = signature
+        # exonum_message.author = author
+        # exonum_message.payload = payload
+        # exonum_message.raw = raw
+        # return exonum_message
 
 
 def gen_keypair():
