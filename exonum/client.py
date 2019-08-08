@@ -257,3 +257,5 @@ if __name__ == '__main__':
 
         service_module = ModuleManager.import_service_module('exonum-supervisor/0.11.0', 'service')
         print(dir(service_module))
+        print('-----')
+        print(client.available_services().json())
