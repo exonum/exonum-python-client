@@ -9,7 +9,6 @@ from websocket import WebSocket
 from threading import Thread
 
 from protoc import Protoc
-from message import MessageGenerator
 
 BLOCK_URL = "{}://{}:{}/api/explorer/v1/block?height={}"
 BLOCKS_URL = "{}://{}:{}/api/explorer/v1/blocks"
@@ -248,6 +247,10 @@ def get(url, params=None):
 
 if __name__ == '__main__':
     from module_manager import ModuleManager
+    from message import MessageGenerator
+    import codecs
+    import json
+    import time
 
     with ExonumClient('a', hostname='127.0.0.1', public_api_port=8080, private_api_port=8081) as client:
         client.load_main_proto_files()
@@ -259,3 +262,59 @@ if __name__ == '__main__':
         print(dir(service_module))
         print('-----')
         print(client.available_services().json())
+
+        # Create subscriber
+        # TODO FIXME subscriber is not created for some reason (Handshake Status 400)
+
+        subscriber = client.create_subscriber()
+
+        # Deploy cryptocurrency service
+
+        cryptocurrency_service_name = 'exonum-cryptocurrency-advanced:0.11.0'
+        deploy_request = service_module.DeployRequest()
+        deploy_request.artifact.runtime_id = 0
+        deploy_request.artifact.name = cryptocurrency_service_name
+        deploy_request.deadline_height = 1000000
+
+        hex_request = codecs.encode(deploy_request.SerializeToString(), "hex").decode("utf-8")
+
+        request_json = json.dumps(hex_request)
+        supervisor_endpoint = "http://127.0.0.1:8081/api/services/supervisor/{}"
+        deploy_endpoint = supervisor_endpoint.format('deploy-artifact')
+
+        response = requests.post(deploy_endpoint, request_json, headers={"content-type": "application/json"})
+
+        print('-------')
+        print(response)
+        print(response.json())
+
+        # Wait for new blocks
+        # TODO Use subscriber
+
+        time.sleep(2)
+
+        # Start cryptocurrency service
+
+        start_request = service_module.StartService()
+        start_request.artifact.runtime_id = 0
+        start_request.artifact.name = cryptocurrency_service_name
+        start_request.name = 'XNM'
+        start_request.deadline_height = 1000000
+
+        hex_request = codecs.encode(start_request.SerializeToString(), "hex").decode("utf-8")
+
+        request_json = json.dumps(hex_request)
+        start_endpoint = supervisor_endpoint.format('start-service')
+
+        response = requests.post(start_endpoint, request_json, headers={"content-type": "application/json"})
+        
+        # Wait for new blocks
+        # TODO Use subscriber
+
+        time.sleep(2)
+
+        print('-----')
+        print(client.available_services().json())
+
+
+
