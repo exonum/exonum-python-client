@@ -63,6 +63,7 @@ class Protoc:
             protoc_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
         code = protoc_process.wait()
+        (stdout, stderr) = protoc_process.communicate()
         if code == 0:
             print("Proto files were compiled successfully")
         else:

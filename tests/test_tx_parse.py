@@ -1,18 +1,11 @@
 import copy
-
 import unittest
 from pysodium import crypto_hash_sha256, crypto_sign_keypair
 import sys
 import os
-# from tests.proto_test.timestamping_pb2 import TxTimestamp
-# from tests.proto_test.helpers_pb2 import Hash, PublicKey
+
 from exonum.message import ExonumMessage, MessageGenerator
 from exonum.module_manager import ModuleManager
-
-HASH_DATA = '1'
-DATA_HASH = crypto_hash_sha256(HASH_DATA.encode())
-SERVICE_ID = 130
-MESSAGE_ID = 1
 
 class TestTxParse(unittest.TestCase):
     @classmethod
