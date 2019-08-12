@@ -52,7 +52,7 @@ class TestExonumClient(unittest.TestCase):
     # This test case replaces get function from exonum client with the mock one.
     # Thus testing of HTTP interacting could be done without actual exonum client.
 
-    def setUp(cls):
+    def setUp(self):
         # Unload any previously loaded `exonum_main` modules from other tests
         loaded_modules = list(sys.modules.keys())
         for module in loaded_modules:
