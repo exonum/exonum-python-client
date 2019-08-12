@@ -13,11 +13,18 @@ class TestTxParse(unittest.TestCase):
         # Add folder with pre-compiled protobuf messages to the path (so it can be imported)
         sys.path.append(os.path.abspath('tests/proto_dir'))
 
+        # Unload any previously loaded `exonum_main` modules from test_exonum_client
+        loaded_modules = list(sys.modules.keys())
+        for module in loaded_modules:
+            if module.startswith('exonum_modules'):
+                del sys.modules[module]
+
         # Gen init data
         keys = crypto_sign_keypair()
 
         # Prepare original message
         cryptocurrency_service_name = 'exonum-cryptocurrency-advanced:0.11.0'
+
         cryptocurrency_module = ModuleManager.import_service_module(cryptocurrency_service_name, 'service')
 
         cryptocurrency_message_generator = MessageGenerator(1024, cryptocurrency_service_name)
@@ -37,7 +44,6 @@ class TestTxParse(unittest.TestCase):
     def tearDownClass(self):
         # Remove protobuf directory from the path.
         sys.path.remove(os.path.abspath('tests/proto_dir'))
-
 
     def test_tx_success_parse(self):
         exonum_message = self.exonum_message
