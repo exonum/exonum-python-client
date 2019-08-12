@@ -144,7 +144,7 @@ class ExonumClient(object):
         proto_contents = self._get_proto_sources_for_service(runtime_id, service_name).json()
 
         # Save proto_sources in proto/service_name directory.
-        service_module_name = re.sub(r'[-. /]', '_', service_name)
+        service_module_name = re.sub(r'[-. :/]', '_', service_name)
         service_dir = os.path.join(self.proto_dir, 'proto', service_module_name)
         self._save_files(service_dir, proto_contents)
 
@@ -251,11 +251,11 @@ if __name__ == '__main__':
 
     with ExonumClient('a', hostname='127.0.0.1', public_api_port=8080, private_api_port=8081) as client:
         client.load_main_proto_files()
-        client.load_service_proto_files(0, 'exonum-supervisor/0.11.0')
+        client.load_service_proto_files(0, 'exonum-supervisor:0.11.0')
 
         main_module = ModuleManager.import_main_module('consensus')
 
-        service_module = ModuleManager.import_service_module('exonum-supervisor/0.11.0', 'service')
+        service_module = ModuleManager.import_service_module('exonum-supervisor:0.11.0', 'service')
         print(dir(service_module))
         print('-----')
         print(client.available_services().json())

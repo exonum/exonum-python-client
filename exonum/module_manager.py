@@ -10,7 +10,7 @@ class ModuleManager:
 
     @staticmethod
     def import_service_module(service_name, module_name):
-        service_module_name = re.sub(r'[-. /]', '_', service_name)
+        service_module_name = re.sub(r'[-. :/]', '_', service_name)
         module = importlib.import_module('exonum_modules.{}.{}_pb2'.format(service_module_name, module_name))
 
         return module
