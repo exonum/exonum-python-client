@@ -95,7 +95,8 @@ class ExonumClient(object):
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
         # Remove generated temporary directory.
-        shutil.rmtree(self.proto_dir)
+        # shutil.rmtree(self.proto_dir)
+        pass
 
     def _get_main_proto_sources(self):
         return get(
@@ -246,8 +247,10 @@ def get(url, params=None):
         raise e
 
 if __name__ == '__main__':
+    # Example of usage.
+
     from module_manager import ModuleManager
-    from message import MessageGenerator
+    from message import MessageGenerator, gen_keypair
     import codecs
     import json
     import time
@@ -307,7 +310,7 @@ if __name__ == '__main__':
         start_endpoint = supervisor_endpoint.format('start-service')
 
         response = requests.post(start_endpoint, request_json, headers={"content-type": "application/json"})
-        
+
         # Wait for new blocks
         # TODO Use subscriber
 
@@ -316,5 +319,32 @@ if __name__ == '__main__':
         print('-----')
         print(client.available_services().json())
 
+        # Work with cryptocurrency
 
+        keys = gen_keypair()
+
+        client.load_service_proto_files(0, cryptocurrency_service_name)
+
+        cryptocurrency_module = ModuleManager.import_service_module(cryptocurrency_service_name, 'service')
+
+        cryptocurrency_message_generator = MessageGenerator(1024, cryptocurrency_service_name)
+
+        create_wallet_alice = cryptocurrency_module.CreateWallet()
+        create_wallet_alice.name = 'Alice'
+        create_wallet_alice_tx = cryptocurrency_message_generator.create_message('CreateWallet', create_wallet_alice)
+        create_wallet_alice_tx.sign(keys)
+
+        create_wallet_bob = cryptocurrency_module.CreateWallet()
+        create_wallet_bob.name = 'Bob'
+        create_wallet_bob_tx = cryptocurrency_message_generator.create_message('CreateWallet', create_wallet_bob)
+        create_wallet_bob_tx.sign(keys)
+
+        responses = client.send_transactions([create_wallet_alice_tx, create_wallet_bob_tx])
+
+        time.sleep(2)
+
+        for response in responses:
+            res = client.get_tx_info(response.json()['tx_hash'])
+            print(res)
+            print(res.json())
 
