@@ -95,8 +95,7 @@ class ExonumClient(object):
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
         # Remove generated temporary directory.
-        # shutil.rmtree(self.proto_dir)
-        pass
+        shutil.rmtree(self.proto_dir)
 
     def _get_main_proto_sources(self):
         return get(

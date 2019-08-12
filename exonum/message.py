@@ -3,6 +3,7 @@ import codecs
 from struct import pack, unpack
 
 from pysodium import crypto_sign_keypair, crypto_hash_sha256, crypto_sign_detached, crypto_sign_verify_detached
+from google.protobuf.message import DecodeError as ProtobufDecodeError
 
 from .module_manager import ModuleManager
 
@@ -77,6 +78,8 @@ class ExonumMessage:
 
         signed_message.signature.CopyFrom(helpers_mod.Signature(data=signature))
 
+        self.signature = signature
+
         self.raw = bytes(signed_message.SerializeToString())
         return self
 
@@ -103,45 +106,45 @@ class ExonumMessage:
             signed_msg.ParseFromString(self.raw)
 
             crypto_sign_verify_detached(self.signature, signed_msg.payload, self.author)
-        except ValueError:
+        except (ProtobufDecodeError, ValueError):
             return False
         return True
 
     @staticmethod
     def from_hex(tx_hex, service_name, tx_name):
-        # TODO proper error handling? MIN_LENGTH support?
+        try:
+            consensus_mod = ModuleManager.import_main_module('consensus')
+            runtime_mod = ModuleManager.import_main_module('runtime')
+            service_mod = ModuleManager.import_service_module(service_name, 'service')
+            transaction_class = getattr(service_mod, tx_name)
 
-        consensus_mod = ModuleManager.import_main_module('consensus')
-        runtime_mod = ModuleManager.import_main_module('runtime')
-        service_mod = ModuleManager.import_service_module(service_name, 'service')
-        transaction_class = getattr(self.service_module, tx_name)
+            tx_raw = bytes.fromhex(tx_hex)
 
-        tx_raw = bytes.fromhex(tx_hex)
+            signed_msg = consensus_mod.SignedMessage()
+            signed_msg.ParseFromString(tx_raw)
 
-        signed_msg = consensus_mod.SignedMessage()
-        signed_msg.ParseFromString(tx_raw)
+            exonum_msg = consensus_mod.ExonumMessage()
+            exonum_msg.ParseFromString(signed_msg.payload)
 
-        exonum_msg = consensus_mod.ExonumMessage()
-        exonum_msg.any_tx.ParseFromString(signed_msg.payload)
+            any_tx = exonum_msg.any_tx
 
-        any_tx = exonum_msg.any_tx
+            decoded_msg = transaction_class()
+            decoded_msg.ParseFromString(any_tx.arguments)
 
-        decoded_msg = transaction_class()
-        decoded_msg.ParseFromString(any_tx.payload)
+            # TODO check correctness of the data getting
+            service_id = any_tx.call_info.instance_id
+            message_id = any_tx.call_info.method_id
+            signature = signed_msg.signature.data[:]
+            author = signed_msg.author.data[:]
 
-        # TODO check correctness of the data getting
-        service_id = any_tx.call_info.instance_id
-        message_id = any_tx.call_info.method_id
-        signature = signed_msg.signature.data[:]
-        author = signed_msg.author.data[:]
-
-        exonum_message = ExonumMessage(service_id, message_id, decoded_msg)
-        exonum_message.signature = signature
-        exonum_message.author = author
-        exonum_message.payload = signed_msg.payload
-        exonum_message.raw = tx_raw
-
-        return exonum_message
+            exonum_message = ExonumMessage(service_id, message_id, decoded_msg)
+            exonum_message.signature = signature
+            exonum_message.author = author
+            exonum_message.payload = signed_msg.payload
+            exonum_message.raw = tx_raw
+            return exonum_message
+        except ProtobufDecodeError:
+            return None
 
 
 def gen_keypair():
