@@ -62,18 +62,14 @@ class Subscriber(object):
 
 class ExonumClient(object):
     def __init__(
-        self, service_name, hostname, public_api_port=80, private_api_port=81, ssl=False
+        self, hostname, public_api_port=80, private_api_port=81, ssl=False
     ):
         # TODO add a warning that object should be created via "with".
         self.schema = "https" if ssl else "http"
         self.hostname = hostname
         self.public_api_port = public_api_port
         self.private_api_port = private_api_port
-        self.service_name = service_name
         self.tx_url = TX_URL.format(self.schema, hostname, public_api_port)
-        self.service_url = SERVICE_URL.format(
-            self.schema, hostname, public_api_port, service_name
-        )
         self.protoc = Protoc()
 
     def __enter__(self):
@@ -95,6 +91,7 @@ class ExonumClient(object):
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
         # Remove generated temporary directory.
+        sys.path.remove(self.proto_dir)
         shutil.rmtree(self.proto_dir)
 
     def _get_main_proto_sources(self):
@@ -205,8 +202,11 @@ class ExonumClient(object):
             + tx_hash
         )
 
-    def get_service(self, sub_uri):
-        return get(self.service_url + sub_uri)
+    def get_service(self, service_name, sub_uri):
+        service_url = SERVICE_URL.format(
+            self.schema, hostname, public_api_port, service_name
+        )
+        return get(service_url + sub_uri)
 
     def health_info(self):
         return get(
@@ -254,7 +254,7 @@ def example_run():
     import json
     import time
 
-    with ExonumClient('a', hostname='127.0.0.1', public_api_port=8080, private_api_port=8081) as client:
+    with ExonumClient(hostname='127.0.0.1', public_api_port=8080, private_api_port=8081) as client:
         client.load_main_proto_files()
         client.load_service_proto_files(0, 'exonum-supervisor:0.11.0')
 
