@@ -27,12 +27,7 @@ class MessageGenerator:
         for i, message in enumerate(self.service_module.DESCRIPTOR.message_types_by_name):
             self.message_ids[message] = i
 
-    def create_message(self, tx_name, **kwargs):
-        cls = getattr(self.service_module, tx_name)
-        msg = cls()
-        for field, value in kwargs.items():
-            setattr(msg, field, value)
-
+    def create_message(self, tx_name, msg):
         return ExonumMessage(self.service_id, self.message_ids[tx_name], msg)
 
 
@@ -60,7 +55,7 @@ class ExonumMessage:
 
         any_tx = runtime_mod.AnyTx()
         any_tx.call_info.CopyFrom(call_info)
-        any_tx.payload = self.data.SerializeToString()
+        any_tx.arguments = serialized_msg
 
         exonum_message = consensus_mod.ExonumMessage()
         exonum_message.any_tx.CopyFrom(any_tx)
