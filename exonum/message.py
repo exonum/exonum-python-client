@@ -4,7 +4,7 @@ from struct import pack, unpack
 
 from pysodium import crypto_sign_keypair, crypto_hash_sha256, crypto_sign_detached, crypto_sign_verify_detached
 
-from module_manager import ModuleManager
+from .module_manager import ModuleManager
 
 MINIMUM_TX_BODY_LENGTH_HEX = 204  # It calculated as first 76 metadata bytes plus signature with 128 bytes length
 PUBLIC_KEY_LENGTH_HEX = 64

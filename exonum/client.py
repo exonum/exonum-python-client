@@ -8,7 +8,7 @@ import sys
 from websocket import WebSocket
 from threading import Thread
 
-from protoc import Protoc
+from .protoc import Protoc
 
 BLOCK_URL = "{}://{}:{}/api/explorer/v1/block?height={}"
 BLOCKS_URL = "{}://{}:{}/api/explorer/v1/blocks"
@@ -246,11 +246,11 @@ def get(url, params=None):
     except requests.exceptions.ConnectionError as e:
         raise e
 
-if __name__ == '__main__':
+def example_run():
     # Example of usage.
 
-    from module_manager import ModuleManager
-    from message import MessageGenerator, gen_keypair
+    from .module_manager import ModuleManager
+    from .message import MessageGenerator, gen_keypair
     import codecs
     import json
     import time
@@ -348,3 +348,5 @@ if __name__ == '__main__':
             print(res)
             print(res.json())
 
+if __name__ == '__main__':
+    example_run()
