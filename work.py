@@ -23,8 +23,6 @@ def example_run():
         # Create subscriber
         # TODO FIXME subscriber is not created for some reason (Handshake Status 400)
 
-        subscriber = client.create_subscriber()
-
         # Deploy cryptocurrency service
 
         cryptocurrency_service_name = 'exonum-cryptocurrency-advanced:0.11.0'
@@ -45,9 +43,10 @@ def example_run():
         print(response.json())
 
         # Wait for new blocks
-        # TODO Use subscriber
-
-        time.sleep(2)
+        
+        with client.create_subscriber() as subscriber:
+            subscriber.wait_for_new_block()
+            subscriber.wait_for_new_block()
 
         # Start cryptocurrency service
 
@@ -64,10 +63,15 @@ def example_run():
 
         response = requests.post(start_endpoint, request_json, headers={"content-type": "application/json"})
 
-        # Wait for new blocks
-        # TODO Use subscriber
+        # Sleep a bit until exonum will restart the server
 
-        time.sleep(2)
+        time.sleep(1)
+
+        # Wait for new blocks
+        
+        with client.create_subscriber() as subscriber:
+            subscriber.wait_for_new_block()
+            subscriber.wait_for_new_block()
 
         print('-----')
         print(client.available_services().json())
@@ -99,9 +103,10 @@ def example_run():
         responses = client.send_transactions([create_wallet_alice_tx, create_wallet_bob_tx])
 
         # Wait for new blocks
-        # TODO Use subscriber
 
-        time.sleep(2)
+        with client.create_subscriber() as subscriber:
+            subscriber.wait_for_new_block()
+            subscriber.wait_for_new_block()
 
         # Show transactions statuses
 
@@ -114,6 +119,8 @@ def example_run():
         print(client.health_info())
         print(client.mempool())
         print(client.user_agent())
+
+        subscriber.stop()
 
 def main():
     example_run()
