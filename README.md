@@ -51,7 +51,6 @@ pip3 -e install python-client
 
 ### Exonum Client Initialization
 ```python
-import proto.cryptocurrency_pb2
 from exonum import ExonumClient, MessageGenerator, ModuleManager, gen_keypair
 
 with ExonumClient(hostname="localhost", public_api_port=8080, private_api_port=8081, ssl=False) as client:
