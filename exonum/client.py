@@ -73,6 +73,14 @@ class ExonumClient(object):
         self.protoc = Protoc()
 
     def __enter__(self):
+        self.initialize()
+        
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        self.deinitialize()
+
+    def initialize(self):
         # Create directory for temprorary files.
         self.proto_dir = tempfile.mkdtemp(prefix='exonum_client_')
 
@@ -86,10 +94,9 @@ class ExonumClient(object):
 
         # Add directory with exonum_modules into python path.
         sys.path.append(self.proto_dir)
-        
-        return self
 
-    def __exit__(self, exc_type, exc_value, exc_traceback):
+
+    def deinitialize(self):
         # Remove generated temporary directory.
         sys.path.remove(self.proto_dir)
         shutil.rmtree(self.proto_dir)

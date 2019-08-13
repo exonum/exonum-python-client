@@ -61,17 +61,38 @@ class TestExonumClient(unittest.TestCase):
 
     def test_client_creates_temp_folder(self):
         # Test that proto directory is created and added to sys.path
+        proto_dir = None
 
         with ExonumClient(hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT,
                           private_api_port=EXONUM_PRIVATE_PORT) as client:
-            self.assertTrue(os.path.isdir(client.proto_dir))
-            self.assertTrue(os.path.exists(client.proto_dir))
-            self.assertTrue(client.proto_dir in sys.path)
+            proto_dir = client.proto_dir
+            self.assertTrue(os.path.isdir(proto_dir))
+            self.assertTrue(os.path.exists(proto_dir))
+            self.assertTrue(proto_dir in sys.path)
 
         # Test that everything is cleaned up after use
-        self.assertFalse(os.path.isdir(client.proto_dir))
-        self.assertFalse(os.path.exists(client.proto_dir))
-        self.assertFalse(client.proto_dir in sys.path)
+        self.assertFalse(os.path.isdir(proto_dir))
+        self.assertFalse(os.path.exists(proto_dir))
+        self.assertFalse(proto_dir in sys.path)
+
+    def test_client_creates_temp_folder_manual_init(self):
+        # Test that proto directory is created and added to sys.path
+
+        exonum_client = ExonumClient(hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT,
+                                     private_api_port=EXONUM_PRIVATE_PORT)
+        exonum_client.initialize()
+        proto_dir = exonum_client.proto_dir
+        
+        self.assertTrue(os.path.isdir(proto_dir))
+        self.assertTrue(os.path.exists(proto_dir))
+        self.assertTrue(proto_dir in sys.path)
+
+        exonum_client.deinitialize()
+
+        # Test that everything is cleaned up after use
+        self.assertFalse(os.path.isdir(proto_dir))
+        self.assertFalse(os.path.exists(proto_dir))
+        self.assertFalse(proto_dir in sys.path)
 
     @patch('exonum.client.get', new=mock_requests_get)
     def test_main_sources_download(self):
