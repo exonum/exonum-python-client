@@ -27,6 +27,14 @@ def proto_sources_response(service):
 
         return response
 
+def ok_response():
+    from requests.models import Response
+    
+    response = Response()
+    response.code = 'OK'
+    response.status_code = 200
+
+    return response
 
 
 def mock_requests_get(url, params=None):
@@ -35,6 +43,10 @@ def mock_requests_get(url, params=None):
 
     proto_sources_endpoint = exonum_public_base + SYSTEM_ENDPOINT_POSTFIX.format('proto-sources')
 
+    healthcheck_endpoint = exonum_public_base + SYSTEM_ENDPOINT_POSTFIX.format('healthcheck')
+    mempool_endpoint = exonum_public_base + SYSTEM_ENDPOINT_POSTFIX.format('mempool')
+    user_agent_endpoint = exonum_public_base + SYSTEM_ENDPOINT_POSTFIX.format('user_agent')
+
 
     responses = {
         # Proto sources endpoints
@@ -42,7 +54,12 @@ def mock_requests_get(url, params=None):
         # Proto sources without params (main sources)
         (proto_sources_endpoint, "None"): proto_sources_response('main'),
         # Proto sources for supervisor service
-        (proto_sources_endpoint, "{'artifact': '0:exonum-supervisor:0.11.0'}"): proto_sources_response('supervisor')
+        (proto_sources_endpoint, "{'artifact': '0:exonum-supervisor:0.11.0'}"): proto_sources_response('supervisor'),
+
+        # Sustem endpoints
+        (healthcheck_endpoint, "None"): ok_response(),
+        (mempool_endpoint, "None"): ok_response(),
+        (user_agent_endpoint, "None"): ok_response(),
 
     }
 
@@ -111,4 +128,32 @@ class TestExonumClient(unittest.TestCase):
 
             service_module = ModuleManager.import_service_module('exonum-supervisor:0.11.0', 'service')
 
-    # TODO add more tests
+    @patch('exonum.client.get', new=mock_requests_get)
+    def test_helthcheck(self):
+        with ExonumClient(hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT,
+                          private_api_port=EXONUM_PRIVATE_PORT) as client:
+            resp = client.health_info()
+            self.assertEqual(resp.status_code, 200)
+
+    @patch('exonum.client.get', new=mock_requests_get)
+    def test_mempool(self):
+        with ExonumClient(hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT,
+                          private_api_port=EXONUM_PRIVATE_PORT) as client:
+            resp = client.mempool()
+            self.assertEqual(resp.status_code, 200)
+
+    @patch('exonum.client.get', new=mock_requests_get)
+    def test_user_agent(self):
+        with ExonumClient(hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT,
+                          private_api_port=EXONUM_PRIVATE_PORT) as client:
+            resp = client.user_agent()
+            self.assertEqual(resp.status_code, 200)
+
+    # TODO add more tests;
+    # send_transaction
+    # send_transactions
+    # get_block
+    # get_blocks
+    # get_tx_info
+    # get_service
+    # Subscriber tests
