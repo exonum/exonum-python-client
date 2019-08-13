@@ -13,6 +13,7 @@ EXONUM_PRIVATE_PORT = '8081'
 EXONUM_URL_BASE = '{}://{}:{}/'
 
 SYSTEM_ENDPOINT_POSTFIX = 'api/system/v1/{}'
+SERVICE_ENDPOINT_POSTFIX = 'api/services/{}/v1/{}'
 
 def proto_sources_response(service):
     from requests.models import Response
@@ -148,6 +149,30 @@ class TestExonumClient(unittest.TestCase):
                           private_api_port=EXONUM_PRIVATE_PORT) as client:
             resp = client.user_agent()
             self.assertEqual(resp.status_code, 200)
+
+    def test_system_endpoint(self):
+        exonum_public_base = EXONUM_URL_BASE.format(EXONUM_PROTO, EXONUM_IP, EXONUM_PUBLIC_PORT)
+        exonum_private_base = EXONUM_URL_BASE.format(EXONUM_PROTO, EXONUM_IP, EXONUM_PRIVATE_PORT)
+
+        with ExonumClient(hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT,
+                          private_api_port=EXONUM_PRIVATE_PORT) as client:
+            service = 'service'
+            endpoint = 'endpoint'
+
+            # Test public endpoint generation
+            got_endpoint = client.system_endpoint(service, endpoint)
+
+            expected_public_endpoint = exonum_public_base + SERVICE_ENDPOINT_POSTFIX.format(service, endpoint)
+
+            self.assertEqual(got_endpoint, expected_public_endpoint)
+
+            # Test private endpoint generation
+            got_endpoint = client.system_endpoint(service, endpoint, private=True)
+
+            expected_private_endpoint = exonum_private_base + SERVICE_ENDPOINT_POSTFIX.format(service, endpoint)
+
+            self.assertEqual(got_endpoint, expected_private_endpoint)
+
 
     # TODO add more tests;
     # send_transaction
