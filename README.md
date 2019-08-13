@@ -164,6 +164,28 @@ contain a hash of the transaction. The response looks as follows:
 }
 ```
 
+### Subscribing to events
+
+If you want to subscribe to events, use the following code:
+
+```python
+with client.create_subscriber() as subscriber:
+    subscriber.wait_for_new_block()
+    subscriber.wait_for_new_block()
+```
+
+Context manager will automatically create a connection and will disconnect after use.
+Or you can manually do the same:
+
+```python
+subscriber = client.create_subscriber()
+subscriber.connect()
+# ... Your code
+subscriber.stop()
+```
+
+Keep in mind that if you'll forget to stop subscriber, you may discover HTTP errors when you'll try to use Exonum API.
+
 ### Testing
 
 To run tests, use the following command:

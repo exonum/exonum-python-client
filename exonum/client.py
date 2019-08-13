@@ -24,9 +24,19 @@ class Subscriber(object):
         self.handler = None
         self.thread = Thread(target=self._event_processing)
         self.ws_client = WebSocket()
+        self.connected = False
+
+    def __enter__(self):
+        self.connect()
+
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        self.stop()
 
     def connect(self):
         self.ws_client.connect(self.address)
+        self.connected = True
 
     def set_handler(self, handler):
         self.handler = handler
@@ -52,12 +62,14 @@ class Subscriber(object):
             self.ws_client.recv()
 
     def stop(self):
-        if not self.is_running:
-            return
-        self.is_running = False
-        if self.thread.isAlive():
-            self.thread.join()
-        self.ws_client.close()
+        if self.connected:
+            self.ws_client.close()
+            self.connected = False
+
+        if self.is_running:
+            if self.thread.isAlive():
+                self.thread.join()
+            self.is_running = False
 
 
 class ExonumClient(object):
@@ -243,12 +255,8 @@ class ExonumClient(object):
         )
 
     def create_subscriber(self):
-        try:
-            subscriber = Subscriber(self.hostname, self.public_api_port)
-            subscriber.connect()
-            return subscriber
-        except Exception as e:
-            print(e)
+        subscriber = Subscriber(self.hostname, self.public_api_port)
+        return subscriber
 
 
 def get(url, params=None):
