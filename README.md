@@ -171,6 +171,20 @@ To run tests, use the following command:
 python3 -m unittest
 ```
 
+### Known problems
+
+If within use you discover a following error:
+```sh
+TypeError: Couldn't build proto file into descriptor pool!
+```
+
+It's because of the issue with protobuf binary wheels. The only work around it to install the pure python implementation.
+
+```sh
+pip uninstall protobuf
+pip install --no-binary=protobuf protobuf
+```
+
 ## License
 Apache 2.0 - see [LICENSE](LICENSE) for more information.
 
