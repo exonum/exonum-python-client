@@ -93,7 +93,7 @@ class ExonumClient(object):
         self.deinitialize()
 
     def initialize(self):
-        # Create directory for temprorary files.
+        # Create directory for temporary files.
         self.proto_dir = tempfile.mkdtemp(prefix='exonum_client_')
 
         # Create folder for python files output.
