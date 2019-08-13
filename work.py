@@ -4,11 +4,11 @@ def event_handler(data):
 def example_run():
     # Example of usage.
 
-    from .module_manager import ModuleManager
-    from .message import MessageGenerator, gen_keypair
+    from exonum import ExonumClient, ModuleManager, MessageGenerator, gen_keypair
     import codecs
     import json
     import time
+    import requests
 
     with ExonumClient(hostname='127.0.0.1', public_api_port=8080, private_api_port=8081) as client:
         client.load_main_proto_files()
@@ -17,7 +17,7 @@ def example_run():
         main_module = ModuleManager.import_main_module('consensus')
 
         service_module = ModuleManager.import_service_module('exonum-supervisor:0.11.0', 'service')
-        
+
         print(client.available_services().json())
 
         # Create subscriber
