@@ -1,0 +1,22 @@
+language: python
+
+python:
+  - "3.7"
+
+matrix:
+  fast_finish: true
+
+sudo: false
+dist: bionic
+
+jobs:
+  include:
+    - name: lints
+      install: pip install pycodestyle
+      script: pycodestyle . --max-line-length=120 --exclude="*_pb2.py"
+    - name: tests
+      apt_packages:
+        - libprotobuf-dev
+        - protobuf-compiler
+      install: pip install --no-binary=protobuf protobuf
+      script: python -m unittest
