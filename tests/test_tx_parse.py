@@ -1,11 +1,12 @@
 import copy
 import unittest
-from pysodium import crypto_hash_sha256, crypto_sign_keypair
+from pysodium import crypto_sign_keypair
 import sys
 import os
 
 from exonum.message import ExonumMessage, MessageGenerator
 from exonum.module_manager import ModuleManager
+
 
 class TestTxParse(unittest.TestCase):
     @classmethod
@@ -48,7 +49,7 @@ class TestTxParse(unittest.TestCase):
     def test_tx_success_parse(self):
         exonum_message = self.exonum_message
         service_name = self.cryptocurrency_service_name
-        
+
         # Parse message
         parsed_message = ExonumMessage.from_hex(exonum_message.raw.hex(), service_name, 'CreateWallet')
 

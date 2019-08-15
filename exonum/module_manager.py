@@ -1,6 +1,7 @@
 import importlib
 import re
 
+
 class ModuleManager:
     @staticmethod
     def import_main_module(module_name):

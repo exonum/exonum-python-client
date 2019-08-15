@@ -1,4 +1,3 @@
-import json
 import os
 import requests
 import re
@@ -16,6 +15,7 @@ SERVICE_URL = "{}://{}:{}/api/services/{}/v1/"
 SYSTEM_URL = "{}://{}:{}/api/system/v1/{}"
 TX_URL = "{}://{}:{}/api/explorer/v1/transactions"
 WEBSOCKET_URI = "ws://{}:{}/api/explorer/v1/blocks/subscribe"
+
 
 class Subscriber(object):
     def __init__(self, address, port):
@@ -74,7 +74,7 @@ class Subscriber(object):
 
 class ExonumClient(object):
     def __init__(
-        self, hostname, public_api_port=80, private_api_port=81, ssl=False
+            self, hostname, public_api_port=80, private_api_port=81, ssl=False
     ):
         # TODO add a warning that object should be created via "with".
         self.schema = "https" if ssl else "http"
@@ -86,7 +86,7 @@ class ExonumClient(object):
 
     def __enter__(self):
         self.initialize()
-        
+
         return self
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
@@ -106,7 +106,6 @@ class ExonumClient(object):
 
         # Add directory with exonum_modules into python path.
         sys.path.append(self.proto_dir)
-
 
     def deinitialize(self):
         # Remove generated temporary directory.
@@ -175,7 +174,7 @@ class ExonumClient(object):
             )
         )
 
-    """Send transaction into Exonum node via REST IPI. 
+    """Send transaction into Exonum node via REST IPI.
         msg - A prepared message
     """
 
@@ -199,7 +198,7 @@ class ExonumClient(object):
         )
 
     def get_blocks(
-        self, count, latest=None, skip_empty_blocks=False, add_blocks_time=False
+            self, count, latest=None, skip_empty_blocks=False, add_blocks_time=False
     ):
         blocks_url = BLOCKS_URL.format(self.schema, self.hostname, self.public_api_port)
         params = dict()

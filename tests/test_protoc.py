@@ -1,10 +1,10 @@
 import unittest
-import sys
 import os
 import tempfile
 import shutil
 
 from exonum.protoc import Protoc
+
 
 class TestProtoc(unittest.TestCase):
     def setUp(self):

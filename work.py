@@ -1,6 +1,7 @@
 def event_handler(data):
     print(data)
 
+
 def example_run():
     # Example of usage.
 
@@ -43,7 +44,7 @@ def example_run():
         print(response.json())
 
         # Wait for new blocks
-        
+
         with client.create_subscriber() as subscriber:
             subscriber.wait_for_new_block()
             subscriber.wait_for_new_block()
@@ -68,7 +69,7 @@ def example_run():
         time.sleep(1)
 
         # Wait for new blocks
-        
+
         with client.create_subscriber() as subscriber:
             subscriber.wait_for_new_block()
             subscriber.wait_for_new_block()
@@ -121,6 +122,7 @@ def example_run():
         print(client.user_agent())
 
         subscriber.stop()
+
 
 def main():
     example_run()
