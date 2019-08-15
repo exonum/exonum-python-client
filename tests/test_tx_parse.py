@@ -1,102 +1,96 @@
 import copy
-
+import unittest
 from pysodium import crypto_hash_sha256, crypto_sign_keypair
-from tests.proto_test.timestamping_pb2 import TxTimestamp
-from tests.proto_test.helpers_pb2 import Hash, PublicKey
-from exonum.message import ExonumMessage
+import sys
+import os
 
-HASH_DATA = '1'
-DATA_HASH = crypto_hash_sha256(HASH_DATA.encode())
-SERVICE_ID = 130
-MESSAGE_ID = 1
+from exonum.message import ExonumMessage, MessageGenerator
+from exonum.module_manager import ModuleManager
 
+class TestTxParse(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        # Add folder with pre-compiled protobuf messages to the path (so it can be imported)
+        sys.path.append(os.path.abspath('tests/proto_dir'))
 
-def test_tx_success_parse():
-    # Gen init data
-    keys = crypto_sign_keypair()
+        # Unload any previously loaded `exonum_main` modules from test_exonum_client
+        loaded_modules = list(sys.modules.keys())
+        for module in loaded_modules:
+            if module.startswith('exonum_modules'):
+                del sys.modules[module]
 
-    # Prepare original message
-    hash_message = Hash()
-    hash_message.data = DATA_HASH
-    pk_message = PublicKey()
-    pk_message.data = keys[0]
-    message = TxTimestamp()
-    message.content_hash.CopyFrom(hash_message)
-    message.owners.extend([pk_message])
+        # Gen init data
+        keys = crypto_sign_keypair()
 
-    # Create original message
-    exonum_message = ExonumMessage(SERVICE_ID, MESSAGE_ID, message)
-    exonum_message.sign(keys)
+        # Prepare original message
+        cryptocurrency_service_name = 'exonum-cryptocurrency-advanced:0.11.0'
 
-    # Parse message
-    parsed_message = ExonumMessage.from_hex(exonum_message.raw.hex(), TxTimestamp)
-    assert parsed_message.get_author() == keys[0]
-    assert parsed_message.data.content_hash.data == data_hash
-    assert parsed_message.service_id == SERVICE_ID
-    assert parsed_message.message_id == MESSAGE_ID
-    assert parsed_message.data.owners[0].data == keys[0]
+        cryptocurrency_module = ModuleManager.import_service_module(cryptocurrency_service_name, 'service')
 
+        cryptocurrency_message_generator = MessageGenerator(1024, cryptocurrency_service_name)
 
-def test_tx_fail_parse():
-    # Gen init data
-    data_hash = crypto_hash_sha256(HASH_DATA.encode())
-    keys = crypto_sign_keypair()
+        create_wallet_alice = cryptocurrency_module.CreateWallet()
+        create_wallet_alice.name = 'Alice'
 
-    # Prepare original message
-    hash_message = Hash()
-    hash_message.data = DATA_HASH
-    pk_message = PublicKey()
-    pk_message.data = keys[0]
-    message = TxTimestamp()
-    message.content_hash.CopyFrom(hash_message)
-    message.owners.extend([pk_message])
+        # Create original message
+        create_wallet_alice_tx = cryptocurrency_message_generator.create_message('CreateWallet', create_wallet_alice)
+        create_wallet_alice_tx.sign(keys)
 
-    # Create original message
-    exonum_message = ExonumMessage(SERVICE_ID, MESSAGE_ID, message)
-    exonum_message.sign(keys)
+        cls.keys = keys
+        cls.exonum_message = create_wallet_alice_tx
+        cls.cryptocurrency_service_name = cryptocurrency_service_name
 
-    # Parse message
-    corrupted_tx = '1' + exonum_message.raw.hex()
-    parsed_message = ExonumMessage.from_hex(corrupted_tx, TxTimestamp)
-    assert parsed_message is None
+    @classmethod
+    def tearDownClass(self):
+        # Remove protobuf directory from the path.
+        sys.path.remove(os.path.abspath('tests/proto_dir'))
 
+    def test_tx_success_parse(self):
+        exonum_message = self.exonum_message
+        service_name = self.cryptocurrency_service_name
+        
+        # Parse message
+        parsed_message = ExonumMessage.from_hex(exonum_message.raw.hex(), service_name, 'CreateWallet')
 
-def test_tx_validation():
-    # Gen init data
-    keys = crypto_sign_keypair()
-    fake_keys = crypto_sign_keypair()
+        self.assertEqual(parsed_message.get_author(), TestTxParse.keys[0])
+        self.assertEqual(parsed_message.service_id, exonum_message.service_id)
+        self.assertEqual(parsed_message.message_id, exonum_message.message_id)
+        self.assertEqual(parsed_message.hash(), exonum_message.hash())
 
-    # Prepare original message
-    hash_message = Hash()
-    hash_message.data = DATA_HASH
-    pk_message = PublicKey()
-    pk_message.data = keys[0]
-    message = TxTimestamp()
-    message.content_hash.CopyFrom(hash_message)
-    message.owners.extend([pk_message])
+    def test_tx_fail_parse(self):
+        exonum_message = self.exonum_message
+        service_name = self.cryptocurrency_service_name
 
-    # Create original message
-    exonum_message = ExonumMessage(SERVICE_ID, MESSAGE_ID, message)
-    exonum_message.sign(keys)
+        # Parse message
+        corrupted_message = '1a' + exonum_message.raw.hex()
+        parsed_message = ExonumMessage.from_hex(corrupted_message, service_name, 'CreateWallet')
 
-    # Checks that origin message validates right
-    assert exonum_message.validate() is True
+        self.assertIsNone(parsed_message)
 
-    # Check corrupted author message
-    corrupt_message = copy.deepcopy(exonum_message)
-    corrupt_message.author = fake_keys[0]
-    assert corrupt_message.validate() is False
+    def test_tx_validation(self):
+        exonum_message = self.exonum_message
 
-    # Check corrupted signature message
-    corrupt_message = copy.deepcopy(exonum_message)
-    sig = bytearray(corrupt_message.signature)
-    sig[0] = sig[0] ^ 1
-    corrupt_message.signature = bytes(sig)
-    assert corrupt_message.validate() is False
+        # Gen init data
+        fake_keys = crypto_sign_keypair()
 
-    # Check corrupted payload message
-    corrupt_message = copy.deepcopy(exonum_message)
-    raw = bytearray(corrupt_message.raw)
-    raw[0] = raw[0] ^ 1
-    corrupt_message.raw = bytes(raw)
-    assert corrupt_message.validate() is False
+        # Checks that origin message validates right
+        self.assertTrue(exonum_message.validate())
+
+        # Check corrupted author message
+        corrupt_message = copy.deepcopy(exonum_message)
+        corrupt_message.author = fake_keys[0]
+        self.assertFalse(corrupt_message.validate())
+
+        # Check corrupted signature message
+        corrupt_message = copy.deepcopy(exonum_message)
+        sig = bytearray(corrupt_message.signature)
+        sig[0] = sig[0] ^ 1
+        corrupt_message.signature = bytes(sig)
+        self.assertFalse(corrupt_message.validate())
+
+        # Check corrupted payload message
+        corrupt_message = copy.deepcopy(exonum_message)
+        raw = bytearray(corrupt_message.raw)
+        raw[0] = raw[0] ^ 1
+        corrupt_message.raw = bytes(raw)
+        self.assertFalse(corrupt_message.validate())

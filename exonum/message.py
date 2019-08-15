@@ -3,7 +3,9 @@ import codecs
 from struct import pack, unpack
 
 from pysodium import crypto_sign_keypair, crypto_hash_sha256, crypto_sign_detached, crypto_sign_verify_detached
-from importlib import import_module
+from google.protobuf.message import DecodeError as ProtobufDecodeError
+
+from .module_manager import ModuleManager
 
 MINIMUM_TX_BODY_LENGTH_HEX = 204  # It calculated as first 76 metadata bytes plus signature with 128 bytes length
 PUBLIC_KEY_LENGTH_HEX = 64
@@ -15,55 +17,70 @@ PROTO_MESSAGE_START_POSITION_TX = 76
 U16_LENGTH_HEX = 4
 
 
-class MessageGenerator(object):
-    def __init__(self, pb_module, service_id):
+class MessageGenerator:
+    def __init__(self, service_id, service_name):
         self.service_id = service_id
+
+        self.service_name = service_name
         self.message_ids = dict()
-        self.module = pb_module
-        for i, message in enumerate(pb_module.DESCRIPTOR.message_types_by_name):
+
+        self.service_module = ModuleManager.import_service_module(service_name, 'service')
+        for i, message in enumerate(self.service_module.DESCRIPTOR.message_types_by_name):
             self.message_ids[message] = i
 
-    def create_message(self, tx_name, **kwargs):
-        cls = getattr(import_module(self.module.__name__), tx_name)
-        msg = cls()
-        for field, value in kwargs.items():
-            setattr(msg, field, value)
-
+    def create_message(self, tx_name, msg):
         return ExonumMessage(self.service_id, self.message_ids[tx_name], msg)
 
 
-class ExonumMessage(object):
+class ExonumMessage:
     def __init__(self, service_id, message_id, msg):
         self.author = None
         self.service_id = service_id
         self.message_id = message_id
-        self.data = msg
+        self.msg = msg
         self.payload = None
         self.signature = None
         self.raw = bytearray()
 
+        self._build_message()
+
+    def _build_message(self):
+        runtime_mod = ModuleManager.import_main_module('runtime')
+        consensus_mod = ModuleManager.import_main_module('consensus')
+
+        serialized_msg = self.msg.SerializeToString()
+
+        call_info = runtime_mod.CallInfo()
+        call_info.instance_id = self.service_id
+        call_info.method_id = self.message_id
+
+        any_tx = runtime_mod.AnyTx()
+        any_tx.call_info.CopyFrom(call_info)
+        any_tx.arguments = serialized_msg
+
+        exonum_message = consensus_mod.ExonumMessage()
+        exonum_message.any_tx.CopyFrom(any_tx)
+
+        self.payload = exonum_message.SerializeToString()
+
     def sign(self, keys):
-        # Makes possible resign same message
-        self.raw = bytearray()
         pk, sk = keys
         self.author = pk
 
-        self.payload = self.data.SerializeToString()
+        consensus_mod = ModuleManager.import_main_module('consensus')
+        helpers_mod = ModuleManager.import_main_module('helpers')
 
-        self.raw.extend(pk)
-        self.raw.extend(pack("<B", 0))  # 0 and 0 it's tag and class of TX message
-        self.raw.extend(pack("<B", 0))
-        self.raw.extend(pack("<H", self.service_id))
-        self.raw.extend(pack("<H", self.message_id))
-        self.raw.extend(self.payload)
-        # Make same field as for parsing
-        self.signature = crypto_sign_detached(bytes(self.raw), sk)
-        self.raw.extend(
-            self.signature
-        )  # calculating signature
+        signed_message = consensus_mod.SignedMessage()
+        signed_message.payload = self.payload
+        signed_message.author.CopyFrom(helpers_mod.PublicKey(data=pk))
 
-        # Makes all internal bytes types equal bytes
-        self.raw = bytes(self.raw)
+        signature = bytes(crypto_sign_detached(signed_message.payload, sk))
+
+        signed_message.signature.CopyFrom(helpers_mod.Signature(data=signature))
+
+        self.signature = signature
+
+        self.raw = bytes(signed_message.SerializeToString())
         return self
 
     def to_json(self):
@@ -83,40 +100,51 @@ class ExonumMessage(object):
         :return: bool
         """
         try:
-            crypto_sign_verify_detached(self.signature, self.raw[:-SIGNATURE_LENGTH_BYTES], self.author)
-        except ValueError:
+            consensus_mod = ModuleManager.import_main_module('consensus')
+
+            signed_msg = consensus_mod.SignedMessage()
+            signed_msg.ParseFromString(self.raw)
+
+            crypto_sign_verify_detached(self.signature, signed_msg.payload, self.author)
+        except (ProtobufDecodeError, ValueError):
             return False
         return True
 
-    @classmethod
-    def from_hex(cls, tx_hex, proto_class, min_length=MINIMUM_TX_BODY_LENGTH_HEX):
-        if len(tx_hex) < min_length:
-            return None
+    @staticmethod
+    def from_hex(tx_hex, service_name, tx_name):
         try:
-            author = bytes.fromhex(tx_hex[:PUBLIC_KEY_LENGTH_HEX])
-            service_id = unpack("<H", codecs.decode(tx_hex[SERVICE_ID_START_POSITION_TX:
-                                                           SERVICE_ID_START_POSITION_TX +
-                                                           U16_LENGTH_HEX], "hex"))[0]
-            message_id = unpack("<H", codecs.decode(tx_hex[MESSAGE_ID_START_POSITION_TX:
-                                                           MESSAGE_ID_START_POSITION_TX +
-                                                           U16_LENGTH_HEX], "hex"))[0]
-            signature = bytes.fromhex(tx_hex[-SIGNATURE_LENGTH_HEX:])
-            payload = bytes.fromhex(tx_hex[PROTO_MESSAGE_START_POSITION_TX:
-                                           -SIGNATURE_LENGTH_HEX])
-            raw = bytes.fromhex(tx_hex)
-        except (ValueError, IndexError):
+            consensus_mod = ModuleManager.import_main_module('consensus')
+            runtime_mod = ModuleManager.import_main_module('runtime')
+            service_mod = ModuleManager.import_service_module(service_name, 'service')
+            transaction_class = getattr(service_mod, tx_name)
+
+            tx_raw = bytes.fromhex(tx_hex)
+
+            signed_msg = consensus_mod.SignedMessage()
+            signed_msg.ParseFromString(tx_raw)
+
+            exonum_msg = consensus_mod.ExonumMessage()
+            exonum_msg.ParseFromString(signed_msg.payload)
+
+            any_tx = exonum_msg.any_tx
+
+            decoded_msg = transaction_class()
+            decoded_msg.ParseFromString(any_tx.arguments)
+
+            # TODO check correctness of the data getting
+            service_id = any_tx.call_info.instance_id
+            message_id = any_tx.call_info.method_id
+            signature = signed_msg.signature.data[:]
+            author = signed_msg.author.data[:]
+
+            exonum_message = ExonumMessage(service_id, message_id, decoded_msg)
+            exonum_message.signature = signature
+            exonum_message.author = author
+            exonum_message.payload = signed_msg.payload
+            exonum_message.raw = tx_raw
+            return exonum_message
+        except ProtobufDecodeError:
             return None
-
-        message = proto_class()
-        # Possible throws exception
-        message.ParseFromString(payload)
-
-        exonum_message = ExonumMessage(service_id, message_id, message)
-        exonum_message.signature = signature
-        exonum_message.author = author
-        exonum_message.payload = payload
-        exonum_message.raw = raw
-        return exonum_message
 
 
 def gen_keypair():
