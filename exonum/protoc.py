@@ -70,8 +70,7 @@ class Protoc:
         if code == 0:
             print("Proto files were compiled successfully")
         else:
-            out, err = protoc_process.communicate()
-            print("Error acquired while compiling files: {}".format(err.decode("utf-8")))
+            print("Error acquired while compiling files: {}".format(stderr.decode("utf-8")))
 
         modules = [proto_path.replace(".proto", "") for proto_path in proto_files]
         for file in filter(lambda f: f.endswith(".py"), os.listdir(path_out)):
