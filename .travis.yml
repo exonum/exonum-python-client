@@ -15,9 +15,11 @@ jobs:
       install: pip install pycodestyle
       script: pycodestyle . --max-line-length=120 --exclude="*_pb2.py"
     - name: tests
-      apt_packages:
-        - libsodium-dev
-        - libprotobuf-dev
-        - protobuf-compiler
+      addons:
+        apt:
+          packages:
+            - libsodium-dev
+            - libprotobuf-dev
+            - protobuf-compiler
       install: pip install --no-binary=protobuf protobuf pysodium requests websocket
       script: python -m unittest
