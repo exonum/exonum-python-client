@@ -1,5 +1,7 @@
 # Exonum Python Light Client
 
+[![Travis Build Status](https://travis-ci.com/exonum/python-client.svg?token=DyxSqsiCaQvPg4SYLXqu&branch=master)](https://travis-ci.com/exonum/python-client)
+
 Python client for [Exonum Framework][exonum].
 
 ## Overview
