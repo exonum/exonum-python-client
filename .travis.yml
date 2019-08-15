@@ -17,6 +17,8 @@ jobs:
     - name: tests
       addons:
         apt:
+          sources:
+            - sourceline: 'ppa:maarten-fonville/protobuf'
           packages:
             - libsodium-dev
             - libprotobuf-dev
