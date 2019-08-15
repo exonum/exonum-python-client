@@ -4,6 +4,7 @@ import os
 
 from exonum.module_manager import ModuleManager
 
+
 class TestModuleManager(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

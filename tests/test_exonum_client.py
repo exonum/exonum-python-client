@@ -15,6 +15,7 @@ EXONUM_URL_BASE = '{}://{}:{}/'
 SYSTEM_ENDPOINT_POSTFIX = 'api/system/v1/{}'
 SERVICE_ENDPOINT_POSTFIX = 'api/services/{}/v1/{}'
 
+
 def proto_sources_response(service):
     from requests.models import Response
 
@@ -28,9 +29,10 @@ def proto_sources_response(service):
 
         return response
 
+
 def ok_response():
     from requests.models import Response
-    
+
     response = Response()
     response.code = 'OK'
     response.status_code = 200
@@ -48,7 +50,6 @@ def mock_requests_get(url, params=None):
     mempool_endpoint = exonum_public_base + SYSTEM_ENDPOINT_POSTFIX.format('mempool')
     user_agent_endpoint = exonum_public_base + SYSTEM_ENDPOINT_POSTFIX.format('user_agent')
 
-
     responses = {
         # Proto sources endpoints
 
@@ -65,6 +66,7 @@ def mock_requests_get(url, params=None):
     }
 
     return responses[(url, str(params))]
+
 
 class TestExonumClient(unittest.TestCase):
     # This test case replaces get function from exonum client with the mock one.
@@ -100,7 +102,7 @@ class TestExonumClient(unittest.TestCase):
                                      private_api_port=EXONUM_PRIVATE_PORT)
         exonum_client.initialize()
         proto_dir = exonum_client.proto_dir
-        
+
         self.assertTrue(os.path.isdir(proto_dir))
         self.assertTrue(os.path.exists(proto_dir))
         self.assertTrue(proto_dir in sys.path)
@@ -172,7 +174,6 @@ class TestExonumClient(unittest.TestCase):
             expected_private_endpoint = exonum_private_base + SERVICE_ENDPOINT_POSTFIX.format(service, endpoint)
 
             self.assertEqual(got_endpoint, expected_private_endpoint)
-
 
     # TODO add more tests;
     # send_transaction

@@ -4,14 +4,17 @@ import subprocess
 
 PROTOC_ENV_NAME = "PROTOC"
 
+
 def find_protoc():
     if PROTOC_ENV_NAME in os.environ:
         return os.getenv(PROTOC_ENV_NAME)
     else:
         return shutil.which("protoc")
 
+
 def find_proto_files(path):
     return [file for file in os.listdir(path) if file.endswith(".proto")]
+
 
 class Protoc:
     def __init__(self):
@@ -54,7 +57,7 @@ class Protoc:
                 "--proto_path={}".format(path_in),
                 "--python_out={}".format(path_out),
             ]
-        
+
         proto_files = find_proto_files(path_in)
         if include:
             proto_files.extend(find_proto_files(include))
