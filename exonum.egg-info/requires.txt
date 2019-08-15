@@ -1,5 +1,0 @@
-protobuf
-google
-pysodium
-requests
-websocket-client-py3

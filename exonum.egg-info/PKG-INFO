@@ -1,9 +1,0 @@
-Metadata-Version: 1.2
-Name: exonum
-Version: 0.2
-Summary: Exonum Python Light Client
-Home-page: https://github.com/exonum/python-client/
-License: UNKNOWN
-Description: UNKNOWN
-Platform: UNKNOWN
-Requires-Python: >=3.4
