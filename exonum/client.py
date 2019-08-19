@@ -7,7 +7,7 @@ from .protobuf_loader import ProtobufLoader
 
 BLOCK_URL = "{}://{}:{}/api/explorer/v1/block?height={}"
 BLOCKS_URL = "{}://{}:{}/api/explorer/v1/blocks"
-SERVICE_URL = "{}://{}:{}/api/services/{}/v1/"
+SERVICE_URL = "{}://{}:{}/api/services/{}/"
 SYSTEM_URL = "{}://{}:{}/api/system/v1/{}"
 TX_URL = "{}://{}:{}/api/explorer/v1/transactions"
 WEBSOCKET_URI = "ws://{}:{}/api/explorer/v1/blocks/subscribe"
@@ -152,7 +152,7 @@ class ExonumClient(object):
             + tx_hash
         )
 
-    def system_endpoint(self, service_name, sub_uri, private=False):
+    def service_endpoint(self, service_name, sub_uri, private=False):
         port = self.public_api_port if not private else self.private_api_port
 
         service_url = SERVICE_URL.format(
@@ -162,7 +162,7 @@ class ExonumClient(object):
         return service_url + sub_uri
 
     def get_service(self, service_name, sub_uri, private=False):
-        return get(self.system_endpoint(service_name, sub_uri, private))
+        return get(self.service_endpoint(service_name, sub_uri, private))
 
     def health_info(self):
         return get(
