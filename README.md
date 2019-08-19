@@ -55,28 +55,34 @@ pip3 -e install python-client
 ```python
 from exonum import ExonumClient, MessageGenerator, ModuleManager, gen_keypair
 
-with ExonumClient(hostname="localhost", public_api_port=8080, private_api_port=8081, ssl=False) as client:
-    ...
-```
-
-Since client acquires resources on initialization, create Client via context manager is recommended.
-Otherwise you should initialize and deinitialize client manually:
-
-```python
 client = ExonumClient(hostname="localhost", public_api_port=8080, private_api_port=8081, ssl=False)
-client.initialize()
-# ... Some usage
-client.deinitialize()
 ```
 
 ### Compiling Proto Files
 
-To compile proto files into the Python analogues we need to run the
-following code:
+To compile proto files into the Python analogues we need a protobuf loader.
 
 ```python
-client.load_main_proto_files() # Load and compile main proto files, such as `runtime.proto`, `consensus.proto`, etc.
-client.load_service_proto_files(runtime_id=0, service_name='exonum-supervisor:0.11.0') # Same for specific service.
+with client.protobuf_loader() as loader:
+    #  Your code goes here.
+```
+
+Since loader acquires resources on initialization, creating via context manager is recommended.
+Otherwise you should initialize and deinitialize client manually:
+
+```python
+loader = client.protobuf_loader()
+loader.initialize()
+# ... Some usage
+loader.deinitialize()
+```
+
+
+Then we need to run the following code:
+
+```python
+loader.load_main_proto_files()  # Load and compile main proto files, such as `runtime.proto`, `consensus.proto`, etc.
+loader.load_service_proto_files(runtime_id=0, service_name='exonum-supervisor:0.11.0')  # Same for specific service.
 ```
 
 - runtime_id=0 here means, that service works in Rust runtime.
@@ -88,7 +94,7 @@ The following example shows how to create a transaction message.
 keys = gen_keypair()
 
 cryptocurrency_service_name = 'exonum-cryptocurrency-advanced:0.11.0'
-client.load_service_proto_files(runtime_id=0, cryptocurrency_service_name)
+loader.load_service_proto_files(runtime_id=0, cryptocurrency_service_name)
 
 cryptocurrency_module = ModuleManager.import_service_module(cryptocurrency_service_name, 'service')
 
