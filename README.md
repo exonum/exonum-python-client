@@ -82,7 +82,7 @@ Then we need to run the following code:
 
 ```python
 loader.load_main_proto_files()  # Load and compile main proto files, such as `runtime.proto`, `consensus.proto`, etc.
-loader.load_service_proto_files(runtime_id=0, service_name='exonum-supervisor:0.11.0')  # Same for specific service.
+loader.load_service_proto_files(runtime_id=0, service_name='exonum-supervisor:0.12.0')  # Same for specific service.
 ```
 
 - runtime_id=0 here means, that service works in Rust runtime.
