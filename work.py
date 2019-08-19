@@ -14,7 +14,7 @@ def example_run():
     client = ExonumClient(hostname='127.0.0.1', public_api_port=8080, private_api_port=8081)
     with client.protobuf_loader() as loader:
         loader.load_main_proto_files()
-        loader.load_service_proto_files(0, 'exonum-supervisor:0.11.0')
+        loader.load_service_proto_files(0, 'exonum-supervisor:0.12.0')
 
         main_module = ModuleManager.import_main_module('consensus')
 
