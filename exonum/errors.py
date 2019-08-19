@@ -1,0 +1,2 @@
+class ProtobufLoaderEntityExists(Exception):
+    pass

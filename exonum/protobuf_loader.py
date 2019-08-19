@@ -5,11 +5,18 @@ import tempfile
 import re
 
 from .protoc import Protoc
+from .errors import ProtobufLoaderEntityExists
 
 
 class ProtobufLoader:
+    entity = None
+
     def __init__(self, client):
         # TODO add a warning that object should be created via "with".
+        if ProtobufLoader.entity is not None:
+            raise ProtobufLoaderEntityExists("There is already a ProtobufLoader entity created")
+
+        ProtobufLoader.entity = self
         self.client = client
         self.protoc = Protoc()
 
@@ -37,6 +44,9 @@ class ProtobufLoader:
         sys.path.append(self.proto_dir)
 
     def deinitialize(self):
+        # Mark entity as removed.
+        ProtobufLoader.entity = None
+
         # Remove generated temporary directory.
         sys.path.remove(self.proto_dir)
         shutil.rmtree(self.proto_dir)

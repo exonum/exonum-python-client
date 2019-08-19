@@ -5,6 +5,7 @@ import os
 
 from exonum.client import ExonumClient
 from exonum.module_manager import ModuleManager
+from exonum.errors import ProtobufLoaderEntityExists
 
 EXONUM_PROTO = 'http'
 EXONUM_IP = '127.0.0.1'
@@ -114,6 +115,17 @@ class TestProtobufLoader(unittest.TestCase):
         self.assertFalse(os.path.isdir(proto_dir))
         self.assertFalse(os.path.exists(proto_dir))
         self.assertFalse(proto_dir in sys.path)
+
+    def test_protobuf_loader_raises_when_created_twice(self):
+        # Test that if we will try to create more than one ProtobufLoader entity
+        # exception will be raised.
+
+        client = ExonumClient(hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT,
+                              private_api_port=EXONUM_PRIVATE_PORT)
+
+        with client.protobuf_loader() as loader:
+            with self.assertRaises(ProtobufLoaderEntityExists):
+                client.protobuf_loader()
 
     @patch('exonum.client.get', new=mock_requests_get)
     def test_main_sources_download(self):
