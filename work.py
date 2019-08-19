@@ -11,9 +11,10 @@ def example_run():
     import time
     import requests
 
-    with ExonumClient(hostname='127.0.0.1', public_api_port=8080, private_api_port=8081) as client:
-        client.load_main_proto_files()
-        client.load_service_proto_files(0, 'exonum-supervisor:0.11.0')
+    client = ExonumClient(hostname='127.0.0.1', public_api_port=8080, private_api_port=8081)
+    with client.protobuf_loader() as loader:
+        loader.load_main_proto_files()
+        loader.load_service_proto_files(0, 'exonum-supervisor:0.11.0')
 
         main_module = ModuleManager.import_main_module('consensus')
 
@@ -79,9 +80,10 @@ def example_run():
 
         # Work with cryptocurrency
 
-        keys = gen_keypair()
+        keys_1 = gen_keypair()
+        keys_2 = gen_keypair()
 
-        client.load_service_proto_files(0, cryptocurrency_service_name)
+        loader.load_service_proto_files(0, cryptocurrency_service_name)
 
         cryptocurrency_module = ModuleManager.import_service_module(cryptocurrency_service_name, 'service')
 
@@ -90,16 +92,16 @@ def example_run():
         # Create wallet for Alice
 
         create_wallet_alice = cryptocurrency_module.CreateWallet()
-        create_wallet_alice.name = 'Alice'
+        create_wallet_alice.name = 'Alice1'
         create_wallet_alice_tx = cryptocurrency_message_generator.create_message('CreateWallet', create_wallet_alice)
-        create_wallet_alice_tx.sign(keys)
+        create_wallet_alice_tx.sign(keys_1)
 
         # Create wallet for Bob
 
         create_wallet_bob = cryptocurrency_module.CreateWallet()
-        create_wallet_bob.name = 'Bob'
+        create_wallet_bob.name = 'Bob2'
         create_wallet_bob_tx = cryptocurrency_message_generator.create_message('CreateWallet', create_wallet_bob)
-        create_wallet_bob_tx.sign(keys)
+        create_wallet_bob_tx.sign(keys_2)
 
         responses = client.send_transactions([create_wallet_alice_tx, create_wallet_bob_tx])
 
