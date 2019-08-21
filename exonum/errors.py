@@ -4,3 +4,7 @@ class ProtobufLoaderEntityExists(Exception):
 
 class MalformedProofError(Exception):
     pass
+
+
+class ListProofVerificationError(Exception):
+    pass

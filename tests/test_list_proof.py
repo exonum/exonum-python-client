@@ -19,7 +19,8 @@ class TestProofParser(unittest.TestCase):
             'right': 'c6f5873ab0f93c8be05e4e412cfc307fd98e58c9da9e6f582130882e672eb742'
         }
 
-        proof = ProofParser.parse(json_proof)
+        proof_parser = ProofParser(bytes.fromhex)
+        proof = proof_parser.parse(json_proof)
 
         expected_proof = Left(left=Leaf(val='2dc17ca9c00d29ecff475d92f9b0c8885350d7b783e703b8ad21ae331d134496'),
                               right='c6f5873ab0f93c8be05e4e412cfc307fd98e58c9da9e6f582130882e672eb742')
@@ -33,7 +34,8 @@ class TestProofParser(unittest.TestCase):
             }
         }
 
-        proof = ProofParser.parse(json_proof)
+        proof_parser = ProofParser(bytes.fromhex)
+        proof = proof_parser.parse(json_proof)
 
         expected_proof = Right(left='88e24b8560daa0fe0333b3e037e727bfa1bc9763af9b8f13bc9d430aea5d1e56',
                                right=Leaf(val='c9d662f802867504736f7bb027408d00f118802dd4b9d904b456a1b5cc631c92'))
@@ -50,7 +52,8 @@ class TestProofParser(unittest.TestCase):
             }
         }
 
-        proof = ProofParser.parse(json_proof)
+        proof_parser = ProofParser(bytes.fromhex)
+        proof = proof_parser.parse(json_proof)
 
         expected_proof = Full(left=Leaf(val='2dc17ca9c00d29ecff475d92f9b0c8885350d7b783e703b8ad21ae331d134496'),
                               right=Leaf(val='c6f5873ab0f93c8be05e4e412cfc307fd98e58c9da9e6f582130882e672eb742'))
@@ -63,7 +66,8 @@ class TestProofParser(unittest.TestCase):
             'hash': '5ba859b4d1799cb27ece9db8f7a76a50fc713a5d9d22f753eca42172996a88f9'
         }
 
-        proof = ProofParser.parse(json_proof)
+        proof_parser = ProofParser(bytes.fromhex)
+        proof = proof_parser.parse(json_proof)
 
         expected_proof = Absent(length=5, hash='5ba859b4d1799cb27ece9db8f7a76a50fc713a5d9d22f753eca42172996a88f9')
 
@@ -100,6 +104,8 @@ class TestProofParser(unittest.TestCase):
             }
         ]
 
+        proof_parser = ProofParser(bytes.fromhex)
+
         for malformed_proof in malformed_proofs:
             with self.assertRaises(MalformedProofError):
-                proof = ProofParser.parse(malformed_proof)
+                proof = proof_parser.parse(malformed_proof)
