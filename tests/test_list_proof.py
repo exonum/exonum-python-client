@@ -10,66 +10,75 @@ Leaf = ListProof.Leaf
 Absent = ListProof.Absent
 
 
+def to_hex(hex_data):
+    return bytes.fromhex(hex_data)
+
+
 class TestProofParser(unittest.TestCase):
+    def setUp(self):
+        self.HASH_A = '2dc17ca9c00d29ecff475d92f9b0c8885350d7b783e703b8ad21ae331d134496'
+        self.HASH_B = 'c6f5873ab0f93c8be05e4e412cfc307fd98e58c9da9e6f582130882e672eb742'
+        self.HASH_A_HEX = to_hex(self.HASH_A)
+        self.HASH_B_HEX = to_hex(self.HASH_B)
+
     def test_parse_simple(self):
         json_proof = {
             'left': {
-                'val': '2dc17ca9c00d29ecff475d92f9b0c8885350d7b783e703b8ad21ae331d134496'
+                'val': self.HASH_A
             },
-            'right': 'c6f5873ab0f93c8be05e4e412cfc307fd98e58c9da9e6f582130882e672eb742'
+            'right': self.HASH_B
         }
 
         proof_parser = ProofParser(bytes.fromhex)
         proof = proof_parser.parse(json_proof)
 
-        expected_proof = Left(left=Leaf(val='2dc17ca9c00d29ecff475d92f9b0c8885350d7b783e703b8ad21ae331d134496'),
-                              right='c6f5873ab0f93c8be05e4e412cfc307fd98e58c9da9e6f582130882e672eb742')
+        expected_proof = Left(left=Leaf(val=self.HASH_A, val_raw=self.HASH_A_HEX), right=self.HASH_B_HEX)
 
         self.assertEqual(proof, expected_proof)
 
         json_proof = {
-            'left': '88e24b8560daa0fe0333b3e037e727bfa1bc9763af9b8f13bc9d430aea5d1e56',
+            'left': self.HASH_A,
             'right': {
-                'val': 'c9d662f802867504736f7bb027408d00f118802dd4b9d904b456a1b5cc631c92'
+                'val': self.HASH_B
             }
         }
 
         proof_parser = ProofParser(bytes.fromhex)
         proof = proof_parser.parse(json_proof)
 
-        expected_proof = Right(left='88e24b8560daa0fe0333b3e037e727bfa1bc9763af9b8f13bc9d430aea5d1e56',
-                               right=Leaf(val='c9d662f802867504736f7bb027408d00f118802dd4b9d904b456a1b5cc631c92'))
+        expected_proof = Right(left=self.HASH_A_HEX,
+                               right=Leaf(val=self.HASH_B, val_raw=self.HASH_B_HEX))
 
         self.assertEqual(proof, expected_proof)
 
     def test_parse_full(self):
         json_proof = {
             'left': {
-                'val': '2dc17ca9c00d29ecff475d92f9b0c8885350d7b783e703b8ad21ae331d134496'
+                'val': self.HASH_A
             },
             'right': {
-                'val': 'c6f5873ab0f93c8be05e4e412cfc307fd98e58c9da9e6f582130882e672eb742'
+                'val': self.HASH_B
             }
         }
 
         proof_parser = ProofParser(bytes.fromhex)
         proof = proof_parser.parse(json_proof)
 
-        expected_proof = Full(left=Leaf(val='2dc17ca9c00d29ecff475d92f9b0c8885350d7b783e703b8ad21ae331d134496'),
-                              right=Leaf(val='c6f5873ab0f93c8be05e4e412cfc307fd98e58c9da9e6f582130882e672eb742'))
+        expected_proof = Full(left=Leaf(val=self.HASH_A, val_raw=self.HASH_A_HEX),
+                              right=Leaf(val=self.HASH_B, val_raw=self.HASH_B_HEX))
 
         self.assertEqual(proof, expected_proof)
 
     def test_parse_absent(self):
         json_proof = {
             'length': 5,
-            'hash': '5ba859b4d1799cb27ece9db8f7a76a50fc713a5d9d22f753eca42172996a88f9'
+            'hash': self.HASH_A
         }
 
         proof_parser = ProofParser(bytes.fromhex)
         proof = proof_parser.parse(json_proof)
 
-        expected_proof = Absent(length=5, hash='5ba859b4d1799cb27ece9db8f7a76a50fc713a5d9d22f753eca42172996a88f9')
+        expected_proof = Absent(length=5, hash=self.HASH_A_HEX)
 
         self.assertEqual(proof, expected_proof)
 
