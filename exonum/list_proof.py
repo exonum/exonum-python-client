@@ -28,23 +28,6 @@ def is_field_int(json, field):
 
 
 class ProofParser:
-    @staticmethod
-    def parse(json):
-        if is_dict(json):
-            for kind, condition in ListProof.NODE_CONDITIONS.items():
-                if condition(json):
-                    return ListProof.NODE_FACTORY[kind](json)
-
-        raise MalformedProofError('Received malformed proof: {}'.format(json))
-
-
-class ListProof:
-    Left = collections.namedtuple('Left', ['left', 'right'])
-    Right = collections.namedtuple('Right', ['left', 'right'])
-    Full = collections.namedtuple('Full', ['left', 'right'])
-    Leaf = collections.namedtuple('Leaf', ['val'])
-    Absent = collections.namedtuple('Absent', ['length', 'hash'])
-
     NODE_CONDITIONS = {
         'Left': lambda json: is_field_dict(json, 'left') and is_field_hash_or_none(json, 'right'),
         'Right': lambda json: is_field_hash(json, 'left') and is_field_dict(json, 'right'),
@@ -60,6 +43,23 @@ class ListProof:
         'Leaf': lambda json: ListProof.Leaf(json['val']),
         'Absent': lambda json: ListProof.Absent(json['length'], json['hash']),
     }
+
+    @staticmethod
+    def parse(json):
+        if is_dict(json):
+            for kind, condition in ProofParser.NODE_CONDITIONS.items():
+                if condition(json):
+                    return ProofParser.NODE_FACTORY[kind](json)
+
+        raise MalformedProofError('Received malformed proof: {}'.format(json))
+
+
+class ListProof:
+    Left = collections.namedtuple('Left', ['left', 'right'])
+    Right = collections.namedtuple('Right', ['left', 'right'])
+    Full = collections.namedtuple('Full', ['left', 'right'])
+    Leaf = collections.namedtuple('Leaf', ['val'])
+    Absent = collections.namedtuple('Absent', ['length', 'hash'])
 
     def __init__(self, proof_json):
         self._proof = ProofParser.parse(proof_json)
