@@ -11,12 +11,16 @@ def is_field_dict(json, field):
     return isinstance(json.get(field), dict)
 
 
-def is_field_str(json, field):
-    return isinstance(json.get(field), str)
+def is_field_hash(json, field):
+    try:
+        field = json.get(field)
+        return isinstance(field, str) and len(field) == 64 and int(field, 16)
+    except ValueError:
+        return False
 
 
-def is_field_str_or_none(json, field):
-    return not json.get(field) or isinstance(json.get(field), str)
+def is_field_hash_or_none(json, field):
+    return not json.get(field) or is_field_hash(json, field)
 
 
 def is_field_int(json, field):
@@ -42,11 +46,11 @@ class ListProof:
     Absent = collections.namedtuple('Absent', ['length', 'hash'])
 
     NODE_CONDITIONS = {
-        'Left': lambda json: is_field_dict(json, 'left') and is_field_str_or_none(json, 'right'),
-        'Right': lambda json: is_field_dict(json, 'left') and is_field_str(json, 'right'),
+        'Left': lambda json: is_field_dict(json, 'left') and is_field_hash_or_none(json, 'right'),
+        'Right': lambda json: is_field_hash(json, 'left') and is_field_dict(json, 'right'),
         'Full': lambda json: is_field_dict(json, 'left') and is_field_dict(json, 'right'),
-        'Leaf': lambda json: is_field_str(json, 'val'),
-        'Absent': lambda json: is_field_int(json, 'length') and is_field_str(json, 'hash'),
+        'Leaf': lambda json: is_field_hash(json, 'val'),
+        'Absent': lambda json: is_field_int(json, 'length') and is_field_hash(json, 'hash'),
     }
 
     NODE_FACTORY = {
