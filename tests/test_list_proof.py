@@ -197,3 +197,16 @@ class TestListProof(unittest.TestCase):
                                   (3, '378ec583913aad58f857fa016fbe0b0fccede49454e9e4bd574e6234a620869f'),
                                   (4, '8021361a8e6cd5fbd5edef78140117a0802b3dc187388037345b8b65835382b2'),
                                   (5, '8d8b0adab49c2568c2b62ba0ab51ac2a6961b73c3f3bb1b596dd62a0a9971aac')])
+
+    def test_proof_of_absence(self):
+        tx_count = 2
+        expected_hash = '07df67b1a853551eb05470a03c9245483e5a3731b4b558e634908ff356b69857'
+
+        proof_json = {'length': tx_count, 'hash': '34e927df0267eac2dbd7e27f0ad9de2b3dba7af7c1c84b9cab599b8048333c3b'}
+
+        proof = ListProof(proof_json)
+
+        res = proof.validate(tx_count, expected_hash)
+
+        self.assertTrue(res[0])
+        self.assertEqual(res[1], [])
