@@ -153,31 +153,31 @@ class TestListProof(unittest.TestCase):
 
     def test_proof_range(self):
         proof_json = {
-          "left": {
-            "left": {
-              "left": {
-                "val": "4507b25b6c91cbeba4320ac641728a92f4c085674e11c96b5a5830eddfe7a07a"
+          'left': {
+            'left': {
+              'left': {
+                'val': '4507b25b6c91cbeba4320ac641728a92f4c085674e11c96b5a5830eddfe7a07a'
               },
-              "right": {
-                "val": "17c18e8cfbba5cd179cb9067f28e5a6dc8aeb2a66a7cd7237746f891a2e125b7"
+              'right': {
+                'val': '17c18e8cfbba5cd179cb9067f28e5a6dc8aeb2a66a7cd7237746f891a2e125b7'
               }
             },
-            "right": {
-              "left": {
-                "val": "183c6af10407efd8ab875cdf372a5e5893e2527f77fec4bbbcf14f2dd5c22340"
+            'right': {
+              'left': {
+                'val': '183c6af10407efd8ab875cdf372a5e5893e2527f77fec4bbbcf14f2dd5c22340'
               },
-              "right": {
-                "val": "378ec583913aad58f857fa016fbe0b0fccede49454e9e4bd574e6234a620869f"
+              'right': {
+                'val': '378ec583913aad58f857fa016fbe0b0fccede49454e9e4bd574e6234a620869f'
               }
             }
           },
-          "right": {
-            "left": {
-              "left": {
-                "val": "8021361a8e6cd5fbd5edef78140117a0802b3dc187388037345b8b65835382b2"
+          'right': {
+            'left': {
+              'left': {
+                'val': '8021361a8e6cd5fbd5edef78140117a0802b3dc187388037345b8b65835382b2'
               },
-              "right": {
-                "val": "8d8b0adab49c2568c2b62ba0ab51ac2a6961b73c3f3bb1b596dd62a0a9971aac"
+              'right': {
+                'val': '8d8b0adab49c2568c2b62ba0ab51ac2a6961b73c3f3bb1b596dd62a0a9971aac'
               }
             }
           }
@@ -208,5 +208,4 @@ class TestListProof(unittest.TestCase):
 
         res = proof.validate(tx_count, expected_hash)
 
-        self.assertTrue(res[0])
-        self.assertEqual(res[1], [])
+        self.assertTrue(res, (True, []))

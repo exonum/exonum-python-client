@@ -9,58 +9,53 @@ from .hasher import Hasher
 
 class ProofListKey:
     def __init__(self, height, index):
-        self._height = height
-        self._index = index
+        self.height = height
+        self.index = index
 
-    def leaf(self, index):
+    @staticmethod
+    def leaf(index):
         return ProofListKey(0, index)
 
     def left(self):
-        return ProofListKey(self._height - 1, self._index << 1)
+        return ProofListKey(self.height - 1, self.index << 1)
 
     def right(self):
-        return ProofListKey(self._height - 1, (self._index << 1) + 1)
-
-    def index(self):
-        return self._index
-
-    def height(self):
-        return self._height
+        return ProofListKey(self.height - 1, (self.index << 1) + 1)
 
 
 class ProofParser:
     NODE_CONDITIONS = {
         # Node is Left when it contains field 'left' which is dict and may contain field 'right' which is hash.
-        'Left': lambda self, data: is_field_dict(data, 'left') and is_field_hash_or_none(data, 'right'),
+        'Left': lambda _, data: is_field_dict(data, 'left') and is_field_hash_or_none(data, 'right'),
 
         # Node is Right when it contains field 'left' which is hash and field 'right' which is dict.
-        'Right': lambda self, data: is_field_hash(data, 'left') and is_field_dict(data, 'right'),
+        'Right': lambda _, data: is_field_hash(data, 'left') and is_field_dict(data, 'right'),
 
         # Node is Full, when it contains fields 'left' and 'right' and both of them are dicts.
-        'Full': lambda self, data: is_field_dict(data, 'left') and is_field_dict(data, 'right'),
+        'Full': lambda _, data: is_field_dict(data, 'left') and is_field_dict(data, 'right'),
 
         # Node is Leaf when it contains field 'val' which can be converted to bytes with provided function.
         'Leaf': lambda self, data: is_field_convertible(data, 'val', self.value_to_bytes),
 
         # Node is Absent when it contains field 'length' which is int and field 'hash' which is hexademical string.
-        'Absent': lambda self, data: is_field_int(data, 'length') and is_field_hash(data, 'hash'),
+        'Absent': lambda _, data: is_field_int(data, 'length') and is_field_hash(data, 'hash'),
     }
 
     NODE_FACTORY = {
         # Left node contains left subtree and right value hash as bytes.
-        'Left': lambda self, json: ListProof.Left(self.parse(json['left']), to_bytes(json.get('right'))),
+        'Left': lambda self, data: ListProof.Left(self.parse(data['left']), to_bytes(data.get('right'))),
 
         # Right node contains left value hash as bytes and right subtree.
-        'Right': lambda self, json: ListProof.Right(to_bytes(json['left']), self.parse(json['right'])),
+        'Right': lambda self, data: ListProof.Right(to_bytes(data['left']), self.parse(data['right'])),
 
         # Full node contains left and right subtrees.
-        'Full': lambda self, json: ListProof.Full(self.parse(json['left']), self.parse(json['right'])),
+        'Full': lambda self, data: ListProof.Full(self.parse(data['left']), self.parse(data['right'])),
 
         # Leaf node contains value converted to bytes with the provided function.
-        'Leaf': lambda self, json: ListProof.Leaf(json['val'], self.value_to_bytes(json['val'])),
+        'Leaf': lambda self, data: ListProof.Leaf(data['val'], self.value_to_bytes(data['val'])),
 
         # Absent node contains length as int and hash as bytes.
-        'Absent': lambda self, json: ListProof.Absent(json['length'], to_bytes(json['hash'])),
+        'Absent': lambda self, data: ListProof.Absent(data['length'], to_bytes(data['hash'])),
     }
 
     def __init__(self, value_to_bytes):
@@ -120,14 +115,11 @@ class ListProof:
             Otherwise, ListProofVerificationError with the string denoting the type of the verification error.
         """
 
-        result: List[Tuple[int, Any]] = []
+        root_hash, result = self._calculate_root_hash(length)
 
-        height = calculate_height(length)
-
-        try:
-            root_hash = self._collect(self._proof, ProofListKey(height, 0), result)
-        except ListProofVerificationError as error:
-            return False, error
+        if not root_hash:
+            # Varification error
+            return False, result
 
         expected_hash_raw = bytes.fromhex(expected_hash)
 
@@ -140,6 +132,25 @@ class ListProof:
                 return False, ListProofVerificationError('Unmatched root hash')
 
         return True, result
+
+    def _calculate_root_hash(self, length):
+        # Absent proof element may be only the top one.
+        if type(self._proof) == ListProof.Absent:
+            root_hash = Hasher.hash_list_node(self._proof.length, self._proof.hash)
+
+            return root_hash, []
+
+        # Otherwise, we should calculate the root hash recursevely.
+        result: List[Tuple[int, Any]] = []
+
+        height = calculate_height(length)
+
+        try:
+            root_hash = self._collect(self._proof, ProofListKey(height, 0), result)
+
+            return root_hash, result
+        except ListProofVerificationError as error:
+            return None, error
 
     def _collect(self, proof_el, key, result):
         if key.height == 0:
@@ -159,7 +170,7 @@ class ListProof:
             if proof_el.right:
                 data_hash = Hasher.hash_node(left_hash, proof_el.right)
             else:
-                data_hash = Hasher.hash_single_none(left_hash)
+                data_hash = Hasher.hash_single_node(left_hash)
 
         elif type(proof_el) == ListProof.Right:
             right_hash = self._collect(proof_el.right, key.right(), result)
@@ -167,15 +178,12 @@ class ListProof:
             data_hash = self.hash_node(proof_el.left, right_hash)
 
         elif type(proof_el) == ListProof.Leaf:
-            if key.height() > 1:
+            if key.height > 1:
                 raise ListProofVerificationError('Unexpected leaf')
 
-            result.append((key.index(), proof_el.val))
+            result.append((key.index, proof_el.val))
 
             data_hash = Hasher.hash_leaf(proof_el.val_raw)
-
-        elif type(proof_el) == ListProof.Absent:
-            data_hash = Hasher.hash_list_node(proof_el.length, proof_el.hash)
 
         else:
             assert False, "Got wrong element in ListProof._collect: {}".format(proof_el)

@@ -19,7 +19,7 @@ class Hasher:
         return crypto_hash_sha256(data)
 
     @staticmethod
-    def hash_single_none(left):
+    def hash_single_node(left):
         data = struct.pack('<B', Hasher.HashTag.LIST_BRANCH_NODE) + left
 
         return crypto_hash_sha256(data)
