@@ -132,7 +132,7 @@ class TestProofParser(unittest.TestCase):
 
         for malformed_proof in malformed_proofs:
             with self.assertRaises(MalformedProofError):
-                proof = proof_parser.parse(malformed_proof)
+                proof_parser.parse(malformed_proof)
 
 
 class TestListProof(unittest.TestCase):
@@ -146,10 +146,10 @@ class TestListProof(unittest.TestCase):
 
         proof = ListProof(proof_json)
 
-        res = proof.validate(tx_count, expected_hash)
+        status, result = proof.validate(tx_count, expected_hash)
 
-        self.assertTrue(res[0])
-        self.assertEqual(res[1], [(0, stored_val)])
+        self.assertTrue(status)
+        self.assertEqual(result, [(0, stored_val)])
 
     def test_proof_range(self):
         proof_json = {
