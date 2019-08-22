@@ -11,7 +11,7 @@ Leaf = ListProof.Leaf
 Absent = ListProof.Absent
 
 
-def to_hex(hex_data):
+def to_bytes(hex_data):
     return bytes.fromhex(hex_data)
 
 
@@ -19,8 +19,8 @@ class TestProofParser(unittest.TestCase):
     def setUp(self):
         self.HASH_A = '2dc17ca9c00d29ecff475d92f9b0c8885350d7b783e703b8ad21ae331d134496'
         self.HASH_B = 'c6f5873ab0f93c8be05e4e412cfc307fd98e58c9da9e6f582130882e672eb742'
-        self.HASH_A_HEX = to_hex(self.HASH_A)
-        self.HASH_B_HEX = to_hex(self.HASH_B)
+        self.HASH_A_HEX = to_bytes(self.HASH_A)
+        self.HASH_B_HEX = to_bytes(self.HASH_B)
 
     def test_parse_simple(self):
         json_proof = {
