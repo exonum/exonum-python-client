@@ -65,7 +65,7 @@ class ListProof:
     Absent = collections.namedtuple('Absent', ['length', 'hash'])
 
     def __init__(self, proof_dict, value_to_bytes=bytes.fromhex):
-        '''
+        """
         Constructor of the ListProof.
 
         Parameters
@@ -75,7 +75,7 @@ class ListProof:
         value_to_bytes: Callable[[str], bytes]
             A function that converts the stored value to bytes for hashing.
             By default, `bytes.fromhex` is used.
-        '''
+        """
 
         self.value_to_bytes = value_to_bytes
 
@@ -83,7 +83,7 @@ class ListProof:
         self._proof = proof_parser.parse(proof_dict)
 
     def validate(self, length: int, expected_hash: str):
-        '''
+        """
         This method validates the provided proof against the given expected hash.
 
         Parameters
@@ -100,7 +100,8 @@ class ListProof:
         result: List[Tuple[int, Any]] or ListProofVerificationError
             If the hash is correct, a list of the collected values with indices is returned.
             Otherwise, ListProofVerificationError with the string denoting the type of the verification error.
-        '''
+        """
+
         result: List[Tuple[int, Any]] = []
 
         height = calculate_height(length)
