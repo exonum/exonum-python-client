@@ -30,11 +30,11 @@ class ProofListKey:
 
 class ProofParser:
     NODE_CONDITIONS = {
-        'Left': lambda self, json: is_field_dict(json, 'left') and is_field_hash_or_none(json, 'right'),
-        'Right': lambda self, json: is_field_hash(json, 'left') and is_field_dict(json, 'right'),
-        'Full': lambda self, json: is_field_dict(json, 'left') and is_field_dict(json, 'right'),
-        'Leaf': lambda self, json: is_field_convertible(json, 'val', self.value_to_bytes),
-        'Absent': lambda self, json: is_field_int(json, 'length') and is_field_hash(json, 'hash'),
+        'Left': lambda self, data: is_field_dict(data, 'left') and is_field_hash_or_none(data, 'right'),
+        'Right': lambda self, data: is_field_hash(data, 'left') and is_field_dict(data, 'right'),
+        'Full': lambda self, data: is_field_dict(data, 'left') and is_field_dict(data, 'right'),
+        'Leaf': lambda self, data: is_field_convertible(data, 'val', self.value_to_bytes),
+        'Absent': lambda self, data: is_field_int(data, 'length') and is_field_hash(data, 'hash'),
     }
 
     NODE_FACTORY = {
@@ -48,11 +48,11 @@ class ProofParser:
     def __init__(self, value_to_bytes):
         self.value_to_bytes = value_to_bytes
 
-    def parse(self, json):
-        if is_dict(json):
+    def parse(self, proof_dict):
+        if is_dict(proof_dict):
             for kind, condition in ProofParser.NODE_CONDITIONS.items():
-                if condition(self, json):
-                    return ProofParser.NODE_FACTORY[kind](self, json)
+                if condition(self, proof_dict):
+                    return ProofParser.NODE_FACTORY[kind](self, proof_dict)
 
         raise MalformedProofError('Received malformed proof: {}'.format(json))
 
@@ -64,13 +64,43 @@ class ListProof:
     Leaf = collections.namedtuple('Leaf', ['val', 'val_raw'])
     Absent = collections.namedtuple('Absent', ['length', 'hash'])
 
-    def __init__(self, proof_json, value_to_bytes=bytes.fromhex):
+    def __init__(self, proof_dict, value_to_bytes=bytes.fromhex):
+        '''
+        Constructor of the ListProof.
+
+        Parameters
+        ----------
+        proof_dict : Dict[Any, Any]
+            Proof as a python dictionary.
+        value_to_bytes: Callable[[str], bytes]
+            A function that converts the stored value to bytes for hashing.
+            By default, `bytes.fromhex` is used.
+        '''
+
         self.value_to_bytes = value_to_bytes
 
         proof_parser = ProofParser(self.value_to_bytes)
-        self._proof = proof_parser.parse(proof_json)
+        self._proof = proof_parser.parse(proof_dict)
 
-    def validate(self, length: int, merkle_root: str):
+    def validate(self, length: int, expected_hash: str):
+        '''
+        This method validates the provided proof against the given expected hash.
+
+        Parameters
+        ----------
+        length : int
+            Length of the proof list.
+        expected_hash: str
+            Hexadecimal string with the expected hash.
+
+        Returns
+        -------
+        hash_valid: bool
+            Boolean value denoting if the expected hash equals to the hash obtained from the proof.
+        result: List[Tuple[int, Any]] or ListProofVerificationError
+            If the hash is correct, a list of the collected values with indices is returned.
+            Otherwise, ListProofVerificationError with the string denoting the type of the verification error.
+        '''
         result: List[Tuple[int, Any]] = []
 
         height = calculate_height(length)
@@ -80,14 +110,14 @@ class ListProof:
         except ListProofVerificationError as error:
             return False, error
 
-        expected_hash = bytes.fromhex(merkle_root)
+        expected_hash_raw = bytes.fromhex(expected_hash)
 
         if type(self._proof) == ListProof.Absent:
-            if root_hash != bytes.fromhex(merkle_root):
+            if root_hash != expected_hash_raw:
                 return False, ListProofVerificationError('Unmatched root hash')
         else:
             result_hash = Hasher.hash_list_node(length, root_hash)
-            if result_hash != expected_hash:
+            if result_hash != expected_hash_raw:
                 return False, ListProofVerificationError('Unmatched root hash')
 
         return True, result
