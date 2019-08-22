@@ -18,7 +18,7 @@ def example_run():
 
         main_module = ModuleManager.import_main_module('consensus')
 
-        service_module = ModuleManager.import_service_module('exonum-supervisor:0.11.0', 'service')
+        service_module = ModuleManager.import_service_module('exonum-supervisor:0.12.0', 'service')
 
         print(client.available_services().json())
 
@@ -27,7 +27,7 @@ def example_run():
 
         # Deploy cryptocurrency service
 
-        cryptocurrency_service_name = 'exonum-cryptocurrency-advanced:0.11.0'
+        cryptocurrency_service_name = 'exonum-cryptocurrency-advanced:0.12.0'
         deploy_request = service_module.DeployRequest()
         deploy_request.artifact.runtime_id = 0
         deploy_request.artifact.name = cryptocurrency_service_name
@@ -115,8 +115,13 @@ def example_run():
 
         for response in responses:
             res = client.get_tx_info(response.json()['tx_hash'])
-            print(res)
             print(res.json())
+
+            block_height = res.json()['location']['block_height']
+
+            block_info = client.get_block(block_height).json()
+
+            print('Block info: \n{}\n-----\n'.format(block_info))
 
         # Some additional info.
         print(client.health_info())
