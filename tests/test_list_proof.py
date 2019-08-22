@@ -142,11 +142,58 @@ class TestListProof(unittest.TestCase):
                       'right': 'eae60adeb5c681110eb5226a4ef95faa4f993c4a838d368b66f7c98501f2c8f9'}
 
         tx_count = 2
-        merkle_root = '07df67b1a853551eb05470a03c9245483e5a3731b4b558e634908ff356b69857'
+        expected_hash = '07df67b1a853551eb05470a03c9245483e5a3731b4b558e634908ff356b69857'
 
         proof = ListProof(proof_json)
 
-        res = proof.validate(tx_count, merkle_root)
+        res = proof.validate(tx_count, expected_hash)
 
         self.assertTrue(res[0])
         self.assertEqual(res[1], [(0, stored_val)])
+
+    def test_proof_range(self):
+        proof_json = {
+          "left": {
+            "left": {
+              "left": {
+                "val": "4507b25b6c91cbeba4320ac641728a92f4c085674e11c96b5a5830eddfe7a07a"
+              },
+              "right": {
+                "val": "17c18e8cfbba5cd179cb9067f28e5a6dc8aeb2a66a7cd7237746f891a2e125b7"
+              }
+            },
+            "right": {
+              "left": {
+                "val": "183c6af10407efd8ab875cdf372a5e5893e2527f77fec4bbbcf14f2dd5c22340"
+              },
+              "right": {
+                "val": "378ec583913aad58f857fa016fbe0b0fccede49454e9e4bd574e6234a620869f"
+              }
+            }
+          },
+          "right": {
+            "left": {
+              "left": {
+                "val": "8021361a8e6cd5fbd5edef78140117a0802b3dc187388037345b8b65835382b2"
+              },
+              "right": {
+                "val": "8d8b0adab49c2568c2b62ba0ab51ac2a6961b73c3f3bb1b596dd62a0a9971aac"
+              }
+            }
+          }
+        }
+
+        tx_count = 6
+        expected_hash = '3bb680f61d358cc208003e7b42f077402fdb05388dc0e7f3099551e4f86bb70a'
+
+        proof = ListProof(proof_json)
+
+        res = proof.validate(tx_count, expected_hash)
+
+        self.assertTrue(res[0])
+        self.assertEqual(res[1], [(0, '4507b25b6c91cbeba4320ac641728a92f4c085674e11c96b5a5830eddfe7a07a'),
+                                  (1, '17c18e8cfbba5cd179cb9067f28e5a6dc8aeb2a66a7cd7237746f891a2e125b7'),
+                                  (2, '183c6af10407efd8ab875cdf372a5e5893e2527f77fec4bbbcf14f2dd5c22340'),
+                                  (3, '378ec583913aad58f857fa016fbe0b0fccede49454e9e4bd574e6234a620869f'),
+                                  (4, '8021361a8e6cd5fbd5edef78140117a0802b3dc187388037345b8b65835382b2'),
+                                  (5, '8d8b0adab49c2568c2b62ba0ab51ac2a6961b73c3f3bb1b596dd62a0a9971aac')])
