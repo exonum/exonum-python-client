@@ -30,7 +30,7 @@ class ProofListKey:
 
 class ProofParser:
     NODE_CONDITIONS = {
-        # Node is Left when it conains field 'left' which is dict and may contain field 'right' which is hash.
+        # Node is Left when it contains field 'left' which is dict and may contain field 'right' which is hash.
         'Left': lambda self, data: is_field_dict(data, 'left') and is_field_hash_or_none(data, 'right'),
 
         # Node is Right when it contains field 'left' which is hash and field 'right' which is dict.
