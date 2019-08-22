@@ -30,18 +30,36 @@ class ProofListKey:
 
 class ProofParser:
     NODE_CONDITIONS = {
+        # Node is Left when it conains field 'left' which is dict and may contain field 'right' which is hash.
         'Left': lambda self, data: is_field_dict(data, 'left') and is_field_hash_or_none(data, 'right'),
+
+        # Node is Right when it contains field 'left' which is hash and field 'right' which is dict.
         'Right': lambda self, data: is_field_hash(data, 'left') and is_field_dict(data, 'right'),
+
+        # Node is Full, when it contains fields 'left' and 'right' and both of them are dicts.
         'Full': lambda self, data: is_field_dict(data, 'left') and is_field_dict(data, 'right'),
+
+        # Node is Leaf when it contains field 'val' which can be converted to bytes with provided function.
         'Leaf': lambda self, data: is_field_convertible(data, 'val', self.value_to_bytes),
+
+        # Node is Absent when it contains field 'length' which is int and field 'hash' which is hexademical string.
         'Absent': lambda self, data: is_field_int(data, 'length') and is_field_hash(data, 'hash'),
     }
 
     NODE_FACTORY = {
+        # Left node contains left subtree and right value hash as bytes.
         'Left': lambda self, json: ListProof.Left(self.parse(json['left']), to_bytes(json.get('right'))),
+
+        # Right node contains left value hash as bytes and right subtree.
         'Right': lambda self, json: ListProof.Right(to_bytes(json['left']), self.parse(json['right'])),
+
+        # Full node contains left and right subtrees.
         'Full': lambda self, json: ListProof.Full(self.parse(json['left']), self.parse(json['right'])),
+
+        # Leaf node contains value converted to bytes with the provided function.
         'Leaf': lambda self, json: ListProof.Leaf(json['val'], self.value_to_bytes(json['val'])),
+
+        # Absent node contains length as int and hash as bytes.
         'Absent': lambda self, json: ListProof.Absent(json['length'], to_bytes(json['hash'])),
     }
 
