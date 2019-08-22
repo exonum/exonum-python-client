@@ -54,7 +54,7 @@ class ProofParser:
                 if condition(self, proof_dict):
                     return ProofParser.NODE_FACTORY[kind](self, proof_dict)
 
-        raise MalformedProofError('Received malformed proof: {}'.format(json))
+        raise MalformedProofError('Received malformed proof: {}'.format(proof_dict))
 
 
 class ListProof:
