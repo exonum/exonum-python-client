@@ -1,6 +1,7 @@
 import unittest
 
-from exonum.list_proof import ProofParser, ListProof
+from exonum.proofs.list_proof import ProofParser, ListProof
+from exonum.proofs.hasher import Hasher
 from exonum.errors import MalformedProofError
 
 Left = ListProof.Left
@@ -48,6 +49,20 @@ class TestProofParser(unittest.TestCase):
 
         expected_proof = Right(left=self.HASH_A_HEX,
                                right=Leaf(val=self.HASH_B, val_raw=self.HASH_B_HEX))
+
+        self.assertEqual(proof, expected_proof)
+
+    def test_parse_single_left(self):
+        json_proof = {
+            'left': {
+                'val': self.HASH_A
+            }
+        }
+
+        proof_parser = ProofParser(bytes.fromhex)
+        proof = proof_parser.parse(json_proof)
+
+        expected_proof = Left(left=Leaf(val=self.HASH_A, val_raw=self.HASH_A_HEX), right=None)
 
         self.assertEqual(proof, expected_proof)
 
@@ -118,3 +133,20 @@ class TestProofParser(unittest.TestCase):
         for malformed_proof in malformed_proofs:
             with self.assertRaises(MalformedProofError):
                 proof = proof_parser.parse(malformed_proof)
+
+
+class TestListProof(unittest.TestCase):
+    def test_proof_simple(self):
+        stored_val = '6b70d869aeed2fe090e708485d9f4b4676ae6984206cf05efc136d663610e5c9'
+        proof_json = {'left': {'val': stored_val},
+                      'right': 'eae60adeb5c681110eb5226a4ef95faa4f993c4a838d368b66f7c98501f2c8f9'}
+
+        tx_count = 2
+        merkle_root = '07df67b1a853551eb05470a03c9245483e5a3731b4b558e634908ff356b69857'
+
+        proof = ListProof(proof_json)
+
+        res = proof.validate(tx_count, merkle_root)
+
+        self.assertTrue(res[0])
+        self.assertEqual(res[1], [(0, stored_val)])

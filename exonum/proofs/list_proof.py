@@ -1,67 +1,31 @@
 from typing import List, Tuple, Any
 
 import collections
-import struct
-from enum import IntEnum
-from pysodium import crypto_hash_sha256
 
 from ..errors import MalformedProofError, ListProofVerificationError
 from .utils import *
 from .hasher import Hasher
 
 
-class Hasher:
-    class HashTag(IntEnum):
-        BLOB = 0
-        LIST_BRANCH_NODE = 1
-        LIST_NODE = 2
-        MAP_NODE = 3
-        MAP_BRANCH_NODE = 4
-
-    @staticmethod
-    def hash_node(left, right):
-        data = struct.pack('>Bss', Hasher.HashTag.LIST_BRANCH_NODE, left_raw, right_raw)
-
-        return crypto_hash_sha256(data)
-
-    @staticmethod
-    def hash_single_none(left):
-        data = struct.pack('>Bs', Hasher.HashTag.LIST_BRANCH_NODE, left_raw)
-
-        return crypto_hash_sha256(data)
-
-    @staticmethod
-    def hash_leaf(val):
-        data = struct.pack('>Bs', Hasher.HashTag.BLOB)
-
-        return crypto_hash_sha256(data)
-
-    @staticmethod
-    def hash_list_node(length, merkle_root):
-        data = struct.pack('>BQs', Hasher.HashTag.LIST_NODE, length, merkle_root_raw)
-
-        return crypto_hash_sha256(data)
-
-
 class ProofListKey:
     def __init__(self, height, index):
-        self.height = height
-        self.index = index
+        self._height = height
+        self._index = index
 
     def leaf(self, index):
         return ProofListKey(0, index)
 
     def left(self):
-        return ProofListKey(self.height - 1, self.index << 1)
+        return ProofListKey(self._height - 1, self._index << 1)
 
     def right(self):
-        return ProofListKey(self.height - 1, (self.index << 1) + 1)
+        return ProofListKey(self._height - 1, (self._index << 1) + 1)
 
     def index(self):
-        return self.index
+        return self._index
 
     def height(self):
-        return self.height
+        return self._height
 
 
 class ProofParser:
@@ -106,7 +70,7 @@ class ListProof:
         proof_parser = ProofParser(self.value_to_bytes)
         self._proof = proof_parser.parse(proof_json)
 
-    def validate(self, length: int, expected_hash: str):
+    def validate(self, length: int, merkle_root: str):
         result: List[Tuple[int, Any]] = []
 
         height = calculate_height(length)
@@ -116,11 +80,14 @@ class ListProof:
         except ListProofVerificationError as error:
             return False, error
 
+        expected_hash = bytes.fromhex(merkle_root)
+
         if type(self._proof) == ListProof.Absent:
-            if root_hash != bytes.fromhex(expected_hash):
+            if root_hash != bytes.fromhex(merkle_root):
                 return False, ListProofVerificationError('Unmatched root hash')
         else:
-            if Hasher.hash_list_node(length, root_hash) != bytes.fromhex(expected_hash):
+            result_hash = Hasher.hash_list_node(length, root_hash)
+            if result_hash != expected_hash:
                 return False, ListProofVerificationError('Unmatched root hash')
 
         return True, result
@@ -133,7 +100,7 @@ class ListProof:
 
         if type(proof_el) == ListProof.Full:
             left_hash = self._collect(proof_el.left, key.left(), result)
-            right_hash = self._collect(proof_el.right, key.left(), result)
+            right_hash = self._collect(proof_el.right, key.right(), result)
 
             data_hash = Hasher.hash_node(left_hash, right_hash)
 
@@ -141,7 +108,7 @@ class ListProof:
             left_hash = self._collect(proof_el.left, key.left(), result)
 
             if proof_el.right:
-                data_hash = Hasher.hash_node(left_hash, proof_elright)
+                data_hash = Hasher.hash_node(left_hash, proof_el.right)
             else:
                 data_hash = Hasher.hash_single_none(left_hash)
 
