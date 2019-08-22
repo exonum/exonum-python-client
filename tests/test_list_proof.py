@@ -19,8 +19,8 @@ class TestProofParser(unittest.TestCase):
     def setUp(self):
         self.HASH_A = '2dc17ca9c00d29ecff475d92f9b0c8885350d7b783e703b8ad21ae331d134496'
         self.HASH_B = 'c6f5873ab0f93c8be05e4e412cfc307fd98e58c9da9e6f582130882e672eb742'
-        self.HASH_A_HEX = to_bytes(self.HASH_A)
-        self.HASH_B_HEX = to_bytes(self.HASH_B)
+        self.HASH_A_BYTES = to_bytes(self.HASH_A)
+        self.HASH_B_BYTES = to_bytes(self.HASH_B)
 
     def test_parse_simple(self):
         json_proof = {
@@ -33,7 +33,7 @@ class TestProofParser(unittest.TestCase):
         proof_parser = ProofParser(bytes.fromhex)
         proof = proof_parser.parse(json_proof)
 
-        expected_proof = Left(left=Leaf(val=self.HASH_A, val_raw=self.HASH_A_HEX), right=self.HASH_B_HEX)
+        expected_proof = Left(left=Leaf(val=self.HASH_A, val_raw=self.HASH_A_BYTES), right=self.HASH_B_BYTES)
 
         self.assertEqual(proof, expected_proof)
 
@@ -47,8 +47,8 @@ class TestProofParser(unittest.TestCase):
         proof_parser = ProofParser(bytes.fromhex)
         proof = proof_parser.parse(json_proof)
 
-        expected_proof = Right(left=self.HASH_A_HEX,
-                               right=Leaf(val=self.HASH_B, val_raw=self.HASH_B_HEX))
+        expected_proof = Right(left=self.HASH_A_BYTES,
+                               right=Leaf(val=self.HASH_B, val_raw=self.HASH_B_BYTES))
 
         self.assertEqual(proof, expected_proof)
 
@@ -62,7 +62,7 @@ class TestProofParser(unittest.TestCase):
         proof_parser = ProofParser(bytes.fromhex)
         proof = proof_parser.parse(json_proof)
 
-        expected_proof = Left(left=Leaf(val=self.HASH_A, val_raw=self.HASH_A_HEX), right=None)
+        expected_proof = Left(left=Leaf(val=self.HASH_A, val_raw=self.HASH_A_BYTES), right=None)
 
         self.assertEqual(proof, expected_proof)
 
@@ -79,8 +79,8 @@ class TestProofParser(unittest.TestCase):
         proof_parser = ProofParser(bytes.fromhex)
         proof = proof_parser.parse(json_proof)
 
-        expected_proof = Full(left=Leaf(val=self.HASH_A, val_raw=self.HASH_A_HEX),
-                              right=Leaf(val=self.HASH_B, val_raw=self.HASH_B_HEX))
+        expected_proof = Full(left=Leaf(val=self.HASH_A, val_raw=self.HASH_A_BYTES),
+                              right=Leaf(val=self.HASH_B, val_raw=self.HASH_B_BYTES))
 
         self.assertEqual(proof, expected_proof)
 
@@ -93,7 +93,7 @@ class TestProofParser(unittest.TestCase):
         proof_parser = ProofParser(bytes.fromhex)
         proof = proof_parser.parse(json_proof)
 
-        expected_proof = Absent(length=5, hash=self.HASH_A_HEX)
+        expected_proof = Absent(length=5, hash=self.HASH_A_BYTES)
 
         self.assertEqual(proof, expected_proof)
 
