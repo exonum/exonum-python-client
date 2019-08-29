@@ -1,7 +1,8 @@
-from typing import Optional
+from typing import Optional, Dict
 from enum import IntEnum
 
 from ..errors import MalformedProofError
+from .utils import is_field_hash, to_bytes
 
 # Size in bytes of the Hash. Equal to the hash function output (32).
 KEY_SIZE = 32
@@ -94,7 +95,23 @@ class ProofPath:
 
 
 class MapProofEntry:
-    pass
+    def __init__(self, path: ProofPath, data_hash: bytes):
+        self.path = path
+        self.hash = data_hash
+
+    @staticmethod
+    def parse(data: Dict[str, str]):
+        """ Parses MapProofEntry from the json. """
+
+        if not isinstance(data.get('path'), str) or not is_field_hash(data, 'hash'):
+            raise MalformedProofError('Malformed proof entry: {}'.format(data))
+
+        path_bits = data['path']
+        path = ProofPath.parse(path_bits)
+
+        data_hash = to_bytes(data['hash'])
+
+        return MapProofEntry(path, data_hash)
 
 
 class MapProof:
