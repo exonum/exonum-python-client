@@ -149,8 +149,6 @@ class ListProof:
         if key.height == 0:
             raise ListProofVerificationError('Unexpected branch')
 
-        data_hash = None
-
         if type(proof_el) == ListProof.Full:
             left_hash = self._collect(proof_el.left, key.left(), result)
             right_hash = self._collect(proof_el.right, key.right(), result)
@@ -168,7 +166,7 @@ class ListProof:
         elif type(proof_el) == ListProof.Right:
             right_hash = self._collect(proof_el.right, key.right(), result)
 
-            data_hash = self.hash_node(proof_el.left, right_hash)
+            data_hash = Hasher.hash_node(proof_el.left, right_hash)
 
         elif type(proof_el) == ListProof.Leaf:
             if key.height > 1:
