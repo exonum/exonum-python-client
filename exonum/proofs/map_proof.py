@@ -23,7 +23,24 @@ class ProofPath:
 
     @staticmethod
     def parse(bits: str) -> 'ProofPath':
-        """ Parses a ProofPath from string. """
+        """
+        This method parses a ProofPath from string.
+
+        Paramaeters
+        -----------
+        bits: str
+            Sequence of '0' and '1' as string.
+
+        Returns
+        -------
+        ProofPath
+            Parsed ProofPath object
+
+        Raises
+        ------
+        MalformedProofError
+            If the input string was incorrect (too long, empty or contain unexpected symbols).
+        """
 
         length = len(bits)
         if length == 0 or length > 8 * KEY_SIZE:
@@ -46,26 +63,44 @@ class ProofPath:
         else:
             return ProofPath.from_bytes(data_bytes).prefix(length)
 
+    @staticmethod
+    def from_bytes(data_bytes: bytes) -> 'ProofPath':
+        """
+        Builds a ProofPath from bytes sequence.
+
+        Paramaeters
+        -----------
+        data_bytes: bytes
+            Array of bytes with ProofPath data.
+
+        Returns
+        -------
+        ProofPath
+            Parsed ProofPath object
+
+        Raises
+        ------
+        ValueError
+            If the length of provided array is not equal to KEY_SIZE constant.
+        """
+        if len(data_bytes) != KEY_SIZE:
+            raise ValueError('Incorrect data size')
+
+        inner = bytearray([0] * PROOF_PATH_SIZE)
+
+        inner[0] = ProofPath.KeyPrefix.LEAF
+        inner[ProofPath.Positions.KEY_POS:ProofPath.Positions.KEY_POS + KEY_SIZE] = data_bytes[:]
+        inner[ProofPath.Positions.LEN_POS] = 0
+
+        return ProofPath(inner, 0)
+
     def __init__(self, data_bytes: bytearray, start: int):
+        """ Constructor of the ProofPath. Expects arguments to be cleaned already and doesn't check anything. """
         self.data_bytes = data_bytes
         self._start = start
 
-    def is_leaf(self):
-        return self.data_bytes[0] == ProofPath.KeyPrefix.LEAF
-
-    def start(self):
-        return self._start
-
-    def end(self):
-        if self.is_leaf():
-            return KEY_SIZE * 8
-        else:
-            return self.data_bytes[ProofPath.Positions.LEN_POS]
-
-    def raw_key(self):
-        return self.data_bytes[ProofPath.Positions.KEY_POS:ProofPath.Positions.KEY_POS + KEY_SIZE]
-
     def __repr__(self) -> str:
+        """ Conversion to string. """
         bits_str = ''
 
         raw_key = self.raw_key()
@@ -90,19 +125,24 @@ class ProofPath:
     def __eq__(self, other) -> bool:
         return len(self) == len(other) and self.starts_with(other)
 
-    @staticmethod
-    def from_bytes(data_bytes: bytes) -> 'ProofPath':
-        """ Builds a proof from bytes sequence. """
-        if len(data_bytes) != KEY_SIZE:
-            raise ValueError('Incorrect data size')
+    def is_leaf(self):
+        """ Returns True if ProofPath is leaf and False otherwise """
+        return self.data_bytes[0] == ProofPath.KeyPrefix.LEAF
 
-        inner = bytearray([0] * PROOF_PATH_SIZE)
+    def start(self):
+        """ Returns the index of the start bit. """
+        return self._start
 
-        inner[0] = ProofPath.KeyPrefix.LEAF
-        inner[ProofPath.Positions.KEY_POS:ProofPath.Positions.KEY_POS + KEY_SIZE] = data_bytes[:]
-        inner[ProofPath.Positions.LEN_POS] = 0
+    def end(self):
+        """ Returns the index of the end bit. """
+        if self.is_leaf():
+            return KEY_SIZE * 8
+        else:
+            return self.data_bytes[ProofPath.Positions.LEN_POS]
 
-        return ProofPath(inner, 0)
+    def raw_key(self):
+        """ Returns the stored key as raw bytes """
+        return self.data_bytes[ProofPath.Positions.KEY_POS:ProofPath.Positions.KEY_POS + KEY_SIZE]
 
     def set_end(self, end: Optional[int]):
         """ Sets tha right border of the proof path. """
@@ -128,6 +168,7 @@ class ProofPath:
         return key
 
     def match_len(self, other, from_bit) -> int:
+        """ Returns the length of the common segment. """
         if self.start() != other.start():
             raise ValueError("Misaligned bit ranges")
         elif from_bit < self.start() or from_bit > self.end():
@@ -149,12 +190,14 @@ class ProofPath:
         return len_to_the_end
 
     def common_prefix_len(self, other) -> int:
+        """ Returns the length of the common prefix. """
         if self.start() == other.start():
             return self.match_len(other, self.start())
         else:
             return 0
 
     def starts_with(self, other) -> bool:
+        """ Returns True if other is a prefix of self and False otherwise. """
         return self.common_prefix_len(other) == len(other)
 
     def as_bytes(self) -> bytes:

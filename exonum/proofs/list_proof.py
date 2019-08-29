@@ -108,9 +108,13 @@ class ListProof:
 
         Returns
         -------
-        result: List[Tuple[int, Any]] or raise an exception `ListProofVerificationError`
+        result: List[Tuple[int, Any]]
             If the hash is correct, a list of the collected values with indices is returned.
-            Otherwise, an exception `ListProofVerificationError` is raised with the string denoting
+
+        Raises
+        ------
+        ListProofVerificationError
+            If verification failed, an exception `ListProofVerificationError` is raised with the string denoting
             the type of the verification error.
         """
 
