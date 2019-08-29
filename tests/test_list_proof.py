@@ -2,7 +2,7 @@ import unittest
 
 from exonum.proofs.list_proof import ProofParser, ListProof
 from exonum.proofs.hasher import Hasher
-from exonum.errors import MalformedProofError
+from exonum.errors import MalformedProofError, ListProofVerificationError
 
 Left = ListProof.Left
 Right = ListProof.Right
@@ -146,10 +146,38 @@ class TestListProof(unittest.TestCase):
 
         proof = ListProof(proof_json)
 
-        status, result = proof.validate(tx_count, expected_hash)
+        result = proof.validate(tx_count, expected_hash)
 
-        self.assertTrue(status)
         self.assertEqual(result, [(0, stored_val)])
+
+    def test_incorrect_proof_raises(self):
+        # Test that incorrect proof verification will raise an error.
+
+        stored_val = '6b70d869aeed2fe090e708485d9f4b4676ae6984206cf05efc136d663610e5c9'
+        incorrect_proof_json = {'left': {'val': stored_val},
+                                'right': 'ffe60adeb5c681110eb5226a4ef95faa4f993c4a838d368b66f7c98501f2c8f9'}
+
+        tx_count = 2
+        expected_hash = '07df67b1a853551eb05470a03c9245483e5a3731b4b558e634908ff356b69857'
+
+        proof = ListProof(incorrect_proof_json)
+
+        with self.assertRaises(ListProofVerificationError):
+            result = proof.validate(tx_count, expected_hash)
+
+        # Test that verification of proof against incorrect hash will raise an error.
+
+        stored_val = '6b70d869aeed2fe090e708485d9f4b4676ae6984206cf05efc136d663610e5c9'
+        proof_json = {'left': {'val': stored_val},
+                      'right': 'eae60adeb5c681110eb5226a4ef95faa4f993c4a838d368b66f7c98501f2c8f9'}
+
+        tx_count = 2
+        incorrect_expected_hash = 'ffdf67b1a853551eb05470a03c9245483e5a3731b4b558e634908ff356b69857'
+
+        proof = ListProof(incorrect_proof_json)
+
+        with self.assertRaises(ListProofVerificationError):
+            result = proof.validate(tx_count, incorrect_expected_hash)
 
     def test_proof_range(self):
         proof_json = {
@@ -190,13 +218,12 @@ class TestListProof(unittest.TestCase):
 
         res = proof.validate(tx_count, expected_hash)
 
-        self.assertTrue(res[0])
-        self.assertEqual(res[1], [(0, '4507b25b6c91cbeba4320ac641728a92f4c085674e11c96b5a5830eddfe7a07a'),
-                                  (1, '17c18e8cfbba5cd179cb9067f28e5a6dc8aeb2a66a7cd7237746f891a2e125b7'),
-                                  (2, '183c6af10407efd8ab875cdf372a5e5893e2527f77fec4bbbcf14f2dd5c22340'),
-                                  (3, '378ec583913aad58f857fa016fbe0b0fccede49454e9e4bd574e6234a620869f'),
-                                  (4, '8021361a8e6cd5fbd5edef78140117a0802b3dc187388037345b8b65835382b2'),
-                                  (5, '8d8b0adab49c2568c2b62ba0ab51ac2a6961b73c3f3bb1b596dd62a0a9971aac')])
+        self.assertEqual(res, [(0, '4507b25b6c91cbeba4320ac641728a92f4c085674e11c96b5a5830eddfe7a07a'),
+                               (1, '17c18e8cfbba5cd179cb9067f28e5a6dc8aeb2a66a7cd7237746f891a2e125b7'),
+                               (2, '183c6af10407efd8ab875cdf372a5e5893e2527f77fec4bbbcf14f2dd5c22340'),
+                               (3, '378ec583913aad58f857fa016fbe0b0fccede49454e9e4bd574e6234a620869f'),
+                               (4, '8021361a8e6cd5fbd5edef78140117a0802b3dc187388037345b8b65835382b2'),
+                               (5, '8d8b0adab49c2568c2b62ba0ab51ac2a6961b73c3f3bb1b596dd62a0a9971aac')])
 
     def test_proof_of_absence(self):
         tx_count = 2
@@ -208,4 +235,4 @@ class TestListProof(unittest.TestCase):
 
         res = proof.validate(tx_count, expected_hash)
 
-        self.assertTrue(res, (True, []))
+        self.assertEqual(res, [])

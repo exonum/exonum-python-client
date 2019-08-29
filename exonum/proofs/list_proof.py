@@ -117,21 +117,17 @@ class ListProof:
 
         root_hash, result = self._calculate_root_hash(length)
 
-        if not root_hash:
-            # Varification error
-            return False, result
-
         expected_hash_raw = bytes.fromhex(expected_hash)
 
         if type(self._proof) == ListProof.Absent:
             if root_hash != expected_hash_raw:
-                return False, ListProofVerificationError('Unmatched root hash')
+                raise ListProofVerificationError('Unmatched root hash')
         else:
             result_hash = Hasher.hash_list_node(length, root_hash)
             if result_hash != expected_hash_raw:
-                return False, ListProofVerificationError('Unmatched root hash')
+                raise ListProofVerificationError('Unmatched root hash')
 
-        return True, result
+        return result
 
     def _calculate_root_hash(self, length):
         # Absent proof element may be only the top one.
@@ -145,12 +141,9 @@ class ListProof:
 
         height = calculate_height(length)
 
-        try:
-            root_hash = self._collect(self._proof, ProofListKey(height, 0), result)
+        root_hash = self._collect(self._proof, ProofListKey(height, 0), result)
 
-            return root_hash, result
-        except ListProofVerificationError as error:
-            return None, error
+        return root_hash, result
 
     def _collect(self, proof_el, key, result):
         if key.height == 0:
