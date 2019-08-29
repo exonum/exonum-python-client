@@ -37,7 +37,7 @@ class ProofParser:
         # Node is Leaf when it contains field 'val' which can be converted to bytes with provided function.
         'Leaf': lambda self, data: is_field_convertible(data, 'val', self.value_to_bytes),
 
-        # Node is Absent when it contains field 'length' which is int and field 'hash' which is hexademical string.
+        # Node is Absent when it contains field 'length' which is int and field 'hash' which is hexadecimal string.
         'Absent': lambda _, data: is_field_int(data, 'length') and is_field_hash(data, 'hash'),
     }
 
@@ -108,11 +108,10 @@ class ListProof:
 
         Returns
         -------
-        hash_valid: bool
-            Boolean value denoting if the expected hash equals to the hash obtained from the proof.
-        result: List[Tuple[int, Any]] or ListProofVerificationError
+        result: List[Tuple[int, Any]] or raise an exception `ListProofVerificationError`
             If the hash is correct, a list of the collected values with indices is returned.
-            Otherwise, ListProofVerificationError with the string denoting the type of the verification error.
+            Otherwise, an exception `ListProofVerificationError` is raised with the string denoting
+            the type of the verification error.
         """
 
         root_hash, result = self._calculate_root_hash(length)
@@ -136,7 +135,7 @@ class ListProof:
 
             return root_hash, []
 
-        # Otherwise, we should calculate the root hash recursevely.
+        # Otherwise, we should calculate the root hash recursively.
         result: List[Tuple[int, Any]] = []
 
         height = calculate_height(length)
