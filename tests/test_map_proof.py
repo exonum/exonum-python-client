@@ -4,20 +4,6 @@ from exonum.proofs.map_proof import ProofPath, MapProof, KEY_SIZE
 
 
 class TestProofPath(unittest.TestCase):
-    def test_eq(self):
-        data_bytes = bytearray([0] * KEY_SIZE)
-        data_bytes[0] = 0b0011_0011
-        path_a = ProofPath.from_bytes(data_bytes)
-        path_b = ProofPath.from_bytes(data_bytes)
-
-        self.assertEqual(path_a, path_b)
-
-        data_bytes = bytearray([0] * KEY_SIZE)
-        data_bytes[0] = 0b1111_1111
-        path_c = ProofPath.from_bytes(data_bytes)
-
-        self.assertNotEqual(path_a, path_c)
-
     def test_basic_methods(self):
         # By default path is leaf.
         data_bytes = bytearray([0] * KEY_SIZE)
@@ -42,17 +28,83 @@ class TestProofPath(unittest.TestCase):
         self.assertEqual(path.start(), 0)
         self.assertEqual(path.end(), 256)
 
-    def test_parse_path(self):
-        path_str = '11001100'
-
-        path = ProofPath.parse(path_str)
-
+    def test_eq(self):
         data_bytes = bytearray([0] * KEY_SIZE)
         data_bytes[0] = 0b0011_0011
-        expected_path = ProofPath.from_bytes(data_bytes)
-        expected_path.set_end(8)
+        path_a = ProofPath.from_bytes(data_bytes)
+        path_b = ProofPath.from_bytes(data_bytes)
 
-        self.assertEqual(path, expected_path)
+        self.assertEqual(path_a, path_b)
+
+        data_bytes = bytearray([0] * KEY_SIZE)
+        data_bytes[0] = 0b1111_1111
+        path_c = ProofPath.from_bytes(data_bytes)
+
+        self.assertNotEqual(path_a, path_c)
+
+    def test_starts_with(self):
+        data_bytes = bytearray([0] * KEY_SIZE)
+        data_bytes[0] = 0b0011_0011
+        path_a = ProofPath.from_bytes(data_bytes)
+        path_b = ProofPath.from_bytes(data_bytes)
+
+        path_b.set_end(8)
+
+        # Support methods for 'starts_with'.
+        self.assertEqual(path_a.match_len(path_b, 0), 8)
+        self.assertEqual(path_a.common_prefix_len(path_b), 8)
+
+        self.assertTrue(path_a.starts_with(path_b))
+        self.assertFalse(path_b.starts_with(path_a))
+
+    def test_prefix(self):
+        data_bytes = bytearray([0] * KEY_SIZE)
+        data_bytes[0] = 0b0011_0011
+        path_a = ProofPath.from_bytes(data_bytes)
+
+        path_b = ProofPath.from_bytes(data_bytes)
+        path_b.set_end(8)
+
+        path_c = path_a.prefix(8)
+
+        self.assertEqual(path_b, path_c)
+
+    def test_parse_path(self):
+        path_strs = [
+            # 1 byte
+            '11001100',
+            # 1.5 bytes
+            '111111001100',
+            # 255 symbols
+            '101100110110010001000110101010000111001010110110011011100100110101001'
+            '101100111010111010000001110000000110101001111000011001100111010111100'
+            '101100100111111110110101110010101011010001110100011001100110000011011'
+            '100001010000010011100000100001011010100000000101',
+            # 256 symbols (full path).
+            '101100110110010001000110101010000111001010110110011011100100110101001'
+            '101100111010111010000001110000000110101001111000011001100111010111100'
+            '101100100111111110110101110010101011010001110100011001100110000011011'
+            '1000010100000100111000001000010110101000000001010'
+        ]
+
+        for path_str in path_strs:
+            # Parse proof path.
+            path = ProofPath.parse(path_str)
+
+            # Convert string to path manually.
+            byte_strs = [path_str[i:i+8] for i in range(0, len(path_str), 8)]
+            path_bytes = [int(byte_str[::-1], 2) for byte_str in byte_strs]
+
+            data_bytes = bytearray([0] * KEY_SIZE)
+            data_bytes[:len(path_bytes)] = path_bytes[:]
+
+            expected_path = ProofPath.from_bytes(data_bytes)
+
+            # If path is not full, create prefix.
+            if len(path_str) < 256:
+                expected_path = expected_path.prefix(len(path_str))
+
+            self.assertEqual(path, expected_path)
 
 
 class TestMapProofParse(unittest.TestCase):
