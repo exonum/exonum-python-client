@@ -1,4 +1,4 @@
-from typing import Optional, Dict
+from typing import Optional, Dict, Any, List
 from enum import IntEnum
 
 from ..errors import MalformedProofError
@@ -104,7 +104,7 @@ class MapProofEntry:
         """ Parses MapProofEntry from the json. """
 
         if not isinstance(data.get('path'), str) or not is_field_hash(data, 'hash'):
-            raise MalformedProofError('Malformed proof entry: {}'.format(data))
+            raise MalformedProofError('Malformed proof element: {}'.format(data))
 
         path_bits = data['path']
         path = ProofPath.parse(path_bits)
@@ -114,5 +114,33 @@ class MapProofEntry:
         return MapProofEntry(path, data_hash)
 
 
+class OptionalEntry:
+    def __init__(self, key: Any, value: Optional[Any]):
+        self.key = key
+        self.value = value
+        self.is_missing = False if value else True
+
+    @staticmethod
+    def parse(data: Dict[str, Any]) -> OptionalEntry:
+        if data.get('missing'):
+            return OptionalEntry(key=data['missing'], value=None)
+        elif data.get('key') and data.get('value'):
+            return OptionalEntry(key=data['key'], value=data['value'])
+        else:
+            raise MalformedProofError('Malformed entry: {}'.format(data))
+
+
 class MapProof:
-    pass
+    def __init__(self, entries: List[OptionalEntry], proof: List[MapProofEntry]):
+        self.entries = entries
+        self.proof = proof
+
+    @staticmethod
+    def parse(data: Dict[str, Any]) -> MapProof:
+        if not data.get('entries') or not data.get('proof'):
+            raise MalformedProofError('Malformed proof: {}'.format(data))
+
+        entries: List[OptionalEntry] = [OptionalEntry.parse(raw_entry) for raw_entry in data['entries']]
+        proof: List[MapProofEntry] = [MapProofEntry.parse(raw_entry) for raw_entry in data['proof']]
+
+        return MapProof(entries, proof)
