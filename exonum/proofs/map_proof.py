@@ -3,6 +3,7 @@ from functools import total_ordering
 from enum import IntEnum
 
 from ..errors import MalformedProofError
+from .hasher import Hasher
 from .utils import is_field_hash, to_bytes, div_ceil, trailing_zeros, reset_bits, leb128_encode_unsigned
 
 # Size in bytes of the Hash. Equal to the hash function output (32).
@@ -304,6 +305,44 @@ class OptionalEntry:
             return OptionalEntry(key=data['key'], value=data['value'])
         else:
             raise MalformedProofError('Malformed entry: {}'.format(data))
+
+
+def collect(entries: List[MapProofEntry]) -> bytes:
+    """ TODO: write a proper docstring. """
+    def common_prefix(x: ProofPath, y: ProofPath) -> ProofPath:
+        return x.prefix(x.common_prefix_len(y))
+
+    def hash_branch(left_child: MapProofEntry, right_child: MapProofEntry) -> bytes:
+        # TODO
+
+        return bytes()
+
+    def fold(contour: List[MapProofEntry], last_prefix: ProofPath) -> Optional[ProofPath]:
+        last_entry = contour.pop()
+        penultimate_entry = contour.pop()
+
+        contour.append(MapProofEntry(path=last_prefix, data_hash=hash_branch(penultimate_entry, last_entry)))
+
+        if len(contour) > 1:
+            penultimate_entry = contour[len(contour) - 2]
+            return common_prefix(penultimate_entry.path, last_prefix)
+        else:
+            return None
+
+    if len(entries) == 0:
+        # TODO return default hash
+        return bytes()
+    elif len(entries) == 1:
+        if entries[0].path.is_leaf():
+            return Hasher.hash_single_entry_map(entries[0].path, entries[0].hash)
+        else:
+            # TODO raise error
+            pass
+    else:
+        # Ah, here it goes...
+        pass
+
+    return bytes()
 
 
 class MapProof:
