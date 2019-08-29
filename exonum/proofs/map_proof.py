@@ -3,7 +3,7 @@ from functools import total_ordering
 from enum import IntEnum
 
 from ..errors import MalformedProofError
-from .utils import is_field_hash, to_bytes, div_ceil, trailing_zeros, reset_bits
+from .utils import is_field_hash, to_bytes, div_ceil, trailing_zeros, reset_bits, leb128_encode_unsigned
 
 # Size in bytes of the Hash. Equal to the hash function output (32).
 KEY_SIZE = 32
@@ -177,9 +177,9 @@ class ProofPath:
         else:
             return self.data_bytes[ProofPath.Positions.LEN_POS]
 
-    def raw_key(self):
+    def raw_key(self) -> bytes:
         """ Returns the stored key as raw bytes """
-        return self.data_bytes[ProofPath.Positions.KEY_POS:ProofPath.Positions.KEY_POS + KEY_SIZE]
+        return bytes(self.data_bytes[ProofPath.Positions.KEY_POS:ProofPath.Positions.KEY_POS + KEY_SIZE])
 
     def set_end(self, end: Optional[int]):
         """ Sets tha right border of the proof path. """
@@ -244,7 +244,21 @@ class ProofPath:
 
     def as_bytes_compressed(self) -> bytes:
         """ Represents path as compressed bytes using les128 algorigthm. """
-        pass
+        bits_len = self.end()
+        whole_bytes_len = div_ceil(bits_len, 8)
+        key = self.raw_key()[0:whole_bytes_len]
+
+        result = bytearray()
+        result += leb128_encode_unsigned(bits_len)
+        result += key
+
+        # Trim insignificant bits in the last byte.
+        bits_in_last_byte = bits_len % 8
+        if whole_bytes_len > 0 and bits_in_last_byte != 0:
+            tail = self.end() % 8
+            result[-1] = reset_bits(result[-1], tail)
+
+        return bytes(result)
 
 
 class MapProofEntry:
