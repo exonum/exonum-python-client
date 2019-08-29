@@ -35,3 +35,21 @@ class Hasher:
         data = struct.pack('<BQ', Hasher.HashTag.LIST_NODE, length) + merkle_root
 
         return crypto_hash_sha256(data)
+
+    @staticmethod
+    def hash_map_node(root):
+        data = struct.pack('<B', Hasher.HashTag.MAP_NODE) + root
+
+        return crypto_hash_sha256(data)
+
+    @staticmethod
+    def hash_map_branch(branch_node):
+        data = struct.pack('<B', Hasher.HashTag.MAP_BRANCH_NODE) + branch_node
+
+        return crypto_hash_sha256(data)
+
+    @staticmethod
+    def hash_single_entry_map(path, hash):
+        data = struct.pack('<B', Hasher.HashTag.MAP_BRANCH_NODE) + path.as_bytes() + hash
+
+        return crypto_hash_sha256(data)
