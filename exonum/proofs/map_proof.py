@@ -22,7 +22,7 @@ class ProofPath:
         LEN_POS = KEY_SIZE + 1
 
     @staticmethod
-    def parse(bits: str) -> ProofPath:
+    def parse(bits: str) -> 'ProofPath':
         """ Parses a ProofPath from string. """
 
         length = len(bits)
@@ -48,10 +48,44 @@ class ProofPath:
 
     def __init__(self, data_bytes: bytearray, start: int):
         self.data_bytes = data_bytes
-        self.start = start
+        self._start = start
+
+    def is_leaf(self):
+        return self.data_bytes[0] == ProofPath.KeyPrefix.LEAF
+
+    def start(self):
+        return self._start
+
+    def end(self):
+        if self.is_leaf():
+            return KEY_SIZE * 8
+        else:
+            return self.data_bytes[ProofPath.Positions.LEN_POS]
+
+    def raw_key(self):
+        return self.data_bytes[ProofPath.Positions.KEY_POS:ProofPath.Positions.KEY_POS + KEY_SIZE]
+
+    def __repr__(self) -> str:
+        bits_str = ''
+
+        raw_key = self.raw_key()
+        for byte_idx in range(len(raw_key)):
+            chunk = raw_key[byte_idx]
+            # Range from 7 to 0 inclusively.
+            for bit in range(7, -1, -1):
+                i = byte_idx * 8 + bit
+                if i < self.start() or i > self.end():
+                    bits_str += '_'
+                else:
+                    bits_str += '0' if (1 << bit) & chunk == 0 else '1'
+
+            bits_str += '|'
+
+        format_str = 'ProofPath [ start: {}, end: {}, bits: {} ]'.format(self.start(), self.end(), bits_str)
+        return format_str
 
     @staticmethod
-    def from_bytes(data_bytes: bytes) -> ProofPath:
+    def from_bytes(data_bytes: bytes) -> 'ProofPath':
         """ Builds a proof from bytes sequence. """
         inner = bytearray([0] * PROOF_PATH_SIZE)
 
@@ -70,16 +104,16 @@ class ProofPath:
             self.data_bytes[0] = self.KeyPrefix.LEAF
             self.data_bytes[self.Positions.LEN_POS] = 0
 
-    def prefix(self, length) -> ProofPath:
+    def prefix(self, length) -> 'ProofPath':
         """ Creates a copy of this path shortened to the specified length. """
 
-        end = self.start + length
+        end = self._start + length
         key_len = KEY_SIZE * 8
 
         if end >= key_len:
             raise ValueError('Length of prefix ({}) should not be greater than KEY_SIZE * 8'.format(end))
 
-        key = ProofPath(bytearray(self.data_bytes), self.start)
+        key = ProofPath(bytearray(self.data_bytes), self._start)
         key.set_end(end)
 
         return key
@@ -99,8 +133,11 @@ class MapProofEntry:
         self.path = path
         self.hash = data_hash
 
+    def __repr__(self) -> str:
+        return 'Entry [path: {}, hash: {}]'.format(self.path, self.hash)
+
     @staticmethod
-    def parse(data: Dict[str, str]):
+    def parse(data: Dict[str, str]) -> 'MapProofEntry':
         """ Parses MapProofEntry from the json. """
 
         if not isinstance(data.get('path'), str) or not is_field_hash(data, 'hash'):
@@ -120,8 +157,14 @@ class OptionalEntry:
         self.value = value
         self.is_missing = False if value else True
 
+    def __repr__(self) -> str:
+        if self.is_missing:
+            return 'Missing [key: {}]'.format(self.key)
+        else:
+            return 'Entry [key: {}, value: {}]'.format(self.key, self.value)
+
     @staticmethod
-    def parse(data: Dict[str, Any]) -> OptionalEntry:
+    def parse(data: Dict[str, Any]) -> 'OptionalEntry':
         if data.get('missing'):
             return OptionalEntry(key=data['missing'], value=None)
         elif data.get('key') and data.get('value'):
@@ -135,8 +178,13 @@ class MapProof:
         self.entries = entries
         self.proof = proof
 
+    def __repr__(self) -> str:
+        format_str = 'MapProof [\n  Entries: {}\n  Proof: {}\n]\n'
+
+        return format_str.format(self.entries, self.proof)
+
     @staticmethod
-    def parse(data: Dict[str, Any]) -> MapProof:
+    def parse(data: Dict[str, Any]) -> 'MapProof':
         if not data.get('entries') or not data.get('proof'):
             raise MalformedProofError('Malformed proof: {}'.format(data))
 
