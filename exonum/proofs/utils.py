@@ -1,3 +1,6 @@
+import re
+
+
 def is_dict(json):
     return isinstance(json, dict)
 
@@ -7,11 +10,8 @@ def is_field_dict(json, field):
 
 
 def is_field_hash(json, field):
-    try:
-        field = json.get(field)
-        return isinstance(field, str) and len(field) == 64 and int(field, 16)
-    except ValueError:
-        return False
+    field = json.get(field)
+    return isinstance(field, str) and re.match(r"^[0-9A-Fa-f]{64}$", field)
 
 
 def is_field_hash_or_none(json, field):
