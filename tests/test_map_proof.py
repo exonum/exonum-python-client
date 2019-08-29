@@ -42,6 +42,19 @@ class TestProofPath(unittest.TestCase):
 
         self.assertNotEqual(path_a, path_c)
 
+    def test_comparison(self):
+        datasets = [
+            (ProofPath.from_bytes(bytes([1] * 32)), ProofPath.from_bytes(bytes([254] * 32))),
+            (ProofPath.from_bytes(bytes([0b0001_0001] * 32)), ProofPath.from_bytes(bytes([0b0010_0001] * 32))),
+            (ProofPath.from_bytes(bytes([1] * 32)), ProofPath.from_bytes(bytes([1] * 32)).prefix(254))
+        ]
+
+        for path_a, path_b in datasets:
+            self.assertTrue(path_a > path_b)
+            self.assertTrue(path_b < path_a)
+            self.assertFalse(path_a < path_b)
+            self.assertFalse(path_b > path_a)
+
     def test_starts_with(self):
         data_bytes = bytearray([0] * KEY_SIZE)
         data_bytes[0] = 0b0011_0011

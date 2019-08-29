@@ -1,8 +1,9 @@
 from typing import Optional, Dict, Any, List
+from functools import total_ordering
 from enum import IntEnum
 
 from ..errors import MalformedProofError
-from .utils import is_field_hash, to_bytes, div_ceil, trailing_zeros
+from .utils import is_field_hash, to_bytes, div_ceil, trailing_zeros, reset_bits
 
 # Size in bytes of the Hash. Equal to the hash function output (32).
 KEY_SIZE = 32
@@ -10,6 +11,7 @@ KEY_SIZE = 32
 PROOF_PATH_SIZE = KEY_SIZE + 2
 
 
+@total_ordering
 class ProofPath:
     class KeyPrefix(IntEnum):
         BRANCH = 0
@@ -124,6 +126,41 @@ class ProofPath:
 
     def __eq__(self, other) -> bool:
         return len(self) == len(other) and self.starts_with(other)
+
+    def __lt__(self, other) -> bool:
+        if self.start() != other.start():
+            return NotImplemented
+
+        if self.start() != 0:
+            # the code below does not work if `self.start() % 8 != 0` without additional modifications.
+            raise ValueError("Attempt to compare path with start != 0")
+
+        right_bit = min(self.end(), other.end())
+        right = div_ceil(right_bit, 8)
+
+        raw_key = self.raw_key()
+        other_raw_key = other.raw_key()
+
+        for i in range(right):
+            self_byte, other_byte = raw_key[i], other_raw_key[i]
+
+            if i + 1 == right and right_bit % 8 != 0:
+                # Cut possible junk after the end of path(s)
+                tail = right_bit % 8
+                self_byte = reset_bits(self_byte, tail)
+                other_byte = reset_bits(other_byte, tail)
+
+            # Try to find a first bit index at which this path is greater than the other path
+            # (i.e., a bit of this path is 1 and the corresponding bit of the other path
+            # is 0), and vice versa. The smaller of these indexes indicates the actual
+            # larger path. In turn, the indexes can be found by counting trailing zeros.
+            self_zeros = trailing_zeros(self_byte & ~other_byte)
+            other_zeros = trailing_zeros(~self_byte & other_byte)
+
+            if other_zeros != self_zeros:
+                return other_zeros < self_zeros
+
+        return self.end() < other.end()
 
     def is_leaf(self):
         """ Returns True if ProofPath is leaf and False otherwise """
