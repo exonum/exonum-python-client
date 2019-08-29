@@ -2,7 +2,7 @@ from typing import Optional, Dict, Any, List
 from enum import IntEnum
 
 from ..errors import MalformedProofError
-from .utils import is_field_hash, to_bytes
+from .utils import is_field_hash, to_bytes, div_ceil, trailing_zeros
 
 # Size in bytes of the Hash. Equal to the hash function output (32).
 KEY_SIZE = 32
@@ -84,13 +84,22 @@ class ProofPath:
         format_str = 'ProofPath [ start: {}, end: {}, bits: {} ]'.format(self.start(), self.end(), bits_str)
         return format_str
 
+    def __len__(self) -> int:
+        return self.end() - self.start()
+
+    def __eq__(self, other) -> bool:
+        return len(self) == len(other) and self.starts_with(other)
+
     @staticmethod
     def from_bytes(data_bytes: bytes) -> 'ProofPath':
         """ Builds a proof from bytes sequence. """
+        if len(data_bytes) != KEY_SIZE:
+            raise ValueError('Incorrect data size')
+
         inner = bytearray([0] * PROOF_PATH_SIZE)
 
         inner[0] = ProofPath.KeyPrefix.LEAF
-        inner[ProofPath.Positions.KEY_POS:ProofPath.Positions.LEN_POS] = data_bytes[:]
+        inner[ProofPath.Positions.KEY_POS:ProofPath.Positions.KEY_POS + KEY_SIZE] = data_bytes[:]
         inner[ProofPath.Positions.LEN_POS] = 0
 
         return ProofPath(inner, 0)
@@ -117,6 +126,36 @@ class ProofPath:
         key.set_end(end)
 
         return key
+
+    def match_len(self, other, from_bit) -> int:
+        if self.start() != other.start():
+            raise ValueError("Misaligned bit ranges")
+        elif from_bit < self.start() or from_bit > self.end():
+            raise ValueError("Incorrect from_bit value: {}".format(from_bit))
+
+        from_byte = from_bit // 8
+        to_byte = min(div_ceil(self.end(), 8), div_ceil(other.end(), 8))
+        len_to_the_end = min(len(self), len(other))  # Maximum possible match length.
+
+        raw_key = self.raw_key()
+        other_raw_key = other.raw_key()
+
+        for i in range(from_byte, to_byte):
+            x = raw_key[i] ^ other_raw_key[i]
+            if x != 0:
+                tail = trailing_zeros(x)
+                return min(i * 8 + tail - self.start(), len_to_the_end)
+
+        return len_to_the_end
+
+    def common_prefix_len(self, other) -> int:
+        if self.start() == other.start():
+            return self.match_len(other, self.start())
+        else:
+            return 0
+
+    def starts_with(self, other) -> bool:
+        return self.common_prefix_len(other) == len(other)
 
     def as_bytes(self) -> bytes:
         """ Represents path as bytes according to the Merkledb implementation. """

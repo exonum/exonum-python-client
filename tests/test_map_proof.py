@@ -1,6 +1,58 @@
 import unittest
 
-from exonum.proofs.map_proof import MapProof
+from exonum.proofs.map_proof import ProofPath, MapProof, KEY_SIZE
+
+
+class TestProofPath(unittest.TestCase):
+    def test_eq(self):
+        data_bytes = bytearray([0] * KEY_SIZE)
+        data_bytes[0] = 0b0011_0011
+        path_a = ProofPath.from_bytes(data_bytes)
+        path_b = ProofPath.from_bytes(data_bytes)
+
+        self.assertEqual(path_a, path_b)
+
+        data_bytes = bytearray([0] * KEY_SIZE)
+        data_bytes[0] = 0b1111_1111
+        path_c = ProofPath.from_bytes(data_bytes)
+
+        self.assertNotEqual(path_a, path_c)
+
+    def test_basic_methods(self):
+        # By default path is leaf.
+        data_bytes = bytearray([0] * KEY_SIZE)
+        data_bytes[0] = 0b0011_0011
+        path = ProofPath.from_bytes(data_bytes)
+
+        self.assertTrue(path.is_leaf())
+        self.assertEqual(path.start(), 0)
+        self.assertEqual(path.end(), 256)
+
+        # Make it branch.
+        path.set_end(8)
+
+        self.assertFalse(path.is_leaf())
+        self.assertEqual(path.start(), 0)
+        self.assertEqual(path.end(), 8)
+
+        # Make it leaf back.
+        path.set_end(None)
+
+        self.assertTrue(path.is_leaf())
+        self.assertEqual(path.start(), 0)
+        self.assertEqual(path.end(), 256)
+
+    def test_parse_path(self):
+        path_str = '11001100'
+
+        path = ProofPath.parse(path_str)
+
+        data_bytes = bytearray([0] * KEY_SIZE)
+        data_bytes[0] = 0b0011_0011
+        expected_path = ProofPath.from_bytes(data_bytes)
+        expected_path.set_end(8)
+
+        self.assertEqual(path, expected_path)
 
 
 class TestMapProofParse(unittest.TestCase):

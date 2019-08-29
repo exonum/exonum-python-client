@@ -51,3 +51,12 @@ def calculate_height(number):
         trailing_zeroes_amount = (number - 1).bit_length()
 
         return trailing_zeroes_amount + 1
+
+
+def div_ceil(a, b):
+    return (a + b - 1) // a
+
+
+def trailing_zeros(n):
+    s = str(n)
+    return len(s)-len(s.rstrip('0'))
