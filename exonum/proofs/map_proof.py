@@ -1,13 +1,13 @@
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Iterator, Callable
 from functools import total_ordering
 from enum import IntEnum
 
-from ..errors import MalformedProofError
-from .hasher import Hasher
+from ..errors import MalformedMapProofError
+from .hasher import Hasher, EMPTY_MAP_HASH
 from .utils import is_field_hash, to_bytes, div_ceil, trailing_zeros, reset_bits, leb128_encode_unsigned
 
 # Size in bytes of the Hash. Equal to the hash function output (32).
-KEY_SIZE = 32
+KEY_SIZE = Hasher.HASH_SIZE
 # Size in bytes of the ProofPath.
 PROOF_PATH_SIZE = KEY_SIZE + 2
 
@@ -47,7 +47,8 @@ class ProofPath:
 
         length = len(bits)
         if length == 0 or length > 8 * KEY_SIZE:
-            raise MalformedProofError('Incorrect MapProof path length: {}'.format(length))
+            error = 'Incorrect MapProof path length: {}'.format(length)
+            raise MalformedMapProofError.malformed_entry(bits, error)
 
         data = [0] * KEY_SIZE
 
@@ -57,7 +58,8 @@ class ProofPath:
             elif ch == '1':
                 data[i // 8] += 1 << (i % 8)
             else:
-                raise MalformedProofError('Unexpected MapProof path symbol: {}'.format(ch))
+                error = 'Unexpected MapProof path symbol: {}'.format(ch)
+                raise MalformedMapProofError.malformed_entry(bits, error)
 
         data_bytes = bytes(data)
 
@@ -275,7 +277,7 @@ class MapProofEntry:
         """ Parses MapProofEntry from the json. """
 
         if not isinstance(data.get('path'), str) or not is_field_hash(data, 'hash'):
-            raise MalformedProofError('Malformed proof element: {}'.format(data))
+            raise MalformedMapProofError.malformed_entry(data)
 
         path_bits = data['path']
         path = ProofPath.parse(path_bits)
@@ -304,18 +306,80 @@ class OptionalEntry:
         elif data.get('key') and data.get('value'):
             return OptionalEntry(key=data['key'], value=data['value'])
         else:
-            raise MalformedProofError('Malformed entry: {}'.format(data))
+            raise MalformedMapProofError.malformed_entry(data)
+
+
+class BranchNode:
+    # Branch node contains 2 proof paths and 2 hashes.
+    BRANCH_NODE_SIZE = 2 * (Hasher.HASH_SIZE + PROOF_PATH_SIZE)
+
+    def __init__(self):
+        self.raw = bytearray([0] * self.BRANCH_NODE_SIZE)
+
+    def _verify_kind(self, kind):
+        if kind not in ['left', 'right']:
+            raise ValueError('Incorrect child kind: {}'.format(kind))
+
+    def _hash_slice(self, kind) -> slice:
+        self._verify_kind(kind)
+        start = 0 if kind == 'left' else Hasher.HASH_SIZE
+
+        return slice(start, start + Hasher.HASH_SIZE)
+
+    def _path_slice(self, kind) -> slice:
+        self._verify_kind(kind)
+        start = 2 * Hasher.HASH_SIZE if kind == 'left' else 2 * Hasher.HASH_SIZE + PROOF_PATH_SIZE
+
+        return slice(start, start + PROOF_PATH_SIZE)
+
+    def child_hash(self, kind: str) -> bytes:
+        return bytes(self.raw[self._hash_slice(kind)])
+
+    def child_path(self, kind: str) -> ProofPath:
+        return ProofPath(self.raw[self._path_slice(kind)], 0)
+
+    def set_child_path(self, kind: str, prefix: ProofPath):
+        self.raw[self._path_slice(kind)] = prefix.as_bytes()
+
+    def set_child_hash(self, kind: str, child_hash: bytes):
+        if len(child_hash) != Hasher.HASH_SIZE:
+            raise ValueError('Incorrect hash length: {}'.format(child_hash))
+
+        self.raw[self._hash_slice(kind)] = child_hash
+
+    def set_child(self, kind: str, prefix: ProofPath, child_hash: bytes):
+        self.set_child_path(kind, prefix)
+        self.set_child_hash(kind, child_hash)
+
+    def object_hash(self) -> bytes:
+        data = bytearray([0] * 132)
+
+        data[self._hash_slice('left')] = self.raw[self._hash_slice('left')]
+        data[self._hash_slice('right')] = self.raw[self._hash_slice('right')]
+
+        path_start = 2 * Hasher.HASH_SIZE
+
+        left_path_compressed = self.child_path('left').as_bytes_compressed()
+        data[path_start:path_start + len(left_path_compressed)] = left_path_compressed
+
+        path_start += len(left_path_compressed)
+
+        right_path_compressed = self.child_path('right').as_bytes_compressed()
+        data[path_start + len(right_path_compressed)] = right_path_compressed
+
+        return Hasher.hash_map_branch(data)
 
 
 def collect(entries: List[MapProofEntry]) -> bytes:
-    """ TODO: write a proper docstring. """
     def common_prefix(x: ProofPath, y: ProofPath) -> ProofPath:
         return x.prefix(x.common_prefix_len(y))
 
     def hash_branch(left_child: MapProofEntry, right_child: MapProofEntry) -> bytes:
-        # TODO
+        branch = BranchNode()
+        branch.set_child('left', left_child.path, left_child.hash)
+        branch.set_child('right', right_child.path, right_child.hash)
 
-        return bytes()
+        return branch.object_hash()
 
     def fold(contour: List[MapProofEntry], last_prefix: ProofPath) -> Optional[ProofPath]:
         last_entry = contour.pop()
@@ -330,25 +394,78 @@ def collect(entries: List[MapProofEntry]) -> bytes:
             return None
 
     if len(entries) == 0:
-        # TODO return default hash
-        return bytes()
+        return EMPTY_MAP_HASH
     elif len(entries) == 1:
         if entries[0].path.is_leaf():
             return Hasher.hash_single_entry_map(entries[0].path, entries[0].hash)
         else:
-            # TODO raise error
-            pass
+            raise MalformedMapProofError.non_terminal_node(entries[0].path)
     else:
-        # Ah, here it goes...
-        pass
+        # Contour of entries to be folded into result hash.
+        contour: List[MapProofEntry] = []
 
-    return bytes()
+        # Initical contour state.
+        first_entry, second_entry = entries[0], entries[1]
+        last_prefix = common_prefix(first_entry.path, second_entry.path)
+        contour = [first_entry, second_entry]
+
+        # Process the rest of the entries.
+        for entry in entries[2:]:
+            new_prefix = common_prefix(contour[-1].path, entry.path)
+
+            # Fold contour from the last added entry to the beginning.
+            # At each iteration two last entries are taken and attempted to fold into one new entry.
+            while len(contour) > 1 and len(new_prefix) < len(last_prefix):
+                prefix = fold(contour, last_prefix)
+                if prefix:
+                    last_prefix = prefix
+
+                contour.append(entry)
+                last_prefix = new_prefix
+
+        # All entries are processed. Fold the contour into the final hash.
+        while len(contour) > 1:
+            prefix = fold(contour, last_prefix)
+            if prefix:
+                last_prefix = prefix
+
+        return contour[0].hash
+
+
+class CheckedMapProof:
+    def __init__(self, entries: List[OptionalEntry], root_hash: bytes):
+        self._entries = entries
+        self._root_hash = root_hash
+
+    def missing_keys(self) -> Iterator[OptionalEntry]:
+        """ Retrieves entries that the proof shows as missing from the map. """
+        return filter(lambda el: el.is_missing, self._entries)
+
+    def entries(self) -> Iterator[OptionalEntry]:
+        """ Retrieves entries that the proof shows as present in the map. """
+        return filter(lambda el: not el.is_missing, self._entries)
+
+    def all_entries(self) -> List[OptionalEntry]:
+        """ Retrieves all entries in the proof. """
+        return self._entries
+
+    def root_hash(self) -> bytes:
+        """ Returns a hash of the map that this proof is constructed for. """
+        return self._root_hash
 
 
 class MapProof:
-    def __init__(self, entries: List[OptionalEntry], proof: List[MapProofEntry]):
+    def __init__(
+        self,
+        entries: List[OptionalEntry],
+        proof: List[MapProofEntry],
+        key_to_hash: Callable[[Any], bytes],
+        value_to_bytes: Callable[[Any], bytes]
+    ):
         self.entries = entries
         self.proof = proof
+        self._key_to_hash = key_to_hash
+        self._value_to_bytes = value_to_bytes
 
     def __repr__(self) -> str:
         format_str = 'MapProof [\n  Entries: {}\n  Proof: {}\n]\n'
@@ -356,11 +473,50 @@ class MapProof:
         return format_str.format(self.entries, self.proof)
 
     @staticmethod
-    def parse(data: Dict[str, Any]) -> 'MapProof':
+    def parse(
+        data: Dict[str, Any],
+        key_to_hash: Callable[[Any], bytes],
+        value_to_bytes: Callable[[Any], bytes]
+    ) -> 'MapProof':
         if not data.get('entries') or not data.get('proof'):
-            raise MalformedProofError('Malformed proof: {}'.format(data))
+            raise MalformedMapProofError.malformed_entry(data)
 
         entries: List[OptionalEntry] = [OptionalEntry.parse(raw_entry) for raw_entry in data['entries']]
         proof: List[MapProofEntry] = [MapProofEntry.parse(raw_entry) for raw_entry in data['proof']]
 
-        return MapProof(entries, proof)
+        return MapProof(entries, proof, key_to_hash, value_to_bytes)
+
+    def _check_proof(self, proof):
+        for idx in range(1, len(proof)):
+            prev_path, path = proof[idx - 1].path, proof[idx].path
+
+            if prev_path < path:
+                if path.starts_with(prev_path):
+                    raise MalformedMapProofError.embedded_paths(prev_path, path)
+            elif prev_path == path:
+                raise MalformedMapProofError.duplicate_path(path)
+            elif prev_path > path:
+                raise MalformedMapProofError.invalid_ordering(prev_path, path)
+            else:
+                assert False, "Incomparable keys in proof"
+
+    def check(self) -> CheckedMapProof:
+        def kv_to_map_entry(kv: OptionalEntry) -> MapProofEntry:
+            path = ProofPath.from_bytes(self._key_to_hash(kv.key))
+            value_hash = Hasher.hash_leaf(self._value_to_bytes(kv.value))
+
+            return MapProofEntry(path, value_hash)
+
+        proof = self.proof[:]
+
+        entries = filter(lambda el: not el.is_missing, self.entries)
+
+        proof += map(lambda el: kv_to_map_entry(el), self.entries)
+
+        proof.sort()
+
+        self._check_proof(proof)
+
+        result = collect(proof)
+
+        return CheckedMapProof(self.entries, result)
