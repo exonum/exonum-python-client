@@ -122,6 +122,9 @@ class TestProofPath(unittest.TestCase):
 
 class TestMapProofParse(unittest.TestCase):
     def test_parse_full_tree(self):
+        def mock_converter(val):
+            return bytes()
+
         full_tree = {
           'entries': [
             {
@@ -156,5 +159,5 @@ class TestMapProofParse(unittest.TestCase):
           ]
         }
 
-        parsed_proof = MapProof.parse(full_tree)
+        parsed_proof = MapProof.parse(full_tree, mock_converter, mock_converter)
         print(parsed_proof)
