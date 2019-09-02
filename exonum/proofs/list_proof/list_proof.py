@@ -2,9 +2,9 @@ from typing import List, Tuple, Any
 
 import collections
 
-from ..errors import MalformedProofError, ListProofVerificationError
-from .utils import *
-from .hasher import Hasher
+from .errors import MalformedListProofError, ListProofVerificationError
+from ..utils import *
+from ..hasher import Hasher
 
 
 class ProofListKey:
@@ -67,7 +67,7 @@ class ProofParser:
                 if condition(self, proof_dict):
                     return ProofParser.NODE_FACTORY[kind](self, proof_dict)
 
-        raise MalformedProofError('Received malformed proof: {}'.format(proof_dict))
+        raise MalformedListProofError('Received malformed proof: {}'.format(proof_dict))
 
 
 class ListProof:

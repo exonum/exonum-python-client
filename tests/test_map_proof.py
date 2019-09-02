@@ -1,6 +1,8 @@
 import unittest
 
-from exonum.proofs.map_proof import ProofPath, MapProof, KEY_SIZE
+from exonum.proofs.map_proof import MapProof
+from exonum.proofs.map_proof.proof_path import ProofPath
+from exonum.proofs.map_proof.constants import KEY_SIZE
 
 
 class TestProofPath(unittest.TestCase):

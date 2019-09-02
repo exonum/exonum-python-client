@@ -1,8 +1,9 @@
 import unittest
 
-from exonum.proofs.list_proof import ProofParser, ListProof
+from exonum.proofs.list_proof import ListProof
+from exonum.proofs.list_proof.list_proof import ProofParser
+from exonum.proofs.list_proof.errors import MalformedListProofError, ListProofVerificationError
 from exonum.proofs.hasher import Hasher
-from exonum.errors import MalformedProofError, ListProofVerificationError
 
 Left = ListProof.Left
 Right = ListProof.Right
@@ -131,7 +132,7 @@ class TestProofParser(unittest.TestCase):
         proof_parser = ProofParser(bytes.fromhex)
 
         for malformed_proof in malformed_proofs:
-            with self.assertRaises(MalformedProofError):
+            with self.assertRaises(MalformedListProofError):
                 proof_parser.parse(malformed_proof)
 
 
