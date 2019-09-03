@@ -59,6 +59,6 @@ class BranchNode:
         path_start += len(left_path_compressed)
 
         right_path_compressed = self.child_path('right').as_bytes_compressed()
-        data[path_start + len(right_path_compressed)] = right_path_compressed
+        data[path_start:path_start + len(right_path_compressed)] = right_path_compressed
 
         return Hasher.hash_map_branch(data)

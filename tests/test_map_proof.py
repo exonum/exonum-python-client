@@ -1,8 +1,12 @@
 import unittest
+import sys
+import os
 
 from exonum.proofs.map_proof import MapProof
 from exonum.proofs.map_proof.proof_path import ProofPath
 from exonum.proofs.map_proof.constants import KEY_SIZE
+from exonum.proofs.map_proof.map_proof_builder import MapProofBuilder
+from exonum.module_manager import ModuleManager
 
 
 class TestProofPath(unittest.TestCase):
@@ -163,3 +167,57 @@ class TestMapProofParse(unittest.TestCase):
 
         parsed_proof = MapProof.parse(full_tree, mock_converter, mock_converter)
         print(parsed_proof)
+
+
+class TestMapProof(unittest.TestCase):
+    def test_map_proof_validate(self):
+        # TODO workaround because of the protobuf bug
+        import base64
+        data_raw = bytes([230, 16, 219, 117, 176, 187, 189, 76, 96, 108, 79, 140, 163, 252, 169, 249, 22, 233, 200, 174, 154, 147, 181, 183, 103, 8, 33, 114, 69, 67, 68, 179])
+        data_b64 = str(base64.b64encode(data_raw), 'utf-8')
+
+        history_hash_raw = bytes([25, 250, 248, 89, 215, 69, 105, 7, 199, 111, 8, 90, 245, 183, 162, 215, 98, 29, 153, 38, 23, 163, 73, 0, 108, 7, 114, 9, 87, 213, 212, 157])
+        history_hash_b64 = str(base64.b64encode(history_hash_raw), 'utf-8')
+
+        proof = {
+          "entries": [
+            {
+              "key": "e610db75b0bbbd4c606c4f8ca3fca9f916e9c8ae9a93b5b767082172454344b3",
+              "value": {
+                "pub_key": {
+                  "data": data_b64
+                },
+                "name": "Alice1",
+                "balance": 95,
+                "history_len": 6,
+                "history_hash": {
+                  "data": history_hash_b64
+                }
+              }
+            }
+          ],
+          "proof": [
+            {
+              "path": "0100001001001000101001001100011001110110110110000100110110111111111101100011010010010110101111000010100100110110100011100110010110010101011001000001010100100000011010111000000100111011010010111110010011011011101001110000111111000000011111100010001011010000",
+              "hash": "dbeab4aa952e2c2cb3dc921aa42c9b508e2e5961cad2463f7203d228abc204c8"
+            }
+          ]
+        }
+
+        # TODO move in setup?
+        sys.path.append(os.path.abspath('tests/proto_dir'))
+        cryptocurrency_service_name = 'exonum-cryptocurrency-advanced:0.11.0'
+        cryptocurrency_module = ModuleManager.import_service_module(cryptocurrency_service_name, 'service')
+
+        cryptocurrency_decoder = MapProofBuilder.build_encoder_function(cryptocurrency_module.Wallet)
+
+        parsed_proof = MapProof.parse(proof, lambda x: bytes.fromhex(x), cryptocurrency_decoder)
+
+        result = parsed_proof.check()
+
+        print(result._entries)
+        print(result._root_hash.hex())
+
+        expected_hash = '27d89236d79d59bfdc135669aeb4608afa644edc06469d93147ef85852e275e2'
+
+        print("EXPECTED HASH: {}".format(expected_hash))

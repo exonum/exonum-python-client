@@ -177,7 +177,7 @@ class MapProof:
 
         proof += map(lambda el: kv_to_map_entry(el), self.entries)
 
-        proof.sort()
+        proof.sort(key=lambda el: el.path)
 
         self._check_proof(proof)
 
