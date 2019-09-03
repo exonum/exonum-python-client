@@ -26,7 +26,7 @@ class ProofPath:
         """
         This method parses a ProofPath from string.
 
-        Paramaeters
+        Parameters
         -----------
         bits: str
             Sequence of '0' and '1' as string.
@@ -70,7 +70,7 @@ class ProofPath:
         """
         Builds a ProofPath from bytes sequence.
 
-        Paramaeters
+        Parameters
         -----------
         data_bytes: bytes
             Array of bytes with ProofPath data.
