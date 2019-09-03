@@ -18,6 +18,10 @@ class Hasher:
         MAP_BRANCH_NODE = 4
 
     @staticmethod
+    def hash_raw_data(data: bytes) -> bytes:
+        return crypto_hash_sha256(data)
+
+    @staticmethod
     def hash_node(left: bytes, right: bytes) -> bytes:
         data = struct.pack('<B', Hasher.HashTag.LIST_BRANCH_NODE) + left + right
 
@@ -54,7 +58,7 @@ class Hasher:
         return crypto_hash_sha256(data)
 
     @staticmethod
-    def hash_single_entry_map(path, hash: bytes) -> bytes:
-        data = struct.pack('<B', Hasher.HashTag.MAP_BRANCH_NODE) + path.as_bytes() + hash
+    def hash_single_entry_map(path, h: bytes) -> bytes:
+        data = struct.pack('<B', Hasher.HashTag.MAP_BRANCH_NODE) + path.as_bytes() + h
 
         return crypto_hash_sha256(data)

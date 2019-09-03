@@ -155,6 +155,7 @@ class MapProofBuilder:
         def func(data: Dict[Any, Any]):
             data_json = json.dumps(data)
             protobuf_obj = encoder_class()
+
             return json_format.Parse(data_json, protobuf_obj, True).SerializeToString()
         return func
 

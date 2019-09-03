@@ -58,7 +58,7 @@ def collect(entries: List[MapProofEntry]) -> bytes:
             return None
 
     if len(entries) == 0:
-        return EMPTY_MAP_HASH
+        return EMPTY_MAP_HASH  # TODO is it correct?
     elif len(entries) == 1:
         if entries[0].path.is_leaf():
             return Hasher.hash_single_entry_map(entries[0].path, entries[0].hash)
@@ -84,8 +84,8 @@ def collect(entries: List[MapProofEntry]) -> bytes:
                 if prefix:
                     last_prefix = prefix
 
-                contour.append(entry)
-                last_prefix = new_prefix
+            contour.append(entry)
+            last_prefix = new_prefix
 
         # All entries are processed. Fold the contour into the final hash.
         while len(contour) > 1:
@@ -123,12 +123,12 @@ class MapProof:
         self,
         entries: List[OptionalEntry],
         proof: List[MapProofEntry],
-        key_to_hash: Callable[[Any], bytes],
+        key_to_bytes: Callable[[Any], bytes],
         value_to_bytes: Callable[[Any], bytes]
     ):
         self.entries = entries
         self.proof = proof
-        self._key_to_hash = key_to_hash
+        self._key_to_bytes = key_to_bytes
         self._value_to_bytes = value_to_bytes
 
     def __repr__(self) -> str:
@@ -139,7 +139,7 @@ class MapProof:
     @staticmethod
     def parse(
         data: Dict[str, Any],
-        key_to_hash: Callable[[Any], bytes],
+        key_to_bytes: Callable[[Any], bytes],
         value_to_bytes: Callable[[Any], bytes]
     ) -> 'MapProof':
         if not data.get('entries') or not data.get('proof'):
@@ -148,7 +148,7 @@ class MapProof:
         entries: List[OptionalEntry] = [OptionalEntry.parse(raw_entry) for raw_entry in data['entries']]
         proof: List[MapProofEntry] = [MapProofEntry.parse(raw_entry) for raw_entry in data['proof']]
 
-        return MapProof(entries, proof, key_to_hash, value_to_bytes)
+        return MapProof(entries, proof, key_to_bytes, value_to_bytes)
 
     def _check_proof(self, proof):
         for idx in range(1, len(proof)):
@@ -166,7 +166,10 @@ class MapProof:
 
     def check(self) -> CheckedMapProof:
         def kv_to_map_entry(kv: OptionalEntry) -> MapProofEntry:
-            path = ProofPath.from_bytes(self._key_to_hash(kv.key))
+            key_bytes = self._key_to_bytes(kv.key)
+            key_hash = Hasher.hash_raw_data(key_bytes)
+
+            path = ProofPath.from_bytes(key_hash)
             value_hash = Hasher.hash_leaf(self._value_to_bytes(kv.value))
 
             return MapProofEntry(path, value_hash)

@@ -54,7 +54,7 @@ def calculate_height(number):
 
 
 def div_ceil(a, b):
-    return (a + b - 1) // a
+    return (a + b - 1) // b
 
 
 def trailing_zeros(n):

@@ -46,19 +46,15 @@ class BranchNode:
         self.set_child_hash(kind, child_hash)
 
     def object_hash(self) -> bytes:
-        data = bytearray([0] * 132)
+        data = bytearray()
 
-        data[self._hash_slice('left')] = self.raw[self._hash_slice('left')]
-        data[self._hash_slice('right')] = self.raw[self._hash_slice('right')]
-
-        path_start = 2 * Hasher.HASH_SIZE
+        data += self.raw[self._hash_slice('left')]
+        data += self.raw[self._hash_slice('right')]
 
         left_path_compressed = self.child_path('left').as_bytes_compressed()
-        data[path_start:path_start + len(left_path_compressed)] = left_path_compressed
-
-        path_start += len(left_path_compressed)
+        data += left_path_compressed
 
         right_path_compressed = self.child_path('right').as_bytes_compressed()
-        data[path_start:path_start + len(right_path_compressed)] = right_path_compressed
+        data += right_path_compressed
 
         return Hasher.hash_map_branch(data)

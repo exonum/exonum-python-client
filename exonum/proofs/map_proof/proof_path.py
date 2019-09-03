@@ -246,6 +246,7 @@ class ProofPath:
         """ Represents path as compressed bytes using les128 algorigthm. """
         bits_len = self.end()
         whole_bytes_len = div_ceil(bits_len, 8)
+
         key = self.raw_key()[0:whole_bytes_len]
 
         result = bytearray()
