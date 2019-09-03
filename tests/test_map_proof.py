@@ -174,6 +174,29 @@ class TestMapProofParse(unittest.TestCase):
 
 
 class TestMapProof(PrecompiledModuleUserTestCase):
+    def test_map_proof_validate_empty_proof(self):
+        proof = {
+          "entries": [],
+          "proof": []
+        }
+
+        cryptocurrency_service_name = 'exonum-cryptocurrency-advanced:0.11.0'
+        cryptocurrency_module = ModuleManager.import_service_module(cryptocurrency_service_name, 'service')
+
+        cryptocurrency_decoder = MapProofBuilder.build_encoder_function(cryptocurrency_module.Wallet)
+
+        parsed_proof = MapProof.parse(proof, lambda x: bytes.fromhex(x), cryptocurrency_decoder)
+
+        result = parsed_proof.check()
+
+        entries = result.all_entries()
+
+        self.assertEqual(len(entries), 0)
+
+        expected_hash = '7324b5c72b51bb5d4c180f1109cfd347b60473882145841c39f3e584576296f9'
+
+        self.assertEqual(result.root_hash().hex(), expected_hash)
+
     def test_map_proof_validate_one_node(self):
         proof = {
           "entries": [
@@ -204,11 +227,16 @@ class TestMapProof(PrecompiledModuleUserTestCase):
 
         result = parsed_proof.check()
 
-        # print(result._entries)
+        entries = result.all_entries()
+
+        self.assertEqual(len(entries), 1)
+        self.assertFalse(entries[0].is_missing)
+        self.assertEqual(entries[0].key, proof['entries'][0]['key'])
+        self.assertEqual(entries[0].value, proof['entries'][0]['value'])
 
         expected_hash = 'd034fa0456f92501fbb4750b483f8dd767c1a886f72f9ea0b268daec8808a6b5'
 
-        self.assertEqual(result._root_hash.hex(), expected_hash)
+        self.assertEqual(result.root_hash().hex(), expected_hash)
 
     def test_map_proof_validate(self):
         proof = {
@@ -247,8 +275,12 @@ class TestMapProof(PrecompiledModuleUserTestCase):
 
         result = parsed_proof.check()
 
-        # print(result._entries)
+        entries = result.all_entries()
+        self.assertEqual(len(entries), 1)
+        self.assertFalse(entries[0].is_missing)
+        self.assertEqual(entries[0].key, proof['entries'][0]['key'])
+        self.assertEqual(entries[0].value, proof['entries'][0]['value'])
 
         expected_hash = '27d89236d79d59bfdc135669aeb4608afa644edc06469d93147ef85852e275e2'
 
-        self.assertEqual(result._root_hash.hex(), expected_hash)
+        self.assertEqual(result.root_hash().hex(), expected_hash)

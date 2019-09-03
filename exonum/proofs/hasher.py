@@ -9,6 +9,7 @@ EMPTY_MAP_HASH = bytes.fromhex('7324b5c72b51bb5d4c180f1109cfd347b60473882145841c
 
 class Hasher:
     HASH_SIZE = crypto_hash_sha256_BYTES
+    DEFAULT_HASH = bytes([0] * crypto_hash_sha256_BYTES)
 
     class HashTag(IntEnum):
         BLOB = 0

@@ -7,7 +7,7 @@ from .errors import MalformedMapProofError
 from .constants import KEY_SIZE, PROOF_PATH_SIZE
 from .optional_entry import OptionalEntry
 from .branch_node import BranchNode
-from ..hasher import Hasher, EMPTY_MAP_HASH
+from ..hasher import Hasher
 from ..utils import is_field_hash, to_bytes, div_ceil, trailing_zeros, reset_bits, leb128_encode_unsigned
 
 
@@ -71,7 +71,7 @@ def collect(entries: List[MapProofEntry]) -> bytes:
             return None
 
     if len(entries) == 0:
-        return EMPTY_MAP_HASH  # TODO is it correct?
+        return Hasher.DEFAULT_HASH
     elif len(entries) == 1:
         if entries[0].path.is_leaf():
             return Hasher.hash_single_entry_map(entries[0].path, entries[0].hash)
