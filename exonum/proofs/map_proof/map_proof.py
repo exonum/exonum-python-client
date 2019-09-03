@@ -176,9 +176,9 @@ class MapProof:
 
         proof = self.proof[:]
 
-        entries = filter(lambda el: not el.is_missing, self.entries)
+        actual_entries = filter(lambda el: not el.is_missing, self.entries)
 
-        proof += map(lambda el: kv_to_map_entry(el), self.entries)
+        proof += map(lambda el: kv_to_map_entry(el), actual_entries)
 
         proof.sort(key=lambda el: el.path)
 
@@ -186,4 +186,4 @@ class MapProof:
 
         result = collect(proof)
 
-        return CheckedMapProof(self.entries, result)
+        return CheckedMapProof(self.entries, Hasher.hash_map_node(result))
