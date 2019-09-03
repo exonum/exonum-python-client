@@ -284,3 +284,60 @@ class TestMapProof(PrecompiledModuleUserTestCase):
         expected_hash = '27d89236d79d59bfdc135669aeb4608afa644edc06469d93147ef85852e275e2'
 
         self.assertEqual(result.root_hash().hex(), expected_hash)
+
+    def test_map_proof_validate_several_entries(self):
+        proof = {
+          "entries": [
+            {
+              "key": "7fef155e2ede14d8cceba3e740fd0615a1c41de9a28aa042236ccc159788e1ba",
+              "value": {
+                "pub_key": {
+                  "data": list(bytes.fromhex("7fef155e2ede14d8cceba3e740fd0615a1c41de9a28aa042236ccc159788e1ba"))
+                },
+                "name": "Bob3",
+                "balance": 100,
+                "history_len": 1,
+                "history_hash": {
+                  "data": list(bytes.fromhex("e50f400d911c340a852d822b3d2fbc5a99514f62964bf519033486abd29966de"))
+                }
+              }
+            }
+          ],
+          "proof": [
+            {
+              "path": "0",
+              "hash": "6cfabb13b5ee5a6cb6ba7b99c12f2799b4d3a539fa3feb3eaefdc1de20312292"
+            },
+            {
+              "path": "110010101000101110100110110110101001011000110110101011010111010101010100111101100101101111010110"
+                      "100000010101101011100100101111101101001001010111100111101011000010100000100110111101010100100111"
+                      "1111110010011011001110011000101010100010101011011010101100000011",
+              "hash": "07ad84744967809ce2f412d1bd5fa65249e1cbef2022a21b3885b51012eea71f"
+            },
+            {
+              "path": "111101010000000111101100001110100000111100100111111000000010101011010001000001010111001010000110"
+                      "110101110111110101101100100110001101000011010100100100001111010001000110011101010110101101101000"
+                      "0001001111001101010001111011001011001000110010100000110000101010",
+              "hash": "759398ddf66effc9267ac0d2386193aa58705a96f709d47b2e3d378061dea9ff"
+            }
+          ]
+        }
+
+        cryptocurrency_service_name = 'exonum-cryptocurrency-advanced:0.11.0'
+        cryptocurrency_module = ModuleManager.import_service_module(cryptocurrency_service_name, 'service')
+
+        cryptocurrency_decoder = MapProofBuilder.build_encoder_function(cryptocurrency_module.Wallet)
+
+        parsed_proof = MapProof.parse(proof, lambda x: bytes.fromhex(x), cryptocurrency_decoder)
+
+        result = parsed_proof.check()
+
+        entries = result.all_entries()
+        self.assertEqual(len(entries), 1)
+        self.assertFalse(entries[0].is_missing)
+        self.assertEqual(entries[0].key, proof['entries'][0]['key'])
+        self.assertEqual(entries[0].value, proof['entries'][0]['value'])
+
+        expected_hash = '22ea6ced5c4ab54c4f2c6317f1bba8ea7a67891d04e58bfd9baa0670f7933050'
+
+        self.assertEqual(result.root_hash().hex(), expected_hash)
