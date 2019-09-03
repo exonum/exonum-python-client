@@ -7,15 +7,15 @@ from .map_proof import MapProof
 from .errors import MapProofBuilderError
 
 
-# TODO custom JSON encoder is required because of the bug in python protobuf implementation:
-# https://github.com/protocolbuffers/protobuf/issues/6602
-# This workaround is sort of kludge, and it may lead to incorrect behavior for int8/uint8 arrays,
-# but currently exonum does not have them, so I guess it's ok. When the issue will be fixed,
-# this code will be removed.
 import base64
 import copy
 
 
+# TODO This custom is required because of the bug in python protobuf implementation:
+# https://github.com/protocolbuffers/protobuf/issues/6602
+# This workaround is sort of kludge, and it may lead to incorrect behavior for int8/uint8 arrays,
+# but currently exonum does not have them, so I guess it's ok. When the issue will be fixed,
+# this code will be removed.
 def _encode_byte_lists_to_base64(obj: Dict[Any, Any]) -> Dict[Any, Any]:
     def _visit(entries):
         for key, value in entries.items():
