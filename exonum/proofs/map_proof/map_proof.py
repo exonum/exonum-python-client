@@ -142,7 +142,7 @@ class MapProof:
         key_to_bytes: Callable[[Any], bytes],
         value_to_bytes: Callable[[Any], bytes]
     ) -> 'MapProof':
-        if not data.get('entries') or not data.get('proof'):
+        if data.get('entries') is None or data.get('proof') is None:
             raise MalformedMapProofError.malformed_entry(data)
 
         entries: List[OptionalEntry] = [OptionalEntry.parse(raw_entry) for raw_entry in data['entries']]

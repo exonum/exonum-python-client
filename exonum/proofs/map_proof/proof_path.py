@@ -183,7 +183,7 @@ class ProofPath:
 
     def set_end(self, end: Optional[int]):
         """ Sets tha right border of the proof path. """
-        if end:
+        if end is not None:
             self.data_bytes[0] = self.KeyPrefix.BRANCH
             self.data_bytes[self.Positions.LEN_POS] = end
         else:
