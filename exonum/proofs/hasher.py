@@ -85,13 +85,13 @@ class Hasher:
         return crypto_hash_sha256(data)
 
     @staticmethod
-    def hash_single_entry_map(path, h: bytes) -> bytes:
+    def hash_single_entry_map(path, child_hash: bytes) -> bytes:
         """
         Hash of the map with single entry.
         ``` text
         h = sha-256( HashTag::MapBranchNode || <key> || <child_hash> )
         ```
         """
-        data = struct.pack('<B', Hasher.HashTag.MAP_BRANCH_NODE) + path.as_bytes() + h
+        data = struct.pack('<B', Hasher.HashTag.MAP_BRANCH_NODE) + path.as_bytes() + child_hash
 
         return crypto_hash_sha256(data)
