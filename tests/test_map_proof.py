@@ -1,4 +1,5 @@
 import unittest
+import random
 
 from exonum.proofs.map_proof import MapProof
 from exonum.proofs.map_proof.proof_path import ProofPath
@@ -52,7 +53,9 @@ class TestProofPath(unittest.TestCase):
         datasets = [
             (ProofPath.from_bytes(bytes([1] * 32)), ProofPath.from_bytes(bytes([254] * 32))),
             (ProofPath.from_bytes(bytes([0b0001_0001] * 32)), ProofPath.from_bytes(bytes([0b0010_0001] * 32))),
-            (ProofPath.from_bytes(bytes([1] * 32)), ProofPath.from_bytes(bytes([1] * 32)).prefix(254))
+            (ProofPath.from_bytes(bytes([1] * 32)), ProofPath.from_bytes(bytes([1] * 32)).prefix(254)),
+            (ProofPath.from_bytes(bytes([1] * 32)).prefix(10), ProofPath.from_bytes(bytes([2] * 32)).prefix(10)),
+            (ProofPath.from_bytes(bytes([1] * 32)).prefix(11), ProofPath.from_bytes(bytes([2] * 32)).prefix(10)),
         ]
 
         for path_a, path_b in datasets:
@@ -87,6 +90,57 @@ class TestProofPath(unittest.TestCase):
         path_c = path_a.prefix(8)
 
         self.assertEqual(path_b, path_c)
+
+    def test_match_len(self):
+        def _common_prefix_len(a, b):
+            max_length = min(len(a), len(b))
+            for i in range(max_length):
+                if a[i] != b[i]:
+                    return i
+            return max_length
+
+        def _generate_number(min_length=1):
+            max_length = 256
+
+            length = random.randint(min_length, max_length)
+
+            seq = ''.join([random.choice(['0', '1']) for _ in range(length)])
+
+            return seq
+
+        def _generate_sample(min_length=1):
+            left = _generate_number(min_length)
+            right = _generate_number(min_length)
+            common_length = _common_prefix_len(left, right)
+
+            return (left, right, common_length)
+
+        random.seed(1234)
+
+        test_data = [
+            ('11110000', '11110000', 8),
+            ('11110000', '11110001', 7),
+            ('11110000', '1111000', 7),
+            ('1111000', '11110000', 7),
+            ('11111111', '11110000', 4),
+            ('11111111', '01110000', 0),
+            ('11111111', '11100000', 3),
+            ('11111111', '111', 3),
+        ]
+
+        test_data += [_generate_sample() for _ in range(20)]
+        test_data += [_generate_sample(min_length=256) for _ in range(20)]
+
+        for first, second, expected_match_len in test_data:
+            first_path = ProofPath.parse(first)
+            second_path = ProofPath.parse(second)
+
+            self.assertEqual(first_path.match_len(second_path, 0), expected_match_len)
+            self.assertEqual(second_path.match_len(first_path, 0), expected_match_len, f"{second_path}, {first_path}")
+
+            if len(first_path) > 2 and len(second_path) > 2 and expected_match_len > 2:
+                self.assertEqual(first_path.match_len(second_path, 2), expected_match_len)
+                self.assertEqual(second_path.match_len(first_path, 2), expected_match_len)
 
     def test_parse_path(self):
         path_strs = [
@@ -199,23 +253,30 @@ class TestMapProof(PrecompiledModuleUserTestCase):
 
     def test_map_proof_validate_one_node(self):
         proof = {
-          "entries": [
-            {
-              "key": "d457386c836408ce3315a20924b13e1282905e78557b7e1933a66d42f33317cb",
-              "value": {
-                "pub_key": {
-                  "data": list(bytes.fromhex("d457386c836408ce3315a20924b13e1282905e78557b7e1933a66d42f33317cb"))
-                },
-                "name": "Alice1",
-                "balance": 100,
-                "history_len": 1,
-                "history_hash": {
-                  "data": list(bytes.fromhex("687ebb7ecacf4c1cc18394580922a6d9eae8aa54a1f8f044538a9d10fdae78b0"))
-                }
+           "entries": [
+              {
+                 "key": "1dddbac5d8f16ef97b20a6abe854f6356436ce97b71d9d439b17b91f3a144ac6",
+                 "value": {
+                    "pub_key": {
+                       "data": list(bytes.fromhex("1dddbac5d8f16ef97b20a6abe854f6356436ce97b71d9d439b17b91f3a144ac6"))
+                    },
+                    "name": "Alice1",
+                    "balance": 95,
+                    "history_len": 6,
+                    "history_hash": {
+                       "data": list(bytes.fromhex("1ff3a775f6df930ad63c5f1ce683393c7f080dbd5ca544e40c7488640bf732f8"))
+                    }
+                 }
               }
-            }
-          ],
-          "proof": []
+           ],
+           "proof": [
+              {
+                 "path": "011000000110111110010010010111010111010101111110110101111001110111011111101001111001100000010"
+                         "111001110000111111000111111111100000011011000100001111101001011000100000110110001101000000000"
+                         "1010000101111100110000011111011100111110010101101110000100010110010001",
+                 "hash": "deaa44743a85249302a4633d8cdde96526064c56715318fa0712fe4befb1fef3"
+              }
+           ]
         }
 
         cryptocurrency_service_name = 'exonum-cryptocurrency-advanced:0.11.0'
@@ -234,101 +295,56 @@ class TestMapProof(PrecompiledModuleUserTestCase):
         self.assertEqual(entries[0].key, proof['entries'][0]['key'])
         self.assertEqual(entries[0].value, proof['entries'][0]['value'])
 
-        expected_hash = 'd034fa0456f92501fbb4750b483f8dd767c1a886f72f9ea0b268daec8808a6b5'
+        expected_hash = '7adcdfe51855dc073681b7f9274a414d4d9f378e94e02c39e04819c6f9ed27e7'
 
         self.assertEqual(result.root_hash().hex(), expected_hash)
 
-    def test_map_proof_validate(self):
+    def test_map_proof_validate_several_proof_entries(self):
         proof = {
           "entries": [
             {
-              "key": "e610db75b0bbbd4c606c4f8ca3fca9f916e9c8ae9a93b5b767082172454344b3",
-              "value": {
-                "pub_key": {
-                  "data": list(bytes.fromhex("e610db75b0bbbd4c606c4f8ca3fca9f916e9c8ae9a93b5b767082172454344b3"))
-                },
-                "name": "Alice1",
-                "balance": 95,
-                "history_len": 6,
-                "history_hash": {
-                  "data": list(bytes.fromhex("19faf859d7456907c76f085af5b7a2d7621d992617a349006c07720957d5d49d"))
-                }
-              }
-            }
-          ],
-          "proof": [
-            {
-              "path": "010000100100100010100100110001100111011011011000010011011011111111110110001101001001011010111100"
-                      "001010010011011010001110011001011001010101100100000101010010000001101011100000010011101101001011"
-                      "1110010011011011101001110000111111000000011111100010001011010000",
-              "hash": "dbeab4aa952e2c2cb3dc921aa42c9b508e2e5961cad2463f7203d228abc204c8"
-            }
-          ]
-        }
-
-        cryptocurrency_service_name = 'exonum-cryptocurrency-advanced:0.11.0'
-        cryptocurrency_module = ModuleManager.import_service_module(cryptocurrency_service_name, 'service')
-
-        cryptocurrency_decoder = MapProofBuilder.build_encoder_function(cryptocurrency_module.Wallet)
-
-        parsed_proof = MapProof.parse(proof, lambda x: bytes.fromhex(x), cryptocurrency_decoder)
-
-        result = parsed_proof.check()
-
-        entries = result.all_entries()
-        self.assertEqual(len(entries), 1)
-        self.assertFalse(entries[0].is_missing)
-        self.assertEqual(entries[0].key, proof['entries'][0]['key'])
-        self.assertEqual(entries[0].value, proof['entries'][0]['value'])
-
-        expected_hash = '27d89236d79d59bfdc135669aeb4608afa644edc06469d93147ef85852e275e2'
-
-        self.assertEqual(result.root_hash().hex(), expected_hash)
-
-    def test_map_proof_validate_several_entries(self):
-        proof = {
-          "entries": [
-            {
-              "key": "7fef155e2ede14d8cceba3e740fd0615a1c41de9a28aa042236ccc159788e1ba",
-              "value": {
-                "pub_key": {
-                  "data": list(bytes.fromhex("7fef155e2ede14d8cceba3e740fd0615a1c41de9a28aa042236ccc159788e1ba"))
-                },
-                "name": "Bob3",
-                "balance": 100,
-                "history_len": 1,
-                "history_hash": {
-                  "data": list(bytes.fromhex("e50f400d911c340a852d822b3d2fbc5a99514f62964bf519033486abd29966de"))
-                }
-              }
+              "key": {
+                "tag": 3,
+                "group_id": 1024,
+                "index_id": 0
+              },
+              "value": "d24f95722fb68800b586148232953a1453a5b8dee7af2d213d96e5ce63516380"
             }
           ],
           "proof": [
             {
               "path": "0",
-              "hash": "6cfabb13b5ee5a6cb6ba7b99c12f2799b4d3a539fa3feb3eaefdc1de20312292"
+              "hash": "9e39ec70d792124cc0039d5b25ca8a00c7e26e7063994deb01ca940aa9e68128"
             },
             {
-              "path": "110010101000101110100110110110101001011000110110101011010111010101010100111101100101101111010110"
-                      "100000010101101011100100101111101101001001010111100111101011000010100000100110111101010100100111"
-                      "1111110010011011001110011000101010100010101011011010101100000011",
-              "hash": "07ad84744967809ce2f412d1bd5fa65249e1cbef2022a21b3885b51012eea71f"
+              "path": "101100110110010001000110101010000111001010110110011011100100110101001101100111010111010000001110"
+                      "000000110101001111000011001100111010111100101100100111111110110101110010101011010001110100011001"
+                      "1001100000110111000010100000100111000001000010110101000000001010",
+              "hash": "23e07283aafec41b627fef86d058517fbf820c50b05ec683fcf2b1504605ad87"
             },
             {
-              "path": "111101010000000111101100001110100000111100100111111000000010101011010001000001010111001010000110"
-                      "110101110111110101101100100110001101000011010100100100001111010001000110011101010110101101101000"
-                      "0001001111001101010001111011001011001000110010100000110000101010",
-              "hash": "759398ddf66effc9267ac0d2386193aa58705a96f709d47b2e3d378061dea9ff"
+              "path": "101111000010100000100011011111011011001111111100111110100110111101101010010110110011100001011110"
+                      "011000011010001110010010001100101000111111000010101000110100001010001100001101110111010001110001"
+                      "1101111011100001011101011000000010011001101100001000111000000010",
+              "hash": "3fe2e4c293ecc21180c2aaaeec88adf5fe8e5371ef26466d76c7fbc6ab1d416a"
+            },
+            {
+              "path": "11",
+              "hash": "96f00895570f12ef4b0294d3cc667fcbb3b235197ac11abca280c1be2922ca31"
             }
           ]
         }
 
-        cryptocurrency_service_name = 'exonum-cryptocurrency-advanced:0.11.0'
-        cryptocurrency_module = ModuleManager.import_service_module(cryptocurrency_service_name, 'service')
+        def key_encoder(data):
+            import struct
+            format_str = '>HIH'
+            res = struct.pack(format_str, data['tag'], data['group_id'], data['index_id'])
+            return res
 
-        cryptocurrency_decoder = MapProofBuilder.build_encoder_function(cryptocurrency_module.Wallet)
+        def value_encoder(data):
+            return bytes.fromhex(data)
 
-        parsed_proof = MapProof.parse(proof, lambda x: bytes.fromhex(x), cryptocurrency_decoder)
+        parsed_proof = MapProof.parse(proof, key_encoder, value_encoder)
 
         result = parsed_proof.check()
 
@@ -338,6 +354,6 @@ class TestMapProof(PrecompiledModuleUserTestCase):
         self.assertEqual(entries[0].key, proof['entries'][0]['key'])
         self.assertEqual(entries[0].value, proof['entries'][0]['value'])
 
-        expected_hash = '22ea6ced5c4ab54c4f2c6317f1bba8ea7a67891d04e58bfd9baa0670f7933050'
+        expected_hash = '3ccac1646fbbbc7e22a70b2a426c0d22bdde14a03f4ffc3547207245a4774afc'
 
         self.assertEqual(result.root_hash().hex(), expected_hash)
