@@ -8,7 +8,7 @@ from .constants import KEY_SIZE, PROOF_PATH_SIZE
 from .optional_entry import OptionalEntry
 from .branch_node import BranchNode
 from ..hasher import Hasher
-from ..utils import is_field_hash, to_bytes, div_ceil, trailing_zeros, reset_bits, leb128_encode_unsigned
+from ..utils import is_field_hash, to_bytes, div_ceil, reset_bits, leb128_encode_unsigned
 
 
 class MapProofEntry:
@@ -94,7 +94,7 @@ def collect(entries: List[MapProofEntry]) -> bytes:
             # At each iteration two last entries are taken and attempted to fold into one new entry.
             while len(contour) > 1 and len(new_prefix) < len(last_prefix):
                 prefix = fold(contour, last_prefix)
-                if prefix:
+                if prefix is not None:
                     last_prefix = prefix
 
             contour.append(entry)
