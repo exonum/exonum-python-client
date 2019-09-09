@@ -3,7 +3,7 @@ from functools import total_ordering
 from enum import IntEnum
 
 from ..hasher import Hasher, EMPTY_MAP_HASH
-from ..utils import div_ceil, trailing_zeros, reset_bits, leb128_encode_unsigned
+from ..utils import div_ceil, reset_bits, leb128_encode_unsigned
 
 from .constants import KEY_SIZE, PROOF_PATH_SIZE
 from .errors import MalformedMapProofError
@@ -111,7 +111,7 @@ class ProofPath:
             # Range from 7 to 0 inclusively.
             for bit in range(7, -1, -1):
                 i = byte_idx * 8 + bit
-                if i < self.start() or i > self.end():
+                if i < self.start() or i >= self.end():
                     bits_str += '_'
                 else:
                     bits_str += '0' if (1 << bit) & chunk == 0 else '1'
@@ -127,6 +127,12 @@ class ProofPath:
     def __eq__(self, other) -> bool:
         return len(self) == len(other) and self.starts_with(other)
 
+    def bit(self, idx):
+        pos = self.start() + idx
+        chunk = self.raw_key()[(pos // 8)]
+        bit = pos % 8
+        return (1 << bit) & chunk
+
     def __lt__(self, other) -> bool:
         if self.start() != other.start():
             return NotImplemented
@@ -135,32 +141,17 @@ class ProofPath:
             # the code below does not work if `self.start() % 8 != 0` without additional modifications.
             raise ValueError("Attempt to compare path with start != 0")
 
-        right_bit = min(self.end(), other.end())
-        right = div_ceil(right_bit, 8)
+        this_len = len(self)
+        other_len = len(other)
 
-        raw_key = self.raw_key()
-        other_raw_key = other.raw_key()
+        intersecting_bits = min(this_len, other_len)
 
-        for i in range(right):
-            self_byte, other_byte = raw_key[i], other_raw_key[i]
+        pos = self.common_prefix_len(other)
 
-            if i + 1 == right and right_bit % 8 != 0:
-                # Cut possible junk after the end of path(s)
-                tail = right_bit % 8
-                self_byte = reset_bits(self_byte, tail)
-                other_byte = reset_bits(other_byte, tail)
+        if pos == intersecting_bits:
+            return this_len < other_len
 
-            # Try to find a first bit index at which this path is greater than the other path
-            # (i.e., a bit of this path is 1 and the corresponding bit of the other path
-            # is 0), and vice versa. The smaller of these indexes indicates the actual
-            # larger path. In turn, the indexes can be found by counting trailing zeros.
-            self_zeros = trailing_zeros(self_byte & ~other_byte)
-            other_zeros = trailing_zeros(~self_byte & other_byte)
-
-            if other_zeros != self_zeros:
-                return other_zeros < self_zeros
-
-        return self.end() < other.end()
+        return self.bit(pos) < other.bit(pos)
 
     def is_leaf(self):
         """ Returns True if ProofPath is leaf and False otherwise """
@@ -211,19 +202,10 @@ class ProofPath:
         elif from_bit < self.start() or from_bit > self.end():
             raise ValueError("Incorrect from_bit value: {}".format(from_bit))
 
-        from_byte = from_bit // 8
-        to_byte = min(div_ceil(self.end(), 8), div_ceil(other.end(), 8))
-        len_to_the_end = min(len(self), len(other))  # Maximum possible match length.
-
-        raw_key = self.raw_key()
-        other_raw_key = other.raw_key()
-
-        for i in range(from_byte, to_byte):
-            x = raw_key[i] ^ other_raw_key[i]
-            if x != 0:
-                tail = trailing_zeros(x)
-                return min(i * 8 + tail - self.start(), len_to_the_end)
-
+        len_to_the_end = min(len(self), len(other))
+        for i in range(len_to_the_end):
+            if self.bit(i) != other.bit(i):
+                return i
         return len_to_the_end
 
     def common_prefix_len(self, other) -> int:

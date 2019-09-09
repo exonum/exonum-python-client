@@ -57,11 +57,6 @@ def div_ceil(a, b):
     return (a + b - 1) // b
 
 
-def trailing_zeros(n):
-    s = bin(n)
-    return len(s)-len(s.rstrip('0'))
-
-
 def reset_bits(value, pos):
     """ Resets bits higher than the given pos. """
     reset_bits_mask = ~(255 << pos)
