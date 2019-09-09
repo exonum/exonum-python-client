@@ -131,7 +131,7 @@ class ProofPath:
         pos = self.start() + idx
         chunk = self.raw_key()[(pos // 8)]
         bit = pos % 8
-        return (1 << bit) & chunk
+        return ((1 << bit) & chunk) >> bit
 
     def __lt__(self, other) -> bool:
         if self.start() != other.start():
@@ -203,9 +203,10 @@ class ProofPath:
             raise ValueError("Incorrect from_bit value: {}".format(from_bit))
 
         len_to_the_end = min(len(self), len(other))
-        for i in range(len_to_the_end):
+        for i in range(from_bit, len_to_the_end):
             if self.bit(i) != other.bit(i):
                 return i
+
         return len_to_the_end
 
     def common_prefix_len(self, other) -> int:
