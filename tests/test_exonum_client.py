@@ -7,6 +7,8 @@ from exonum.client import ExonumClient
 from exonum.module_manager import ModuleManager
 from exonum.errors import ProtobufLoaderEntityExists
 
+from .module_user import ModuleUserTestCase
+
 EXONUM_PROTO = 'http'
 EXONUM_IP = '127.0.0.1'
 EXONUM_PUBLIC_PORT = '8080'
@@ -69,14 +71,7 @@ def mock_requests_get(url, params=None):
     return responses[(url, str(params))]
 
 
-class TestProtobufLoader(unittest.TestCase):
-    def setUp(self):
-        # Unload any previously loaded `exonum_main` modules from other tests
-        loaded_modules = list(sys.modules.keys())
-        for module in loaded_modules:
-            if module.startswith('exonum_modules'):
-                del sys.modules[module]
-
+class TestProtobufLoader(ModuleUserTestCase):
     def test_protobuf_loader_creates_temp_folder(self):
         # Test that proto directory is created and added to sys.path
         proto_dir = None
