@@ -241,7 +241,7 @@ class ListProof:
         last_index = self._length - 1
 
         for height in range(1, tree_height):
-            # Filter hashes of cuurent height and the rest ones (to be processed later).
+            # Filter hashes of current height and the rest ones (to be processed later).
             hashes, remaining_hashes = _split_hashes_by_height(hashes, height)
 
             # Merge current layer with hashes that belong to this layer.
