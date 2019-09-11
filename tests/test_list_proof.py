@@ -1,9 +1,9 @@
 import unittest
 
-from exonum.proofs.new_list_proof import ListProof
-from exonum.proofs.new_list_proof.key import ProofListKey
-from exonum.proofs.new_list_proof.list_proof import HashedEntry
-from exonum.proofs.new_list_proof.errors import MalformedListProofError, ListProofVerificationError
+from exonum.proofs.list_proof import ListProof
+from exonum.proofs.list_proof.key import ProofListKey
+from exonum.proofs.list_proof.list_proof import HashedEntry
+from exonum.proofs.list_proof.errors import MalformedListProofError, ListProofVerificationError
 from exonum.proofs.hasher import Hasher
 
 
