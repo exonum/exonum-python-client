@@ -119,7 +119,7 @@ class TestListProof(unittest.TestCase):
         tx_count = 2
         expected_hash = '07df67b1a853551eb05470a03c9245483e5a3731b4b558e634908ff356b69857'
 
-        proof = ListProof.parse(proof_json, to_bytes)
+        proof = ListProof.parse(proof_json)
 
         result = proof.validate(to_bytes(expected_hash))
 
@@ -142,7 +142,7 @@ class TestListProof(unittest.TestCase):
         tx_count = 2
         expected_hash = '07df67b1a853551eb05470a03c9245483e5a3731b4b558e634908ff356b69857'
 
-        proof = ListProof.parse(incorrect_proof_json, to_bytes)
+        proof = ListProof.parse(incorrect_proof_json)
 
         with self.assertRaises(ListProofVerificationError):
             result = proof.validate(to_bytes(expected_hash))
@@ -163,7 +163,7 @@ class TestListProof(unittest.TestCase):
         tx_count = 2
         incorrect_expected_hash = 'DEADBEEFa853551eb05470a03c9245483e5a3731b4b558e634908ff356b69857'
 
-        proof = ListProof.parse(proof_json, to_bytes)
+        proof = ListProof.parse(proof_json)
 
         with self.assertRaises(ListProofVerificationError):
             result = proof.validate(to_bytes(incorrect_expected_hash))
@@ -185,7 +185,7 @@ class TestListProof(unittest.TestCase):
         tx_count = 6
         expected_hash = '3bb680f61d358cc208003e7b42f077402fdb05388dc0e7f3099551e4f86bb70a'
 
-        proof = ListProof.parse(proof_json, to_bytes)
+        proof = ListProof.parse(proof_json)
 
         res = proof.validate(to_bytes(expected_hash))
 
@@ -208,7 +208,7 @@ class TestListProof(unittest.TestCase):
             'length': 2
         }
 
-        proof = ListProof.parse(proof_json, to_bytes)
+        proof = ListProof.parse(proof_json)
 
         res = proof.validate(to_bytes(expected_hash))
 

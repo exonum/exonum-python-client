@@ -1,24 +1,26 @@
 from typing import Dict, List, Tuple, Any, Callable
 import itertools
 
-from ..utils import is_field_hash, is_field_int, calculate_height, to_bytes
+from ..utils import is_field_hash, is_field_int, calculate_height
 from ..hasher import Hasher
 from .key import ProofListKey
 from .errors import MalformedListProofError, ListProofVerificationError
 
 
 class HashedEntry:
+    """ Element of a proof with a key and hash. """
     def __init__(self, key: ProofListKey, entry_hash: bytes):
         self.key = key
         self.entry_hash = entry_hash
 
     @classmethod
     def parse(cls, data: Dict[Any, Any]) -> 'HashedEntry':
+        """ Creates a HashedEntry object from provided dict. """
         if not isinstance(data, dict) or not is_field_hash(data, 'hash'):
             raise MalformedListProofError.parse_error(str(dict))
 
         key = ProofListKey.parse(data)
-        return HashedEntry(key, to_bytes(data['hash']))
+        return HashedEntry(key, bytes.fromhex(data['hash']))
 
     def __eq__(self, other) -> bool:
         return self.key == other.key and self.entry_hash == other.entry_hash
@@ -63,29 +65,108 @@ class ListProof:
         length: int,
         value_to_bytes: Callable[[Any], bytes]
     ):
+        """
+        Constructor of the ListProof.
+        It's not intended to be used directly, use ListProof.Parse instead.
+
+        Parameters
+        ----------
+        proof : List[HashedEntry]
+            Proof entries.
+        entries: List[Tuple[int, Any]]
+            Unhashed entries (leaves).
+        length: int
+            Length of the proof list.
+        value_to_bytes: Callable[[str], bytes]
+            A function that converts the stored value to bytes for hashing.
+            By default, `bytes.fromhex` is used.
+        """
         self._proof = proof
         self._entries = entries
         self._length = length
         self._value_to_bytes = value_to_bytes
+
+    @classmethod
+    def parse(cls, proof_dict: Dict[str, Any], value_to_bytes: Callable[[Any], bytes] = bytes.fromhex) -> 'ListProof':
+        """
+        Method to parse a ListProof from a dict.
+        Expected dict format:
+        {
+            'proof': [
+                {'index': 1, 'height': 1, 'hash': 'eae60adeb5c681110eb5226a4ef95faa4f993c4a838d368b66f7c98501f2c8f9'}
+            ],
+            'entries': [
+                [0, '6b70d869aeed2fe090e708485d9f4b4676ae6984206cf05efc136d663610e5c9']
+            ],
+            'length': 2
+        }
+        If no errors occured during parsing, a ListProof object will be returned.
+        However, successfull parsing doesn't mean that proof isn't malformed (it only means that provided dict structure
+        matches the expected one).
+        Actual checks for the proof contents correctness will be performed in the `validate` method.
+
+        Parameters
+        ----------
+        proof_dict : Dict[str, Any]
+            Proof as a dict.
+        value_to_bytes: Callable[[str], bytes]
+            A function that converts the stored value to bytes for hashing.
+            By default, `bytes.fromhex` is used.
+
+        Raises
+        ------
+        MalformedListProofError
+            If structure of the provided dict doesn't match expected one,
+            an exception `MalformedListProofError` is raised.
+        """
+        if not isinstance(proof_dict.get('proof'), list) \
+                or not isinstance(proof_dict.get('entries'), list) \
+                or not is_field_int(proof_dict, 'length'):
+            raise MalformedListProofError.parse_error(str(proof_dict))
+
+        proof = [HashedEntry.parse(entry) for entry in proof_dict['proof']]
+        entries = [cls._parse_entry(entry) for entry in proof_dict['entries']]
+        length = proof_dict['length']
+
+        return ListProof(proof, entries, length, value_to_bytes)
+
+    def validate(self, expected_hash: bytes) -> List[Tuple[int, Any]]:
+        """
+        This method validates the provided proof against the given expected hash.
+
+        Parameters
+        ----------
+        expected_hash: bytes
+            Hexadecimal expected hash as bytes.
+
+        Returns
+        -------
+        result: List[Tuple[int, Any]]
+            If the hash is correct, a list of the collected values with indices is returned.
+
+        Raises
+        ------
+        ListProofVerificationError
+            If verification failed, an exception `ListProofVerificationError` is raised.
+        MalformedListProofError
+            If proof is malformed, an exception `MalformedListProofError` is raised.
+        """
+        if not isinstance(expected_hash, bytes):
+            raise ValueError("expected_hash should be bytes")
+
+        tree_root = self._collect()
+
+        calculated_hash = Hasher.hash_list_node(self._length, tree_root)
+        if calculated_hash == expected_hash:
+            return self._entries
+        else:
+            raise ListProofVerificationError(expected_hash, calculated_hash)
 
     @staticmethod
     def _parse_entry(data: List[Any]):
         if not isinstance(data, list) or not len(data) == 2:
             raise MalformedListProofError.parse_error(str(data))
         return data[0], data[1]
-
-    @classmethod
-    def parse(cls, data: Dict[str, Any], value_to_bytes: Callable[[Any], bytes]):
-        if not isinstance(data.get('proof'), list) \
-                or not isinstance(data.get('entries'), list) \
-                or not is_field_int(data, 'length'):
-            raise MalformedListProofError.parse_error(str(data))
-
-        proof = [HashedEntry.parse(entry) for entry in data['proof']]
-        entries = [cls._parse_entry(entry) for entry in data['entries']]
-        length = data['length']
-
-        return ListProof(proof, entries, length, value_to_bytes)
 
     @staticmethod
     def _tree_height_by_length(length: int) -> int:
@@ -173,15 +254,3 @@ class ListProof:
 
         assert len(layer) == 1, "Result layer length is not 1"
         return layer[0].entry_hash
-
-    def validate(self, expected_hash: bytes) -> List[Tuple[int, Any]]:
-        if not isinstance(expected_hash, bytes):
-            raise ValueError("expected_hash should be bytes")
-
-        tree_root = self._collect()
-
-        calculated_hash = Hasher.hash_list_node(self._length, tree_root)
-        if calculated_hash == expected_hash:
-            return self._entries
-        else:
-            raise ListProofVerificationError(expected_hash, calculated_hash)
