@@ -1,7 +1,7 @@
 from typing import Dict, List, Tuple, Any, Callable
 import itertools
 
-from ..utils import is_field_hash, is_field_int, calculate_height
+from ..utils import is_field_hash, is_field_int, calculate_height, to_bytes
 from ..hasher import Hasher
 from .key import ProofListKey
 from .errors import MalformedListProofError, ListProofVerificationError
@@ -14,11 +14,14 @@ class HashedEntry:
 
     @classmethod
     def parse(cls, data: Dict[Any, Any]) -> 'HashedEntry':
-        if not is_field_hash(data, 'hash'):
+        if not isinstance(data, dict) or not is_field_hash(data, 'hash'):
             raise MalformedListProofError.parse_error(str(dict))
 
         key = ProofListKey.parse(data)
-        return HashedEntry(key, data['hash'])
+        return HashedEntry(key, to_bytes(data['hash']))
+
+    def __eq__(self, other) -> bool:
+        return self.key == other.key and self.entry_hash == other.entry_hash
 
 
 def _hash_layer(layer: List[HashedEntry], last_index: int) -> List[HashedEntry]:
@@ -31,7 +34,7 @@ def _hash_layer(layer: List[HashedEntry], last_index: int) -> List[HashedEntry]:
         right_idx = 2 * i + 1
 
         # Check if there is both right and left indices in the layer.
-        if len(layer) >= right_idx:
+        if len(layer) > right_idx:
             # Verify that entries in the correct order.
             if not layer[left_idx].key.is_left() or layer[right_idx].key.index != layer[left_idx].key.index + 1:
                 raise MalformedListProofError.missing_hash()
@@ -67,6 +70,8 @@ class ListProof:
 
     @staticmethod
     def _parse_entry(data: List[Any]):
+        if not isinstance(data, list) or not len(data) == 2:
+            raise MalformedListProofError.parse_error(str(data))
         return data[0], data[1]
 
     @classmethod
@@ -76,11 +81,11 @@ class ListProof:
                 or not is_field_int(data, 'length'):
             raise MalformedListProofError.parse_error(str(data))
 
-            proof = [HashedEntry.parse(entry) for entry in data['proof']]
-            entries = [cls._parse_entry(entry) for entry in data['entries']]
-            length = data['length']
+        proof = [HashedEntry.parse(entry) for entry in data['proof']]
+        entries = [cls._parse_entry(entry) for entry in data['entries']]
+        length = data['length']
 
-            return ListProof(proof, entries, length, value_to_bytes)
+        return ListProof(proof, entries, length, value_to_bytes)
 
     @staticmethod
     def _tree_height_by_length(length: int) -> int:
@@ -110,7 +115,7 @@ class ListProof:
             raise MalformedListProofError.non_empty_proof()
 
         # If there are no entries, the proof should contain only a single root hash.
-        if self._entries:
+        if not self._entries:
             if len(self._proof) != 1:
                 if self._proof:
                     raise MalformedListProofError.missing_hash()
@@ -170,6 +175,9 @@ class ListProof:
         return layer[0].entry_hash
 
     def validate(self, expected_hash: bytes) -> List[Tuple[int, Any]]:
+        if not isinstance(expected_hash, bytes):
+            raise ValueError("expected_hash should be bytes")
+
         tree_root = self._collect()
 
         calculated_hash = Hasher.hash_list_node(self._length, tree_root)

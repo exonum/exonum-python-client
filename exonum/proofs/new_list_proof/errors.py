@@ -89,6 +89,7 @@ class ListProofVerificationError(Exception):
             hash_str = hash_bytes.hex()
             return hash_str[:4] + ".." + hash_str[len(hash_str) - 4:]
 
-        super.__init__("Unmatched root hash. Got: {}, expected {}".format(_short_hash(provided_hash, calculated_hash)))
+        err_msg = "Unmatched root hash. Got: {}, expected {}"
+        super().__init__(err_msg.format(_short_hash(provided_hash), _short_hash(calculated_hash)))
         self.provided_hash = provided_hash
         self.calculated_hash = calculated_hash
