@@ -29,11 +29,10 @@ def _encode_byte_lists_to_base64(obj: Dict[Any, Any]) -> Dict[Any, Any]:
 
 def build_encoder_function(encoder_class: type) -> Callable[[Dict[Any, Any]], bytes]:
     """
-    Static method to create encoder function.
+    With this function you can create encoder function for a value.
 
-    Normally you won't use this function, but if you need to use MapProof with one custom
-    converter function and one protobuf-based, you can create protobuf converter with this
-    method.
+    It creates a protobuf converter from value (as dict) to bytes which can be used in either
+    MapProof or ListProof.
 
     Parameters
     ----------
@@ -43,7 +42,7 @@ def build_encoder_function(encoder_class: type) -> Callable[[Dict[Any, Any]], by
     Returns
     ------
     Callable[[Dict[Any, Any]], bytes]
-        A converter function for the MapProof.
+        A converter function from value to bytes.
     """
     def func(data: Dict[Any, Any]):
         # TODO temporary workaround for a problem described above.
