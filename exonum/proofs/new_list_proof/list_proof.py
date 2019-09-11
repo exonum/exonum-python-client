@@ -79,7 +79,6 @@ class ListProof:
             Length of the proof list.
         value_to_bytes: Callable[[str], bytes]
             A function that converts the stored value to bytes for hashing.
-            By default, `bytes.fromhex` is used.
         """
         self._proof = proof
         self._entries = entries
@@ -104,6 +103,11 @@ class ListProof:
         However, successfull parsing doesn't mean that proof isn't malformed (it only means that provided dict structure
         matches the expected one).
         Actual checks for the proof contents correctness will be performed in the `validate` method.
+
+        To convert value to bytes ListProof attemts to use bytes.fromhex by default.
+        If your type should be converted to bytes using protobuf, you can generate the converter function with use of
+        `build_encoder_function` from encoder.py
+        Otherwise, you have to implement converter function by yourself.
 
         Parameters
         ----------
