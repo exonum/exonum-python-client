@@ -115,7 +115,7 @@ system.
 After invoking sign method we get a signed transaction. 
 This transaction is ready for sending to the Exonum node.
 
-To see more examples and find out how to work with proofs go [here](proof).
+To see more examples and find out how to work with proofs go [here][proof].
 
 ### Getting data on availiable services
 
