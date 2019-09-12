@@ -18,7 +18,7 @@ def _encode_byte_lists_to_base64(obj: Dict[Any, Any]) -> Dict[Any, Any]:
                 _visit(value)
             elif isinstance(value, list) and all(map(lambda x: 0 <= x <= 255, value)):
                 obj_raw = bytes(value)
-                entries[key] = str(base64.b64encode(obj_raw), 'utf-8')
+                entries[key] = str(base64.b64encode(obj_raw), "utf-8")
 
     obj_copy = copy.deepcopy(obj)
 
@@ -44,6 +44,7 @@ def build_encoder_function(encoder_class: type) -> Callable[[Dict[Any, Any]], by
     Callable[[Dict[Any, Any]], bytes]
         A converter function from value to bytes.
     """
+
     def func(data: Dict[Any, Any]):
         # TODO temporary workaround for a problem described above.
         preencoded_data = _encode_byte_lists_to_base64(data)
@@ -52,4 +53,5 @@ def build_encoder_function(encoder_class: type) -> Callable[[Dict[Any, Any]], by
         protobuf_obj = encoder_class()
 
         return json_format.Parse(data_json, protobuf_obj, True).SerializeToString()
+
     return func

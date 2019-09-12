@@ -4,7 +4,7 @@ import struct
 from pysodium import crypto_hash_sha256, crypto_hash_sha256_BYTES
 
 # Default hash value for empty ProofMapIndex.
-EMPTY_MAP_HASH = bytes.fromhex('7324b5c72b51bb5d4c180f1109cfd347b60473882145841c39f3e584576296f9')
+EMPTY_MAP_HASH = bytes.fromhex("7324b5c72b51bb5d4c180f1109cfd347b60473882145841c39f3e584576296f9")
 
 
 class Hasher:
@@ -28,7 +28,7 @@ class Hasher:
     def hash_node(left: bytes, right: bytes) -> bytes:
         """ Convenience method to obtain hashed value of the merkle tree node. """
 
-        data = struct.pack('<B', Hasher.HashTag.LIST_BRANCH_NODE) + left + right
+        data = struct.pack("<B", Hasher.HashTag.LIST_BRANCH_NODE) + left + right
 
         return crypto_hash_sha256(data)
 
@@ -36,7 +36,7 @@ class Hasher:
     def hash_single_node(left: bytes) -> bytes:
         """ Convenience method to obtain a hashed value of the merkle tree node with one child. """
 
-        data = struct.pack('<B', Hasher.HashTag.LIST_BRANCH_NODE) + left
+        data = struct.pack("<B", Hasher.HashTag.LIST_BRANCH_NODE) + left
 
         return crypto_hash_sha256(data)
 
@@ -44,7 +44,7 @@ class Hasher:
     def hash_leaf(val: bytes) -> bytes:
         """ Convenience method to obtain a hashed value of the merkle tree leaf. """
 
-        data = struct.pack('<B', Hasher.HashTag.BLOB) + val
+        data = struct.pack("<B", Hasher.HashTag.BLOB) + val
 
         return crypto_hash_sha256(data)
 
@@ -56,7 +56,7 @@ class Hasher:
         h = sha-256( HashTag::ListNode || len as u64 || merkle_root )
         ```
         """
-        data = struct.pack('<BQ', Hasher.HashTag.LIST_NODE, length) + merkle_root
+        data = struct.pack("<BQ", Hasher.HashTag.LIST_NODE, length) + merkle_root
 
         return crypto_hash_sha256(data)
 
@@ -68,7 +68,7 @@ class Hasher:
         h = sha-256( HashTag::MapNode || merkle_root )
         ```
         """
-        data = struct.pack('<B', Hasher.HashTag.MAP_NODE) + root
+        data = struct.pack("<B", Hasher.HashTag.MAP_NODE) + root
 
         return crypto_hash_sha256(data)
 
@@ -80,7 +80,7 @@ class Hasher:
         h = sha-256( HashTag::MapBranchNode || <left_key> || <right_key> || <left_hash> || <right_hash> )
         ```
         """
-        data = struct.pack('<B', Hasher.HashTag.MAP_BRANCH_NODE) + branch_node
+        data = struct.pack("<B", Hasher.HashTag.MAP_BRANCH_NODE) + branch_node
 
         return crypto_hash_sha256(data)
 
@@ -92,6 +92,6 @@ class Hasher:
         h = sha-256( HashTag::MapBranchNode || <key> || <child_hash> )
         ```
         """
-        data = struct.pack('<B', Hasher.HashTag.MAP_BRANCH_NODE) + path.as_bytes() + child_hash
+        data = struct.pack("<B", Hasher.HashTag.MAP_BRANCH_NODE) + path.as_bytes() + child_hash
 
         return crypto_hash_sha256(data)

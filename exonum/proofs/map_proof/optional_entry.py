@@ -11,15 +11,15 @@ class OptionalEntry:
 
     def __repr__(self) -> str:
         if self.is_missing:
-            return 'Missing [key: {}]'.format(self.key)
+            return "Missing [key: {}]".format(self.key)
         else:
-            return 'Entry [key: {}, value: {}]'.format(self.key, self.value)
+            return "Entry [key: {}, value: {}]".format(self.key, self.value)
 
     @staticmethod
-    def parse(data: Dict[str, Any]) -> 'OptionalEntry':
-        if data.get('missing'):
-            return OptionalEntry(key=data['missing'], value=None)
-        elif data.get('key') and data.get('value'):
-            return OptionalEntry(key=data['key'], value=data['value'])
+    def parse(data: Dict[str, Any]) -> "OptionalEntry":
+        if data.get("missing"):
+            return OptionalEntry(key=data["missing"], value=None)
+        elif data.get("key") and data.get("value"):
+            return OptionalEntry(key=data["key"], value=data["value"])
         else:
             raise MalformedMapProofError.malformed_entry(data)

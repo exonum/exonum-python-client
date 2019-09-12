@@ -24,7 +24,7 @@ class MessageGenerator:
         self.service_name = service_name
         self.message_ids = dict()
 
-        self.service_module = ModuleManager.import_service_module(service_name, 'service')
+        self.service_module = ModuleManager.import_service_module(service_name, "service")
         for i, message in enumerate(self.service_module.DESCRIPTOR.message_types_by_name):
             self.message_ids[message] = i
 
@@ -45,8 +45,8 @@ class ExonumMessage:
         self._build_message()
 
     def _build_message(self):
-        runtime_mod = ModuleManager.import_main_module('runtime')
-        consensus_mod = ModuleManager.import_main_module('consensus')
+        runtime_mod = ModuleManager.import_main_module("runtime")
+        consensus_mod = ModuleManager.import_main_module("consensus")
 
         serialized_msg = self.msg.SerializeToString()
 
@@ -67,8 +67,8 @@ class ExonumMessage:
         pk, sk = keys
         self.author = pk
 
-        consensus_mod = ModuleManager.import_main_module('consensus')
-        helpers_mod = ModuleManager.import_main_module('helpers')
+        consensus_mod = ModuleManager.import_main_module("consensus")
+        helpers_mod = ModuleManager.import_main_module("helpers")
 
         signed_message = consensus_mod.SignedMessage()
         signed_message.payload = self.payload
@@ -100,7 +100,7 @@ class ExonumMessage:
         :return: bool
         """
         try:
-            consensus_mod = ModuleManager.import_main_module('consensus')
+            consensus_mod = ModuleManager.import_main_module("consensus")
 
             signed_msg = consensus_mod.SignedMessage()
             signed_msg.ParseFromString(self.raw)
@@ -113,9 +113,9 @@ class ExonumMessage:
     @staticmethod
     def from_hex(tx_hex, service_name, tx_name):
         try:
-            consensus_mod = ModuleManager.import_main_module('consensus')
-            runtime_mod = ModuleManager.import_main_module('runtime')
-            service_mod = ModuleManager.import_service_module(service_name, 'service')
+            consensus_mod = ModuleManager.import_main_module("consensus")
+            runtime_mod = ModuleManager.import_main_module("runtime")
+            service_mod = ModuleManager.import_service_module(service_name, "service")
             transaction_class = getattr(service_mod, tx_name)
 
             tx_raw = bytes.fromhex(tx_hex)

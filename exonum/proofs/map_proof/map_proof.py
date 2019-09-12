@@ -17,19 +17,19 @@ class MapProofEntry:
         self.hash = data_hash
 
     def __repr__(self) -> str:
-        return 'Entry [path: {}, hash: {}]'.format(self.path, self.hash)
+        return "Entry [path: {}, hash: {}]".format(self.path, self.hash)
 
     @staticmethod
-    def parse(data: Dict[str, str]) -> 'MapProofEntry':
+    def parse(data: Dict[str, str]) -> "MapProofEntry":
         """ Parses MapProofEntry from the provided dict. """
 
-        if not isinstance(data.get('path'), str) or not is_field_hash(data, 'hash'):
+        if not isinstance(data.get("path"), str) or not is_field_hash(data, "hash"):
             raise MalformedMapProofError.malformed_entry(data)
 
-        path_bits = data['path']
+        path_bits = data["path"]
         path = ProofPath.parse(path_bits)
 
-        data_hash = to_bytes(data['hash'])
+        data_hash = to_bytes(data["hash"])
 
         return MapProofEntry(path, data_hash)
 
@@ -53,8 +53,8 @@ def collect(entries: List[MapProofEntry]) -> bytes:
 
     def hash_branch(left_child: MapProofEntry, right_child: MapProofEntry) -> bytes:
         branch = BranchNode()
-        branch.set_child('left', left_child.path, left_child.hash)
-        branch.set_child('right', right_child.path, right_child.hash)
+        branch.set_child("left", left_child.path, left_child.hash)
+        branch.set_child("right", right_child.path, right_child.hash)
 
         return branch.object_hash()
 
@@ -111,6 +111,7 @@ def collect(entries: List[MapProofEntry]) -> bytes:
 
 class CheckedMapProof:
     """ Version of `MapProof` obtained after verification. """
+
     def __init__(self, entries: List[OptionalEntry], root_hash: bytes):
         self._entries = entries
         self._root_hash = root_hash
@@ -167,7 +168,7 @@ class MapProof:
         entries: List[OptionalEntry],
         proof: List[MapProofEntry],
         key_to_bytes: Callable[[Any], bytes],
-        value_to_bytes: Callable[[Any], bytes]
+        value_to_bytes: Callable[[Any], bytes],
     ):
         """
         Constructor of the MapProof. It shouldn't be called directly, use `MapProof.parse`.
@@ -178,16 +179,14 @@ class MapProof:
         self._value_to_bytes = value_to_bytes
 
     def __repr__(self) -> str:
-        format_str = 'MapProof [\n  Entries: {}\n  Proof: {}\n]\n'
+        format_str = "MapProof [\n  Entries: {}\n  Proof: {}\n]\n"
 
         return format_str.format(self.entries, self.proof)
 
     @staticmethod
     def parse(
-        data: Dict[str, Any],
-        key_to_bytes: Callable[[Any], bytes],
-        value_to_bytes: Callable[[Any], bytes]
-    ) -> 'MapProof':
+        data: Dict[str, Any], key_to_bytes: Callable[[Any], bytes], value_to_bytes: Callable[[Any], bytes]
+    ) -> "MapProof":
         """
         Method to parse the proof.
 
@@ -243,11 +242,11 @@ class MapProof:
             be rised.
         """
 
-        if data.get('entries') is None or data.get('proof') is None:
+        if data.get("entries") is None or data.get("proof") is None:
             raise MalformedMapProofError.malformed_entry(data)
 
-        entries: List[OptionalEntry] = [OptionalEntry.parse(raw_entry) for raw_entry in data['entries']]
-        proof: List[MapProofEntry] = [MapProofEntry.parse(raw_entry) for raw_entry in data['proof']]
+        entries: List[OptionalEntry] = [OptionalEntry.parse(raw_entry) for raw_entry in data["entries"]]
+        proof: List[MapProofEntry] = [MapProofEntry.parse(raw_entry) for raw_entry in data["proof"]]
 
         return MapProof(entries, proof, key_to_bytes, value_to_bytes)
 

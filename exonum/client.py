@@ -69,9 +69,7 @@ class Subscriber(object):
 
 
 class ExonumClient(object):
-    def __init__(
-            self, hostname, public_api_port=80, private_api_port=81, ssl=False
-    ):
+    def __init__(self, hostname, public_api_port=80, private_api_port=81, ssl=False):
         # TODO add a warning that object should be created via "with".
         self.schema = "https" if ssl else "http"
         self.hostname = hostname
@@ -80,31 +78,17 @@ class ExonumClient(object):
         self.tx_url = TX_URL.format(self.schema, hostname, public_api_port)
 
     def _get_main_proto_sources(self):
-        return get(
-            SYSTEM_URL.format(
-                self.schema, self.hostname, self.public_api_port, "proto-sources"
-            )
-        )
+        return get(SYSTEM_URL.format(self.schema, self.hostname, self.public_api_port, "proto-sources"))
 
     def _get_proto_sources_for_service(self, runtime_id, service_name):
-        params = {
-            'artifact': '{}:{}'.format(runtime_id, service_name)
-        }
-        return get(
-            SYSTEM_URL.format(
-                self.schema, self.hostname, self.public_api_port, "proto-sources"
-            ), params=params
-        )
+        params = {"artifact": "{}:{}".format(runtime_id, service_name)}
+        return get(SYSTEM_URL.format(self.schema, self.hostname, self.public_api_port, "proto-sources"), params=params)
 
     def protobuf_loader(self):
         return ProtobufLoader(self)
 
     def available_services(self):
-        return get(
-            SYSTEM_URL.format(
-                self.schema, self.hostname, self.public_api_port, "services"
-            )
-        )
+        return get(SYSTEM_URL.format(self.schema, self.hostname, self.public_api_port, "services"))
 
     """Send transaction into Exonum node via REST IPI.
         msg - A prepared message
@@ -112,11 +96,7 @@ class ExonumClient(object):
 
     def send_transaction(self, tx):
         try:
-            response = requests.post(
-                self.tx_url,
-                data=tx.to_json(),
-                headers={"content-type": "application/json"},
-            )
+            response = requests.post(self.tx_url, data=tx.to_json(), headers={"content-type": "application/json"})
             return response
         except Exception as e:
             return {"error": str(e)}
@@ -125,13 +105,9 @@ class ExonumClient(object):
         return [self.send_transaction(tx) for tx in txs]
 
     def get_block(self, height):
-        return get(
-            BLOCK_URL.format(self.schema, self.hostname, self.public_api_port, height)
-        )
+        return get(BLOCK_URL.format(self.schema, self.hostname, self.public_api_port, height))
 
-    def get_blocks(
-            self, count, latest=None, skip_empty_blocks=False, add_blocks_time=False
-    ):
+    def get_blocks(self, count, latest=None, skip_empty_blocks=False, add_blocks_time=False):
         blocks_url = BLOCKS_URL.format(self.schema, self.hostname, self.public_api_port)
         params = dict()
         params["count"] = count
@@ -146,18 +122,12 @@ class ExonumClient(object):
         return get(blocks_url, params=params)
 
     def get_tx_info(self, tx_hash):
-        return get(
-            TX_URL.format(self.schema, self.hostname, self.public_api_port)
-            + "?hash="
-            + tx_hash
-        )
+        return get(TX_URL.format(self.schema, self.hostname, self.public_api_port) + "?hash=" + tx_hash)
 
     def service_endpoint(self, service_name, sub_uri, private=False):
         port = self.public_api_port if not private else self.private_api_port
 
-        service_url = SERVICE_URL.format(
-            self.schema, self.hostname, port, service_name
-        )
+        service_url = SERVICE_URL.format(self.schema, self.hostname, port, service_name)
 
         return service_url + sub_uri
 
@@ -165,25 +135,13 @@ class ExonumClient(object):
         return get(self.service_endpoint(service_name, sub_uri, private))
 
     def health_info(self):
-        return get(
-            SYSTEM_URL.format(
-                self.schema, self.hostname, self.public_api_port, "healthcheck"
-            )
-        )
+        return get(SYSTEM_URL.format(self.schema, self.hostname, self.public_api_port, "healthcheck"))
 
     def mempool(self):
-        return get(
-            SYSTEM_URL.format(
-                self.schema, self.hostname, self.public_api_port, "mempool"
-            )
-        )
+        return get(SYSTEM_URL.format(self.schema, self.hostname, self.public_api_port, "mempool"))
 
     def user_agent(self):
-        return get(
-            SYSTEM_URL.format(
-                self.schema, self.hostname, self.public_api_port, "user_agent"
-            )
-        )
+        return get(SYSTEM_URL.format(self.schema, self.hostname, self.public_api_port, "user_agent"))
 
     def create_subscriber(self):
         subscriber = Subscriber(self.hostname, self.public_api_port)

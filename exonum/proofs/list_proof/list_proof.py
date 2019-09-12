@@ -9,18 +9,19 @@ from .errors import MalformedListProofError, ListProofVerificationError
 
 class HashedEntry:
     """ Element of a proof with a key and hash. """
+
     def __init__(self, key: ProofListKey, entry_hash: bytes):
         self.key = key
         self.entry_hash = entry_hash
 
     @classmethod
-    def parse(cls, data: Dict[Any, Any]) -> 'HashedEntry':
+    def parse(cls, data: Dict[Any, Any]) -> "HashedEntry":
         """ Creates a HashedEntry object from provided dict. """
-        if not isinstance(data, dict) or not is_field_hash(data, 'hash'):
+        if not isinstance(data, dict) or not is_field_hash(data, "hash"):
             raise MalformedListProofError.parse_error(str(dict))
 
         key = ProofListKey.parse(data)
-        return HashedEntry(key, bytes.fromhex(data['hash']))
+        return HashedEntry(key, bytes.fromhex(data["hash"]))
 
     def __eq__(self, other) -> bool:
         return self.key == other.key and self.entry_hash == other.entry_hash
@@ -63,7 +64,7 @@ class ListProof:
         proof: List[HashedEntry],
         entries: List[Tuple[int, Any]],
         length: int,
-        value_to_bytes: Callable[[Any], bytes]
+        value_to_bytes: Callable[[Any], bytes],
     ):
         """
         Constructor of the ListProof.
@@ -86,7 +87,7 @@ class ListProof:
         self._value_to_bytes = value_to_bytes
 
     @classmethod
-    def parse(cls, proof_dict: Dict[str, Any], value_to_bytes: Callable[[Any], bytes] = bytes.fromhex) -> 'ListProof':
+    def parse(cls, proof_dict: Dict[str, Any], value_to_bytes: Callable[[Any], bytes] = bytes.fromhex) -> "ListProof":
         """
         Method to parse a ListProof from a dict.
         Expected dict format:
@@ -123,14 +124,16 @@ class ListProof:
             If structure of the provided dict doesn't match expected one,
             an exception `MalformedListProofError` is raised.
         """
-        if not isinstance(proof_dict.get('proof'), list) \
-                or not isinstance(proof_dict.get('entries'), list) \
-                or not is_field_int(proof_dict, 'length'):
+        if (
+            not isinstance(proof_dict.get("proof"), list)
+            or not isinstance(proof_dict.get("entries"), list)
+            or not is_field_int(proof_dict, "length")
+        ):
             raise MalformedListProofError.parse_error(str(proof_dict))
 
-        proof = [HashedEntry.parse(entry) for entry in proof_dict['proof']]
-        entries = [cls._parse_entry(entry) for entry in proof_dict['entries']]
-        length = proof_dict['length']
+        proof = [HashedEntry.parse(entry) for entry in proof_dict["proof"]]
+        entries = [cls._parse_entry(entry) for entry in proof_dict["entries"]]
+        length = proof_dict["length"]
 
         return ListProof(proof, entries, length, value_to_bytes)
 
@@ -189,7 +192,7 @@ class ListProof:
         def _split_hashes_by_height(hashes: List[HashedEntry], h: int) -> Tuple[List[HashedEntry], List[HashedEntry]]:
             """ Splits list of hashed entries into two lists by the given height. """
             current = list(itertools.takewhile(lambda x: x.key.height == h, hashes))
-            remaining = hashes[len(current):]
+            remaining = hashes[len(current) :]
 
             return current, remaining
 

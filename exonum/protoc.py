@@ -31,17 +31,14 @@ class Protoc:
         with open(path, "wt") as file_out:
             for line in file_content:
                 for module in modules:
-                    line = line.replace(
-                        "import {}_pb2 ".format(module),
-                        "from . import {}_pb2 ".format(module),
-                    )
+                    line = line.replace("import {}_pb2 ".format(module), "from . import {}_pb2 ".format(module))
                 file_out.write(line)
 
     def compile(self, path_in, path_out, include=None):
         os.makedirs(path_out)
 
-        init_file_path = os.path.join(path_out, '__init__.py')
-        open(init_file_path, 'a').close()
+        init_file_path = os.path.join(path_out, "__init__.py")
+        open(init_file_path, "a").close()
 
         protoc_args = None
         if include:
@@ -52,19 +49,13 @@ class Protoc:
                 "--python_out={}".format(path_out),
             ]
         else:
-            protoc_args = [
-                self.protoc_path,
-                "--proto_path={}".format(path_in),
-                "--python_out={}".format(path_out),
-            ]
+            protoc_args = [self.protoc_path, "--proto_path={}".format(path_in), "--python_out={}".format(path_out)]
 
         proto_files = find_proto_files(path_in)
         if include:
             proto_files.extend(find_proto_files(include))
         protoc_args.extend(proto_files)
-        protoc_process = subprocess.Popen(
-            protoc_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
+        protoc_process = subprocess.Popen(protoc_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         code = protoc_process.wait()
         (stdout, stderr) = protoc_process.communicate()
         if code == 0:

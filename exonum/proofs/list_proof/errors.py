@@ -8,6 +8,7 @@ class MalformedListProofError(Exception):
     This value described the kind of occured error.
     See enum ErrorKind for the details.
     """
+
     class ErrorKind(Enum):
         """
         Kind of the error. Possible variants:
@@ -19,6 +20,7 @@ class MalformedListProofError(Exception):
         - NON_EMPTY_PROOF: Non-empty proof for an empty list.
         - DUPLICATE_KEY: Same key is used more than once in the proof.
         """
+
         UNEXPECTED_LEAF = enum_auto()
         UNEXPECTED_BRANCH = enum_auto()
         REDUNDANT_HASH = enum_auto()
@@ -33,50 +35,50 @@ class MalformedListProofError(Exception):
         self.error_kind = error_kind
 
     @classmethod
-    def unexpected_leaf(cls) -> 'MalformedListProofError':
-        error_msg = 'Unexpected leaf'
+    def unexpected_leaf(cls) -> "MalformedListProofError":
+        error_msg = "Unexpected leaf"
         error_kind = cls.ErrorKind.UNEXPECTED_LEAF
 
         return cls(error_msg, error_kind)
 
     @classmethod
-    def unexpected_branch(cls) -> 'MalformedListProofError':
-        error_msg = 'Unexpected branch'
+    def unexpected_branch(cls) -> "MalformedListProofError":
+        error_msg = "Unexpected branch"
         error_kind = cls.ErrorKind.UNEXPECTED_BRANCH
 
         return cls(error_msg, error_kind)
 
     @classmethod
-    def redundant_hash(cls) -> 'MalformedListProofError':
-        error_msg = 'Redundant hash'
+    def redundant_hash(cls) -> "MalformedListProofError":
+        error_msg = "Redundant hash"
         error_kind = cls.ErrorKind.REDUNDANT_HASH
 
         return cls(error_msg, error_kind)
 
     @classmethod
-    def missing_hash(cls) -> 'MalformedListProofError':
-        error_msg = 'Missing hash'
+    def missing_hash(cls) -> "MalformedListProofError":
+        error_msg = "Missing hash"
         error_kind = cls.ErrorKind.MISSING_HASH
 
         return cls(error_msg, error_kind)
 
     @classmethod
-    def non_empty_proof(cls) -> 'MalformedListProofError':
-        error_msg = 'Non-empty proof'
+    def non_empty_proof(cls) -> "MalformedListProofError":
+        error_msg = "Non-empty proof"
         error_kind = cls.ErrorKind.NON_EMPTY_PROOF
 
         return cls(error_msg, error_kind)
 
     @classmethod
-    def parse_error(cls, message) -> 'MalformedListProofError':
-        error_msg = f'Parsing error: could not parse {message}'
+    def parse_error(cls, message) -> "MalformedListProofError":
+        error_msg = f"Parsing error: could not parse {message}"
         error_kind = cls.ErrorKind.PARSE_ERROR
 
         return cls(error_msg, error_kind)
 
     @classmethod
-    def duplicate_key(cls) -> 'MalformedListProofError':
-        error_msg = 'Duplicate key'
+    def duplicate_key(cls) -> "MalformedListProofError":
+        error_msg = "Duplicate key"
         error_kind = cls.ErrorKind.DUPLICATE_KEY
 
         return cls(error_msg, error_kind)
@@ -84,6 +86,7 @@ class MalformedListProofError(Exception):
 
 class ListProofVerificationError(Exception):
     """ Error raised when provided root hash doesn't match calculated one. """
+
     def __init__(self, provided_hash, calculated_hash):
         def _short_hash(hash_bytes: bytes):
             hash_str = hash_bytes.hex()

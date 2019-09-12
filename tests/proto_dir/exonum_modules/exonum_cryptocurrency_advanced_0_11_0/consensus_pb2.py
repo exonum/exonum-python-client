@@ -3,11 +3,13 @@
 # source: consensus.proto
 
 import sys
-_b=sys.version_info[0]<3 and (lambda x:x) or (lambda x:x.encode('latin1'))
+
+_b = sys.version_info[0] < 3 and (lambda x: x) or (lambda x: x.encode("latin1"))
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
+
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
@@ -20,934 +22,1557 @@ from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
-  name='consensus.proto',
-  package='exonum.consensus',
-  syntax='proto3',
-  serialized_options=None,
-  serialized_pb=_b('\n\x0f\x63onsensus.proto\x12\x10\x65xonum.consensus\x1a\rhelpers.proto\x1a\x10\x62lockchain.proto\x1a\rruntime.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"i\n\rSignedMessage\x12\x0f\n\x07payload\x18\x01 \x01(\x0c\x12!\n\x06\x61uthor\x18\x02 \x01(\x0b\x32\x11.exonum.PublicKey\x12$\n\tsignature\x18\x03 \x01(\x0b\x32\x11.exonum.Signature\"U\n\x07\x43onnect\x12\x0c\n\x04host\x18\x01 \x01(\t\x12(\n\x04time\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x12\n\nuser_agent\x18\x03 \x01(\t\"9\n\x06Status\x12\x0e\n\x06height\x18\x01 \x01(\x04\x12\x1f\n\tlast_hash\x18\x02 \x01(\x0b\x32\x0c.exonum.Hash\"\x80\x01\n\x07Propose\x12\x11\n\tvalidator\x18\x01 \x01(\r\x12\x0e\n\x06height\x18\x02 \x01(\x04\x12\r\n\x05round\x18\x03 \x01(\r\x12\x1f\n\tprev_hash\x18\x04 \x01(\x0b\x32\x0c.exonum.Hash\x12\"\n\x0ctransactions\x18\x05 \x03(\x0b\x32\x0c.exonum.Hash\"u\n\x07Prevote\x12\x11\n\tvalidator\x18\x01 \x01(\r\x12\x0e\n\x06height\x18\x02 \x01(\x04\x12\r\n\x05round\x18\x03 \x01(\r\x12\"\n\x0cpropose_hash\x18\x04 \x01(\x0b\x32\x0c.exonum.Hash\x12\x14\n\x0clocked_round\x18\x05 \x01(\r\"\xad\x01\n\tPrecommit\x12\x11\n\tvalidator\x18\x01 \x01(\r\x12\x0e\n\x06height\x18\x02 \x01(\x04\x12\r\n\x05round\x18\x03 \x01(\r\x12\"\n\x0cpropose_hash\x18\x04 \x01(\x0b\x32\x0c.exonum.Hash\x12 \n\nblock_hash\x18\x05 \x01(\x0b\x32\x0c.exonum.Hash\x12(\n\x04time\x18\x06 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"\x84\x01\n\rBlockResponse\x12\x1d\n\x02to\x18\x01 \x01(\x0b\x32\x11.exonum.PublicKey\x12\x1c\n\x05\x62lock\x18\x02 \x01(\x0b\x32\r.exonum.Block\x12\x12\n\nprecommits\x18\x03 \x03(\x0c\x12\"\n\x0ctransactions\x18\x04 \x03(\x0b\x32\x0c.exonum.Hash\"K\n\x14TransactionsResponse\x12\x1d\n\x02to\x18\x01 \x01(\x0b\x32\x11.exonum.PublicKey\x12\x14\n\x0ctransactions\x18\x02 \x03(\x0c\"c\n\x0eProposeRequest\x12\x1d\n\x02to\x18\x01 \x01(\x0b\x32\x11.exonum.PublicKey\x12\x0e\n\x06height\x18\x02 \x01(\x04\x12\"\n\x0cpropose_hash\x18\x03 \x01(\x0b\x32\x0c.exonum.Hash\"O\n\x13TransactionsRequest\x12\x1d\n\x02to\x18\x01 \x01(\x0b\x32\x11.exonum.PublicKey\x12\x19\n\x03txs\x18\x02 \x03(\x0b\x32\x0c.exonum.Hash\"\x97\x01\n\x0fPrevotesRequest\x12\x1d\n\x02to\x18\x01 \x01(\x0b\x32\x11.exonum.PublicKey\x12\x0e\n\x06height\x18\x02 \x01(\x04\x12\r\n\x05round\x18\x03 \x01(\r\x12\"\n\x0cpropose_hash\x18\x04 \x01(\x0b\x32\x0c.exonum.Hash\x12\"\n\nvalidators\x18\x05 \x01(\x0b\x32\x0e.exonum.BitVec\"-\n\x0cPeersRequest\x12\x1d\n\x02to\x18\x01 \x01(\x0b\x32\x11.exonum.PublicKey\"=\n\x0c\x42lockRequest\x12\x1d\n\x02to\x18\x01 \x01(\x0b\x32\x11.exonum.PublicKey\x12\x0e\n\x06height\x18\x02 \x01(\x04\"\xe4\x05\n\rExonumMessage\x12\'\n\x06\x61ny_tx\x18\x01 \x01(\x0b\x32\x15.exonum.runtime.AnyTxH\x00\x12,\n\x07\x63onnect\x18\x02 \x01(\x0b\x32\x19.exonum.consensus.ConnectH\x00\x12*\n\x06status\x18\x03 \x01(\x0b\x32\x18.exonum.consensus.StatusH\x00\x12\x30\n\tprecommit\x18\x04 \x01(\x0b\x32\x1b.exonum.consensus.PrecommitH\x00\x12,\n\x07propose\x18\x05 \x01(\x0b\x32\x19.exonum.consensus.ProposeH\x00\x12,\n\x07prevote\x18\x06 \x01(\x0b\x32\x19.exonum.consensus.PrevoteH\x00\x12G\n\x15transactions_response\x18\x07 \x01(\x0b\x32&.exonum.consensus.TransactionsResponseH\x00\x12\x39\n\x0e\x62lock_response\x18\x08 \x01(\x0b\x32\x1f.exonum.consensus.BlockResponseH\x00\x12;\n\x0fpropose_request\x18\t \x01(\x0b\x32 .exonum.consensus.ProposeRequestH\x00\x12\x45\n\x14transactions_request\x18\n \x01(\x0b\x32%.exonum.consensus.TransactionsRequestH\x00\x12=\n\x10prevotes_request\x18\x0b \x01(\x0b\x32!.exonum.consensus.PrevotesRequestH\x00\x12\x37\n\rpeers_request\x18\x0c \x01(\x0b\x32\x1e.exonum.consensus.PeersRequestH\x00\x12\x37\n\rblock_request\x18\r \x01(\x0b\x32\x1e.exonum.consensus.BlockRequestH\x00\x42\t\n\x07messageb\x06proto3')
-  ,
-  dependencies=[helpers__pb2.DESCRIPTOR,blockchain__pb2.DESCRIPTOR,runtime__pb2.DESCRIPTOR,google_dot_protobuf_dot_timestamp__pb2.DESCRIPTOR,])
-
-
+    name="consensus.proto",
+    package="exonum.consensus",
+    syntax="proto3",
+    serialized_options=None,
+    serialized_pb=_b(
+        '\n\x0f\x63onsensus.proto\x12\x10\x65xonum.consensus\x1a\rhelpers.proto\x1a\x10\x62lockchain.proto\x1a\rruntime.proto\x1a\x1fgoogle/protobuf/timestamp.proto"i\n\rSignedMessage\x12\x0f\n\x07payload\x18\x01 \x01(\x0c\x12!\n\x06\x61uthor\x18\x02 \x01(\x0b\x32\x11.exonum.PublicKey\x12$\n\tsignature\x18\x03 \x01(\x0b\x32\x11.exonum.Signature"U\n\x07\x43onnect\x12\x0c\n\x04host\x18\x01 \x01(\t\x12(\n\x04time\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x12\n\nuser_agent\x18\x03 \x01(\t"9\n\x06Status\x12\x0e\n\x06height\x18\x01 \x01(\x04\x12\x1f\n\tlast_hash\x18\x02 \x01(\x0b\x32\x0c.exonum.Hash"\x80\x01\n\x07Propose\x12\x11\n\tvalidator\x18\x01 \x01(\r\x12\x0e\n\x06height\x18\x02 \x01(\x04\x12\r\n\x05round\x18\x03 \x01(\r\x12\x1f\n\tprev_hash\x18\x04 \x01(\x0b\x32\x0c.exonum.Hash\x12"\n\x0ctransactions\x18\x05 \x03(\x0b\x32\x0c.exonum.Hash"u\n\x07Prevote\x12\x11\n\tvalidator\x18\x01 \x01(\r\x12\x0e\n\x06height\x18\x02 \x01(\x04\x12\r\n\x05round\x18\x03 \x01(\r\x12"\n\x0cpropose_hash\x18\x04 \x01(\x0b\x32\x0c.exonum.Hash\x12\x14\n\x0clocked_round\x18\x05 \x01(\r"\xad\x01\n\tPrecommit\x12\x11\n\tvalidator\x18\x01 \x01(\r\x12\x0e\n\x06height\x18\x02 \x01(\x04\x12\r\n\x05round\x18\x03 \x01(\r\x12"\n\x0cpropose_hash\x18\x04 \x01(\x0b\x32\x0c.exonum.Hash\x12 \n\nblock_hash\x18\x05 \x01(\x0b\x32\x0c.exonum.Hash\x12(\n\x04time\x18\x06 \x01(\x0b\x32\x1a.google.protobuf.Timestamp"\x84\x01\n\rBlockResponse\x12\x1d\n\x02to\x18\x01 \x01(\x0b\x32\x11.exonum.PublicKey\x12\x1c\n\x05\x62lock\x18\x02 \x01(\x0b\x32\r.exonum.Block\x12\x12\n\nprecommits\x18\x03 \x03(\x0c\x12"\n\x0ctransactions\x18\x04 \x03(\x0b\x32\x0c.exonum.Hash"K\n\x14TransactionsResponse\x12\x1d\n\x02to\x18\x01 \x01(\x0b\x32\x11.exonum.PublicKey\x12\x14\n\x0ctransactions\x18\x02 \x03(\x0c"c\n\x0eProposeRequest\x12\x1d\n\x02to\x18\x01 \x01(\x0b\x32\x11.exonum.PublicKey\x12\x0e\n\x06height\x18\x02 \x01(\x04\x12"\n\x0cpropose_hash\x18\x03 \x01(\x0b\x32\x0c.exonum.Hash"O\n\x13TransactionsRequest\x12\x1d\n\x02to\x18\x01 \x01(\x0b\x32\x11.exonum.PublicKey\x12\x19\n\x03txs\x18\x02 \x03(\x0b\x32\x0c.exonum.Hash"\x97\x01\n\x0fPrevotesRequest\x12\x1d\n\x02to\x18\x01 \x01(\x0b\x32\x11.exonum.PublicKey\x12\x0e\n\x06height\x18\x02 \x01(\x04\x12\r\n\x05round\x18\x03 \x01(\r\x12"\n\x0cpropose_hash\x18\x04 \x01(\x0b\x32\x0c.exonum.Hash\x12"\n\nvalidators\x18\x05 \x01(\x0b\x32\x0e.exonum.BitVec"-\n\x0cPeersRequest\x12\x1d\n\x02to\x18\x01 \x01(\x0b\x32\x11.exonum.PublicKey"=\n\x0c\x42lockRequest\x12\x1d\n\x02to\x18\x01 \x01(\x0b\x32\x11.exonum.PublicKey\x12\x0e\n\x06height\x18\x02 \x01(\x04"\xe4\x05\n\rExonumMessage\x12\'\n\x06\x61ny_tx\x18\x01 \x01(\x0b\x32\x15.exonum.runtime.AnyTxH\x00\x12,\n\x07\x63onnect\x18\x02 \x01(\x0b\x32\x19.exonum.consensus.ConnectH\x00\x12*\n\x06status\x18\x03 \x01(\x0b\x32\x18.exonum.consensus.StatusH\x00\x12\x30\n\tprecommit\x18\x04 \x01(\x0b\x32\x1b.exonum.consensus.PrecommitH\x00\x12,\n\x07propose\x18\x05 \x01(\x0b\x32\x19.exonum.consensus.ProposeH\x00\x12,\n\x07prevote\x18\x06 \x01(\x0b\x32\x19.exonum.consensus.PrevoteH\x00\x12G\n\x15transactions_response\x18\x07 \x01(\x0b\x32&.exonum.consensus.TransactionsResponseH\x00\x12\x39\n\x0e\x62lock_response\x18\x08 \x01(\x0b\x32\x1f.exonum.consensus.BlockResponseH\x00\x12;\n\x0fpropose_request\x18\t \x01(\x0b\x32 .exonum.consensus.ProposeRequestH\x00\x12\x45\n\x14transactions_request\x18\n \x01(\x0b\x32%.exonum.consensus.TransactionsRequestH\x00\x12=\n\x10prevotes_request\x18\x0b \x01(\x0b\x32!.exonum.consensus.PrevotesRequestH\x00\x12\x37\n\rpeers_request\x18\x0c \x01(\x0b\x32\x1e.exonum.consensus.PeersRequestH\x00\x12\x37\n\rblock_request\x18\r \x01(\x0b\x32\x1e.exonum.consensus.BlockRequestH\x00\x42\t\n\x07messageb\x06proto3'
+    ),
+    dependencies=[
+        helpers__pb2.DESCRIPTOR,
+        blockchain__pb2.DESCRIPTOR,
+        runtime__pb2.DESCRIPTOR,
+        google_dot_protobuf_dot_timestamp__pb2.DESCRIPTOR,
+    ],
+)
 
 
 _SIGNEDMESSAGE = _descriptor.Descriptor(
-  name='SignedMessage',
-  full_name='exonum.consensus.SignedMessage',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='payload', full_name='exonum.consensus.SignedMessage.payload', index=0,
-      number=1, type=12, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b(""),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='author', full_name='exonum.consensus.SignedMessage.author', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='signature', full_name='exonum.consensus.SignedMessage.signature', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=118,
-  serialized_end=223,
+    name="SignedMessage",
+    full_name="exonum.consensus.SignedMessage",
+    filename=None,
+    file=DESCRIPTOR,
+    containing_type=None,
+    fields=[
+        _descriptor.FieldDescriptor(
+            name="payload",
+            full_name="exonum.consensus.SignedMessage.payload",
+            index=0,
+            number=1,
+            type=12,
+            cpp_type=9,
+            label=1,
+            has_default_value=False,
+            default_value=_b(""),
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="author",
+            full_name="exonum.consensus.SignedMessage.author",
+            index=1,
+            number=2,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="signature",
+            full_name="exonum.consensus.SignedMessage.signature",
+            index=2,
+            number=3,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+    ],
+    extensions=[],
+    nested_types=[],
+    enum_types=[],
+    serialized_options=None,
+    is_extendable=False,
+    syntax="proto3",
+    extension_ranges=[],
+    oneofs=[],
+    serialized_start=118,
+    serialized_end=223,
 )
 
 
 _CONNECT = _descriptor.Descriptor(
-  name='Connect',
-  full_name='exonum.consensus.Connect',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='host', full_name='exonum.consensus.Connect.host', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='time', full_name='exonum.consensus.Connect.time', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='user_agent', full_name='exonum.consensus.Connect.user_agent', index=2,
-      number=3, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=225,
-  serialized_end=310,
+    name="Connect",
+    full_name="exonum.consensus.Connect",
+    filename=None,
+    file=DESCRIPTOR,
+    containing_type=None,
+    fields=[
+        _descriptor.FieldDescriptor(
+            name="host",
+            full_name="exonum.consensus.Connect.host",
+            index=0,
+            number=1,
+            type=9,
+            cpp_type=9,
+            label=1,
+            has_default_value=False,
+            default_value=_b("").decode("utf-8"),
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="time",
+            full_name="exonum.consensus.Connect.time",
+            index=1,
+            number=2,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="user_agent",
+            full_name="exonum.consensus.Connect.user_agent",
+            index=2,
+            number=3,
+            type=9,
+            cpp_type=9,
+            label=1,
+            has_default_value=False,
+            default_value=_b("").decode("utf-8"),
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+    ],
+    extensions=[],
+    nested_types=[],
+    enum_types=[],
+    serialized_options=None,
+    is_extendable=False,
+    syntax="proto3",
+    extension_ranges=[],
+    oneofs=[],
+    serialized_start=225,
+    serialized_end=310,
 )
 
 
 _STATUS = _descriptor.Descriptor(
-  name='Status',
-  full_name='exonum.consensus.Status',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='height', full_name='exonum.consensus.Status.height', index=0,
-      number=1, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='last_hash', full_name='exonum.consensus.Status.last_hash', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=312,
-  serialized_end=369,
+    name="Status",
+    full_name="exonum.consensus.Status",
+    filename=None,
+    file=DESCRIPTOR,
+    containing_type=None,
+    fields=[
+        _descriptor.FieldDescriptor(
+            name="height",
+            full_name="exonum.consensus.Status.height",
+            index=0,
+            number=1,
+            type=4,
+            cpp_type=4,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="last_hash",
+            full_name="exonum.consensus.Status.last_hash",
+            index=1,
+            number=2,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+    ],
+    extensions=[],
+    nested_types=[],
+    enum_types=[],
+    serialized_options=None,
+    is_extendable=False,
+    syntax="proto3",
+    extension_ranges=[],
+    oneofs=[],
+    serialized_start=312,
+    serialized_end=369,
 )
 
 
 _PROPOSE = _descriptor.Descriptor(
-  name='Propose',
-  full_name='exonum.consensus.Propose',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='validator', full_name='exonum.consensus.Propose.validator', index=0,
-      number=1, type=13, cpp_type=3, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='height', full_name='exonum.consensus.Propose.height', index=1,
-      number=2, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='round', full_name='exonum.consensus.Propose.round', index=2,
-      number=3, type=13, cpp_type=3, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='prev_hash', full_name='exonum.consensus.Propose.prev_hash', index=3,
-      number=4, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='transactions', full_name='exonum.consensus.Propose.transactions', index=4,
-      number=5, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=372,
-  serialized_end=500,
+    name="Propose",
+    full_name="exonum.consensus.Propose",
+    filename=None,
+    file=DESCRIPTOR,
+    containing_type=None,
+    fields=[
+        _descriptor.FieldDescriptor(
+            name="validator",
+            full_name="exonum.consensus.Propose.validator",
+            index=0,
+            number=1,
+            type=13,
+            cpp_type=3,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="height",
+            full_name="exonum.consensus.Propose.height",
+            index=1,
+            number=2,
+            type=4,
+            cpp_type=4,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="round",
+            full_name="exonum.consensus.Propose.round",
+            index=2,
+            number=3,
+            type=13,
+            cpp_type=3,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="prev_hash",
+            full_name="exonum.consensus.Propose.prev_hash",
+            index=3,
+            number=4,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="transactions",
+            full_name="exonum.consensus.Propose.transactions",
+            index=4,
+            number=5,
+            type=11,
+            cpp_type=10,
+            label=3,
+            has_default_value=False,
+            default_value=[],
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+    ],
+    extensions=[],
+    nested_types=[],
+    enum_types=[],
+    serialized_options=None,
+    is_extendable=False,
+    syntax="proto3",
+    extension_ranges=[],
+    oneofs=[],
+    serialized_start=372,
+    serialized_end=500,
 )
 
 
 _PREVOTE = _descriptor.Descriptor(
-  name='Prevote',
-  full_name='exonum.consensus.Prevote',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='validator', full_name='exonum.consensus.Prevote.validator', index=0,
-      number=1, type=13, cpp_type=3, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='height', full_name='exonum.consensus.Prevote.height', index=1,
-      number=2, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='round', full_name='exonum.consensus.Prevote.round', index=2,
-      number=3, type=13, cpp_type=3, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='propose_hash', full_name='exonum.consensus.Prevote.propose_hash', index=3,
-      number=4, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='locked_round', full_name='exonum.consensus.Prevote.locked_round', index=4,
-      number=5, type=13, cpp_type=3, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=502,
-  serialized_end=619,
+    name="Prevote",
+    full_name="exonum.consensus.Prevote",
+    filename=None,
+    file=DESCRIPTOR,
+    containing_type=None,
+    fields=[
+        _descriptor.FieldDescriptor(
+            name="validator",
+            full_name="exonum.consensus.Prevote.validator",
+            index=0,
+            number=1,
+            type=13,
+            cpp_type=3,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="height",
+            full_name="exonum.consensus.Prevote.height",
+            index=1,
+            number=2,
+            type=4,
+            cpp_type=4,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="round",
+            full_name="exonum.consensus.Prevote.round",
+            index=2,
+            number=3,
+            type=13,
+            cpp_type=3,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="propose_hash",
+            full_name="exonum.consensus.Prevote.propose_hash",
+            index=3,
+            number=4,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="locked_round",
+            full_name="exonum.consensus.Prevote.locked_round",
+            index=4,
+            number=5,
+            type=13,
+            cpp_type=3,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+    ],
+    extensions=[],
+    nested_types=[],
+    enum_types=[],
+    serialized_options=None,
+    is_extendable=False,
+    syntax="proto3",
+    extension_ranges=[],
+    oneofs=[],
+    serialized_start=502,
+    serialized_end=619,
 )
 
 
 _PRECOMMIT = _descriptor.Descriptor(
-  name='Precommit',
-  full_name='exonum.consensus.Precommit',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='validator', full_name='exonum.consensus.Precommit.validator', index=0,
-      number=1, type=13, cpp_type=3, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='height', full_name='exonum.consensus.Precommit.height', index=1,
-      number=2, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='round', full_name='exonum.consensus.Precommit.round', index=2,
-      number=3, type=13, cpp_type=3, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='propose_hash', full_name='exonum.consensus.Precommit.propose_hash', index=3,
-      number=4, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='block_hash', full_name='exonum.consensus.Precommit.block_hash', index=4,
-      number=5, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='time', full_name='exonum.consensus.Precommit.time', index=5,
-      number=6, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=622,
-  serialized_end=795,
+    name="Precommit",
+    full_name="exonum.consensus.Precommit",
+    filename=None,
+    file=DESCRIPTOR,
+    containing_type=None,
+    fields=[
+        _descriptor.FieldDescriptor(
+            name="validator",
+            full_name="exonum.consensus.Precommit.validator",
+            index=0,
+            number=1,
+            type=13,
+            cpp_type=3,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="height",
+            full_name="exonum.consensus.Precommit.height",
+            index=1,
+            number=2,
+            type=4,
+            cpp_type=4,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="round",
+            full_name="exonum.consensus.Precommit.round",
+            index=2,
+            number=3,
+            type=13,
+            cpp_type=3,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="propose_hash",
+            full_name="exonum.consensus.Precommit.propose_hash",
+            index=3,
+            number=4,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="block_hash",
+            full_name="exonum.consensus.Precommit.block_hash",
+            index=4,
+            number=5,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="time",
+            full_name="exonum.consensus.Precommit.time",
+            index=5,
+            number=6,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+    ],
+    extensions=[],
+    nested_types=[],
+    enum_types=[],
+    serialized_options=None,
+    is_extendable=False,
+    syntax="proto3",
+    extension_ranges=[],
+    oneofs=[],
+    serialized_start=622,
+    serialized_end=795,
 )
 
 
 _BLOCKRESPONSE = _descriptor.Descriptor(
-  name='BlockResponse',
-  full_name='exonum.consensus.BlockResponse',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='to', full_name='exonum.consensus.BlockResponse.to', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='block', full_name='exonum.consensus.BlockResponse.block', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='precommits', full_name='exonum.consensus.BlockResponse.precommits', index=2,
-      number=3, type=12, cpp_type=9, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='transactions', full_name='exonum.consensus.BlockResponse.transactions', index=3,
-      number=4, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=798,
-  serialized_end=930,
+    name="BlockResponse",
+    full_name="exonum.consensus.BlockResponse",
+    filename=None,
+    file=DESCRIPTOR,
+    containing_type=None,
+    fields=[
+        _descriptor.FieldDescriptor(
+            name="to",
+            full_name="exonum.consensus.BlockResponse.to",
+            index=0,
+            number=1,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="block",
+            full_name="exonum.consensus.BlockResponse.block",
+            index=1,
+            number=2,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="precommits",
+            full_name="exonum.consensus.BlockResponse.precommits",
+            index=2,
+            number=3,
+            type=12,
+            cpp_type=9,
+            label=3,
+            has_default_value=False,
+            default_value=[],
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="transactions",
+            full_name="exonum.consensus.BlockResponse.transactions",
+            index=3,
+            number=4,
+            type=11,
+            cpp_type=10,
+            label=3,
+            has_default_value=False,
+            default_value=[],
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+    ],
+    extensions=[],
+    nested_types=[],
+    enum_types=[],
+    serialized_options=None,
+    is_extendable=False,
+    syntax="proto3",
+    extension_ranges=[],
+    oneofs=[],
+    serialized_start=798,
+    serialized_end=930,
 )
 
 
 _TRANSACTIONSRESPONSE = _descriptor.Descriptor(
-  name='TransactionsResponse',
-  full_name='exonum.consensus.TransactionsResponse',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='to', full_name='exonum.consensus.TransactionsResponse.to', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='transactions', full_name='exonum.consensus.TransactionsResponse.transactions', index=1,
-      number=2, type=12, cpp_type=9, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=932,
-  serialized_end=1007,
+    name="TransactionsResponse",
+    full_name="exonum.consensus.TransactionsResponse",
+    filename=None,
+    file=DESCRIPTOR,
+    containing_type=None,
+    fields=[
+        _descriptor.FieldDescriptor(
+            name="to",
+            full_name="exonum.consensus.TransactionsResponse.to",
+            index=0,
+            number=1,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="transactions",
+            full_name="exonum.consensus.TransactionsResponse.transactions",
+            index=1,
+            number=2,
+            type=12,
+            cpp_type=9,
+            label=3,
+            has_default_value=False,
+            default_value=[],
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+    ],
+    extensions=[],
+    nested_types=[],
+    enum_types=[],
+    serialized_options=None,
+    is_extendable=False,
+    syntax="proto3",
+    extension_ranges=[],
+    oneofs=[],
+    serialized_start=932,
+    serialized_end=1007,
 )
 
 
 _PROPOSEREQUEST = _descriptor.Descriptor(
-  name='ProposeRequest',
-  full_name='exonum.consensus.ProposeRequest',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='to', full_name='exonum.consensus.ProposeRequest.to', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='height', full_name='exonum.consensus.ProposeRequest.height', index=1,
-      number=2, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='propose_hash', full_name='exonum.consensus.ProposeRequest.propose_hash', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=1009,
-  serialized_end=1108,
+    name="ProposeRequest",
+    full_name="exonum.consensus.ProposeRequest",
+    filename=None,
+    file=DESCRIPTOR,
+    containing_type=None,
+    fields=[
+        _descriptor.FieldDescriptor(
+            name="to",
+            full_name="exonum.consensus.ProposeRequest.to",
+            index=0,
+            number=1,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="height",
+            full_name="exonum.consensus.ProposeRequest.height",
+            index=1,
+            number=2,
+            type=4,
+            cpp_type=4,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="propose_hash",
+            full_name="exonum.consensus.ProposeRequest.propose_hash",
+            index=2,
+            number=3,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+    ],
+    extensions=[],
+    nested_types=[],
+    enum_types=[],
+    serialized_options=None,
+    is_extendable=False,
+    syntax="proto3",
+    extension_ranges=[],
+    oneofs=[],
+    serialized_start=1009,
+    serialized_end=1108,
 )
 
 
 _TRANSACTIONSREQUEST = _descriptor.Descriptor(
-  name='TransactionsRequest',
-  full_name='exonum.consensus.TransactionsRequest',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='to', full_name='exonum.consensus.TransactionsRequest.to', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='txs', full_name='exonum.consensus.TransactionsRequest.txs', index=1,
-      number=2, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=1110,
-  serialized_end=1189,
+    name="TransactionsRequest",
+    full_name="exonum.consensus.TransactionsRequest",
+    filename=None,
+    file=DESCRIPTOR,
+    containing_type=None,
+    fields=[
+        _descriptor.FieldDescriptor(
+            name="to",
+            full_name="exonum.consensus.TransactionsRequest.to",
+            index=0,
+            number=1,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="txs",
+            full_name="exonum.consensus.TransactionsRequest.txs",
+            index=1,
+            number=2,
+            type=11,
+            cpp_type=10,
+            label=3,
+            has_default_value=False,
+            default_value=[],
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+    ],
+    extensions=[],
+    nested_types=[],
+    enum_types=[],
+    serialized_options=None,
+    is_extendable=False,
+    syntax="proto3",
+    extension_ranges=[],
+    oneofs=[],
+    serialized_start=1110,
+    serialized_end=1189,
 )
 
 
 _PREVOTESREQUEST = _descriptor.Descriptor(
-  name='PrevotesRequest',
-  full_name='exonum.consensus.PrevotesRequest',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='to', full_name='exonum.consensus.PrevotesRequest.to', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='height', full_name='exonum.consensus.PrevotesRequest.height', index=1,
-      number=2, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='round', full_name='exonum.consensus.PrevotesRequest.round', index=2,
-      number=3, type=13, cpp_type=3, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='propose_hash', full_name='exonum.consensus.PrevotesRequest.propose_hash', index=3,
-      number=4, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='validators', full_name='exonum.consensus.PrevotesRequest.validators', index=4,
-      number=5, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=1192,
-  serialized_end=1343,
+    name="PrevotesRequest",
+    full_name="exonum.consensus.PrevotesRequest",
+    filename=None,
+    file=DESCRIPTOR,
+    containing_type=None,
+    fields=[
+        _descriptor.FieldDescriptor(
+            name="to",
+            full_name="exonum.consensus.PrevotesRequest.to",
+            index=0,
+            number=1,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="height",
+            full_name="exonum.consensus.PrevotesRequest.height",
+            index=1,
+            number=2,
+            type=4,
+            cpp_type=4,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="round",
+            full_name="exonum.consensus.PrevotesRequest.round",
+            index=2,
+            number=3,
+            type=13,
+            cpp_type=3,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="propose_hash",
+            full_name="exonum.consensus.PrevotesRequest.propose_hash",
+            index=3,
+            number=4,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="validators",
+            full_name="exonum.consensus.PrevotesRequest.validators",
+            index=4,
+            number=5,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+    ],
+    extensions=[],
+    nested_types=[],
+    enum_types=[],
+    serialized_options=None,
+    is_extendable=False,
+    syntax="proto3",
+    extension_ranges=[],
+    oneofs=[],
+    serialized_start=1192,
+    serialized_end=1343,
 )
 
 
 _PEERSREQUEST = _descriptor.Descriptor(
-  name='PeersRequest',
-  full_name='exonum.consensus.PeersRequest',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='to', full_name='exonum.consensus.PeersRequest.to', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=1345,
-  serialized_end=1390,
+    name="PeersRequest",
+    full_name="exonum.consensus.PeersRequest",
+    filename=None,
+    file=DESCRIPTOR,
+    containing_type=None,
+    fields=[
+        _descriptor.FieldDescriptor(
+            name="to",
+            full_name="exonum.consensus.PeersRequest.to",
+            index=0,
+            number=1,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        )
+    ],
+    extensions=[],
+    nested_types=[],
+    enum_types=[],
+    serialized_options=None,
+    is_extendable=False,
+    syntax="proto3",
+    extension_ranges=[],
+    oneofs=[],
+    serialized_start=1345,
+    serialized_end=1390,
 )
 
 
 _BLOCKREQUEST = _descriptor.Descriptor(
-  name='BlockRequest',
-  full_name='exonum.consensus.BlockRequest',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='to', full_name='exonum.consensus.BlockRequest.to', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='height', full_name='exonum.consensus.BlockRequest.height', index=1,
-      number=2, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=1392,
-  serialized_end=1453,
+    name="BlockRequest",
+    full_name="exonum.consensus.BlockRequest",
+    filename=None,
+    file=DESCRIPTOR,
+    containing_type=None,
+    fields=[
+        _descriptor.FieldDescriptor(
+            name="to",
+            full_name="exonum.consensus.BlockRequest.to",
+            index=0,
+            number=1,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="height",
+            full_name="exonum.consensus.BlockRequest.height",
+            index=1,
+            number=2,
+            type=4,
+            cpp_type=4,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+    ],
+    extensions=[],
+    nested_types=[],
+    enum_types=[],
+    serialized_options=None,
+    is_extendable=False,
+    syntax="proto3",
+    extension_ranges=[],
+    oneofs=[],
+    serialized_start=1392,
+    serialized_end=1453,
 )
 
 
 _EXONUMMESSAGE = _descriptor.Descriptor(
-  name='ExonumMessage',
-  full_name='exonum.consensus.ExonumMessage',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='any_tx', full_name='exonum.consensus.ExonumMessage.any_tx', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='connect', full_name='exonum.consensus.ExonumMessage.connect', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='status', full_name='exonum.consensus.ExonumMessage.status', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='precommit', full_name='exonum.consensus.ExonumMessage.precommit', index=3,
-      number=4, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='propose', full_name='exonum.consensus.ExonumMessage.propose', index=4,
-      number=5, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='prevote', full_name='exonum.consensus.ExonumMessage.prevote', index=5,
-      number=6, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='transactions_response', full_name='exonum.consensus.ExonumMessage.transactions_response', index=6,
-      number=7, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='block_response', full_name='exonum.consensus.ExonumMessage.block_response', index=7,
-      number=8, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='propose_request', full_name='exonum.consensus.ExonumMessage.propose_request', index=8,
-      number=9, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='transactions_request', full_name='exonum.consensus.ExonumMessage.transactions_request', index=9,
-      number=10, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='prevotes_request', full_name='exonum.consensus.ExonumMessage.prevotes_request', index=10,
-      number=11, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='peers_request', full_name='exonum.consensus.ExonumMessage.peers_request', index=11,
-      number=12, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='block_request', full_name='exonum.consensus.ExonumMessage.block_request', index=12,
-      number=13, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-    _descriptor.OneofDescriptor(
-      name='message', full_name='exonum.consensus.ExonumMessage.message',
-      index=0, containing_type=None, fields=[]),
-  ],
-  serialized_start=1456,
-  serialized_end=2196,
+    name="ExonumMessage",
+    full_name="exonum.consensus.ExonumMessage",
+    filename=None,
+    file=DESCRIPTOR,
+    containing_type=None,
+    fields=[
+        _descriptor.FieldDescriptor(
+            name="any_tx",
+            full_name="exonum.consensus.ExonumMessage.any_tx",
+            index=0,
+            number=1,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="connect",
+            full_name="exonum.consensus.ExonumMessage.connect",
+            index=1,
+            number=2,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="status",
+            full_name="exonum.consensus.ExonumMessage.status",
+            index=2,
+            number=3,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="precommit",
+            full_name="exonum.consensus.ExonumMessage.precommit",
+            index=3,
+            number=4,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="propose",
+            full_name="exonum.consensus.ExonumMessage.propose",
+            index=4,
+            number=5,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="prevote",
+            full_name="exonum.consensus.ExonumMessage.prevote",
+            index=5,
+            number=6,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="transactions_response",
+            full_name="exonum.consensus.ExonumMessage.transactions_response",
+            index=6,
+            number=7,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="block_response",
+            full_name="exonum.consensus.ExonumMessage.block_response",
+            index=7,
+            number=8,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="propose_request",
+            full_name="exonum.consensus.ExonumMessage.propose_request",
+            index=8,
+            number=9,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="transactions_request",
+            full_name="exonum.consensus.ExonumMessage.transactions_request",
+            index=9,
+            number=10,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="prevotes_request",
+            full_name="exonum.consensus.ExonumMessage.prevotes_request",
+            index=10,
+            number=11,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="peers_request",
+            full_name="exonum.consensus.ExonumMessage.peers_request",
+            index=11,
+            number=12,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="block_request",
+            full_name="exonum.consensus.ExonumMessage.block_request",
+            index=12,
+            number=13,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+    ],
+    extensions=[],
+    nested_types=[],
+    enum_types=[],
+    serialized_options=None,
+    is_extendable=False,
+    syntax="proto3",
+    extension_ranges=[],
+    oneofs=[
+        _descriptor.OneofDescriptor(
+            name="message", full_name="exonum.consensus.ExonumMessage.message", index=0, containing_type=None, fields=[]
+        )
+    ],
+    serialized_start=1456,
+    serialized_end=2196,
 )
 
-_SIGNEDMESSAGE.fields_by_name['author'].message_type = helpers__pb2._PUBLICKEY
-_SIGNEDMESSAGE.fields_by_name['signature'].message_type = helpers__pb2._SIGNATURE
-_CONNECT.fields_by_name['time'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
-_STATUS.fields_by_name['last_hash'].message_type = helpers__pb2._HASH
-_PROPOSE.fields_by_name['prev_hash'].message_type = helpers__pb2._HASH
-_PROPOSE.fields_by_name['transactions'].message_type = helpers__pb2._HASH
-_PREVOTE.fields_by_name['propose_hash'].message_type = helpers__pb2._HASH
-_PRECOMMIT.fields_by_name['propose_hash'].message_type = helpers__pb2._HASH
-_PRECOMMIT.fields_by_name['block_hash'].message_type = helpers__pb2._HASH
-_PRECOMMIT.fields_by_name['time'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
-_BLOCKRESPONSE.fields_by_name['to'].message_type = helpers__pb2._PUBLICKEY
-_BLOCKRESPONSE.fields_by_name['block'].message_type = blockchain__pb2._BLOCK
-_BLOCKRESPONSE.fields_by_name['transactions'].message_type = helpers__pb2._HASH
-_TRANSACTIONSRESPONSE.fields_by_name['to'].message_type = helpers__pb2._PUBLICKEY
-_PROPOSEREQUEST.fields_by_name['to'].message_type = helpers__pb2._PUBLICKEY
-_PROPOSEREQUEST.fields_by_name['propose_hash'].message_type = helpers__pb2._HASH
-_TRANSACTIONSREQUEST.fields_by_name['to'].message_type = helpers__pb2._PUBLICKEY
-_TRANSACTIONSREQUEST.fields_by_name['txs'].message_type = helpers__pb2._HASH
-_PREVOTESREQUEST.fields_by_name['to'].message_type = helpers__pb2._PUBLICKEY
-_PREVOTESREQUEST.fields_by_name['propose_hash'].message_type = helpers__pb2._HASH
-_PREVOTESREQUEST.fields_by_name['validators'].message_type = helpers__pb2._BITVEC
-_PEERSREQUEST.fields_by_name['to'].message_type = helpers__pb2._PUBLICKEY
-_BLOCKREQUEST.fields_by_name['to'].message_type = helpers__pb2._PUBLICKEY
-_EXONUMMESSAGE.fields_by_name['any_tx'].message_type = runtime__pb2._ANYTX
-_EXONUMMESSAGE.fields_by_name['connect'].message_type = _CONNECT
-_EXONUMMESSAGE.fields_by_name['status'].message_type = _STATUS
-_EXONUMMESSAGE.fields_by_name['precommit'].message_type = _PRECOMMIT
-_EXONUMMESSAGE.fields_by_name['propose'].message_type = _PROPOSE
-_EXONUMMESSAGE.fields_by_name['prevote'].message_type = _PREVOTE
-_EXONUMMESSAGE.fields_by_name['transactions_response'].message_type = _TRANSACTIONSRESPONSE
-_EXONUMMESSAGE.fields_by_name['block_response'].message_type = _BLOCKRESPONSE
-_EXONUMMESSAGE.fields_by_name['propose_request'].message_type = _PROPOSEREQUEST
-_EXONUMMESSAGE.fields_by_name['transactions_request'].message_type = _TRANSACTIONSREQUEST
-_EXONUMMESSAGE.fields_by_name['prevotes_request'].message_type = _PREVOTESREQUEST
-_EXONUMMESSAGE.fields_by_name['peers_request'].message_type = _PEERSREQUEST
-_EXONUMMESSAGE.fields_by_name['block_request'].message_type = _BLOCKREQUEST
-_EXONUMMESSAGE.oneofs_by_name['message'].fields.append(
-  _EXONUMMESSAGE.fields_by_name['any_tx'])
-_EXONUMMESSAGE.fields_by_name['any_tx'].containing_oneof = _EXONUMMESSAGE.oneofs_by_name['message']
-_EXONUMMESSAGE.oneofs_by_name['message'].fields.append(
-  _EXONUMMESSAGE.fields_by_name['connect'])
-_EXONUMMESSAGE.fields_by_name['connect'].containing_oneof = _EXONUMMESSAGE.oneofs_by_name['message']
-_EXONUMMESSAGE.oneofs_by_name['message'].fields.append(
-  _EXONUMMESSAGE.fields_by_name['status'])
-_EXONUMMESSAGE.fields_by_name['status'].containing_oneof = _EXONUMMESSAGE.oneofs_by_name['message']
-_EXONUMMESSAGE.oneofs_by_name['message'].fields.append(
-  _EXONUMMESSAGE.fields_by_name['precommit'])
-_EXONUMMESSAGE.fields_by_name['precommit'].containing_oneof = _EXONUMMESSAGE.oneofs_by_name['message']
-_EXONUMMESSAGE.oneofs_by_name['message'].fields.append(
-  _EXONUMMESSAGE.fields_by_name['propose'])
-_EXONUMMESSAGE.fields_by_name['propose'].containing_oneof = _EXONUMMESSAGE.oneofs_by_name['message']
-_EXONUMMESSAGE.oneofs_by_name['message'].fields.append(
-  _EXONUMMESSAGE.fields_by_name['prevote'])
-_EXONUMMESSAGE.fields_by_name['prevote'].containing_oneof = _EXONUMMESSAGE.oneofs_by_name['message']
-_EXONUMMESSAGE.oneofs_by_name['message'].fields.append(
-  _EXONUMMESSAGE.fields_by_name['transactions_response'])
-_EXONUMMESSAGE.fields_by_name['transactions_response'].containing_oneof = _EXONUMMESSAGE.oneofs_by_name['message']
-_EXONUMMESSAGE.oneofs_by_name['message'].fields.append(
-  _EXONUMMESSAGE.fields_by_name['block_response'])
-_EXONUMMESSAGE.fields_by_name['block_response'].containing_oneof = _EXONUMMESSAGE.oneofs_by_name['message']
-_EXONUMMESSAGE.oneofs_by_name['message'].fields.append(
-  _EXONUMMESSAGE.fields_by_name['propose_request'])
-_EXONUMMESSAGE.fields_by_name['propose_request'].containing_oneof = _EXONUMMESSAGE.oneofs_by_name['message']
-_EXONUMMESSAGE.oneofs_by_name['message'].fields.append(
-  _EXONUMMESSAGE.fields_by_name['transactions_request'])
-_EXONUMMESSAGE.fields_by_name['transactions_request'].containing_oneof = _EXONUMMESSAGE.oneofs_by_name['message']
-_EXONUMMESSAGE.oneofs_by_name['message'].fields.append(
-  _EXONUMMESSAGE.fields_by_name['prevotes_request'])
-_EXONUMMESSAGE.fields_by_name['prevotes_request'].containing_oneof = _EXONUMMESSAGE.oneofs_by_name['message']
-_EXONUMMESSAGE.oneofs_by_name['message'].fields.append(
-  _EXONUMMESSAGE.fields_by_name['peers_request'])
-_EXONUMMESSAGE.fields_by_name['peers_request'].containing_oneof = _EXONUMMESSAGE.oneofs_by_name['message']
-_EXONUMMESSAGE.oneofs_by_name['message'].fields.append(
-  _EXONUMMESSAGE.fields_by_name['block_request'])
-_EXONUMMESSAGE.fields_by_name['block_request'].containing_oneof = _EXONUMMESSAGE.oneofs_by_name['message']
-DESCRIPTOR.message_types_by_name['SignedMessage'] = _SIGNEDMESSAGE
-DESCRIPTOR.message_types_by_name['Connect'] = _CONNECT
-DESCRIPTOR.message_types_by_name['Status'] = _STATUS
-DESCRIPTOR.message_types_by_name['Propose'] = _PROPOSE
-DESCRIPTOR.message_types_by_name['Prevote'] = _PREVOTE
-DESCRIPTOR.message_types_by_name['Precommit'] = _PRECOMMIT
-DESCRIPTOR.message_types_by_name['BlockResponse'] = _BLOCKRESPONSE
-DESCRIPTOR.message_types_by_name['TransactionsResponse'] = _TRANSACTIONSRESPONSE
-DESCRIPTOR.message_types_by_name['ProposeRequest'] = _PROPOSEREQUEST
-DESCRIPTOR.message_types_by_name['TransactionsRequest'] = _TRANSACTIONSREQUEST
-DESCRIPTOR.message_types_by_name['PrevotesRequest'] = _PREVOTESREQUEST
-DESCRIPTOR.message_types_by_name['PeersRequest'] = _PEERSREQUEST
-DESCRIPTOR.message_types_by_name['BlockRequest'] = _BLOCKREQUEST
-DESCRIPTOR.message_types_by_name['ExonumMessage'] = _EXONUMMESSAGE
+_SIGNEDMESSAGE.fields_by_name["author"].message_type = helpers__pb2._PUBLICKEY
+_SIGNEDMESSAGE.fields_by_name["signature"].message_type = helpers__pb2._SIGNATURE
+_CONNECT.fields_by_name["time"].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
+_STATUS.fields_by_name["last_hash"].message_type = helpers__pb2._HASH
+_PROPOSE.fields_by_name["prev_hash"].message_type = helpers__pb2._HASH
+_PROPOSE.fields_by_name["transactions"].message_type = helpers__pb2._HASH
+_PREVOTE.fields_by_name["propose_hash"].message_type = helpers__pb2._HASH
+_PRECOMMIT.fields_by_name["propose_hash"].message_type = helpers__pb2._HASH
+_PRECOMMIT.fields_by_name["block_hash"].message_type = helpers__pb2._HASH
+_PRECOMMIT.fields_by_name["time"].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
+_BLOCKRESPONSE.fields_by_name["to"].message_type = helpers__pb2._PUBLICKEY
+_BLOCKRESPONSE.fields_by_name["block"].message_type = blockchain__pb2._BLOCK
+_BLOCKRESPONSE.fields_by_name["transactions"].message_type = helpers__pb2._HASH
+_TRANSACTIONSRESPONSE.fields_by_name["to"].message_type = helpers__pb2._PUBLICKEY
+_PROPOSEREQUEST.fields_by_name["to"].message_type = helpers__pb2._PUBLICKEY
+_PROPOSEREQUEST.fields_by_name["propose_hash"].message_type = helpers__pb2._HASH
+_TRANSACTIONSREQUEST.fields_by_name["to"].message_type = helpers__pb2._PUBLICKEY
+_TRANSACTIONSREQUEST.fields_by_name["txs"].message_type = helpers__pb2._HASH
+_PREVOTESREQUEST.fields_by_name["to"].message_type = helpers__pb2._PUBLICKEY
+_PREVOTESREQUEST.fields_by_name["propose_hash"].message_type = helpers__pb2._HASH
+_PREVOTESREQUEST.fields_by_name["validators"].message_type = helpers__pb2._BITVEC
+_PEERSREQUEST.fields_by_name["to"].message_type = helpers__pb2._PUBLICKEY
+_BLOCKREQUEST.fields_by_name["to"].message_type = helpers__pb2._PUBLICKEY
+_EXONUMMESSAGE.fields_by_name["any_tx"].message_type = runtime__pb2._ANYTX
+_EXONUMMESSAGE.fields_by_name["connect"].message_type = _CONNECT
+_EXONUMMESSAGE.fields_by_name["status"].message_type = _STATUS
+_EXONUMMESSAGE.fields_by_name["precommit"].message_type = _PRECOMMIT
+_EXONUMMESSAGE.fields_by_name["propose"].message_type = _PROPOSE
+_EXONUMMESSAGE.fields_by_name["prevote"].message_type = _PREVOTE
+_EXONUMMESSAGE.fields_by_name["transactions_response"].message_type = _TRANSACTIONSRESPONSE
+_EXONUMMESSAGE.fields_by_name["block_response"].message_type = _BLOCKRESPONSE
+_EXONUMMESSAGE.fields_by_name["propose_request"].message_type = _PROPOSEREQUEST
+_EXONUMMESSAGE.fields_by_name["transactions_request"].message_type = _TRANSACTIONSREQUEST
+_EXONUMMESSAGE.fields_by_name["prevotes_request"].message_type = _PREVOTESREQUEST
+_EXONUMMESSAGE.fields_by_name["peers_request"].message_type = _PEERSREQUEST
+_EXONUMMESSAGE.fields_by_name["block_request"].message_type = _BLOCKREQUEST
+_EXONUMMESSAGE.oneofs_by_name["message"].fields.append(_EXONUMMESSAGE.fields_by_name["any_tx"])
+_EXONUMMESSAGE.fields_by_name["any_tx"].containing_oneof = _EXONUMMESSAGE.oneofs_by_name["message"]
+_EXONUMMESSAGE.oneofs_by_name["message"].fields.append(_EXONUMMESSAGE.fields_by_name["connect"])
+_EXONUMMESSAGE.fields_by_name["connect"].containing_oneof = _EXONUMMESSAGE.oneofs_by_name["message"]
+_EXONUMMESSAGE.oneofs_by_name["message"].fields.append(_EXONUMMESSAGE.fields_by_name["status"])
+_EXONUMMESSAGE.fields_by_name["status"].containing_oneof = _EXONUMMESSAGE.oneofs_by_name["message"]
+_EXONUMMESSAGE.oneofs_by_name["message"].fields.append(_EXONUMMESSAGE.fields_by_name["precommit"])
+_EXONUMMESSAGE.fields_by_name["precommit"].containing_oneof = _EXONUMMESSAGE.oneofs_by_name["message"]
+_EXONUMMESSAGE.oneofs_by_name["message"].fields.append(_EXONUMMESSAGE.fields_by_name["propose"])
+_EXONUMMESSAGE.fields_by_name["propose"].containing_oneof = _EXONUMMESSAGE.oneofs_by_name["message"]
+_EXONUMMESSAGE.oneofs_by_name["message"].fields.append(_EXONUMMESSAGE.fields_by_name["prevote"])
+_EXONUMMESSAGE.fields_by_name["prevote"].containing_oneof = _EXONUMMESSAGE.oneofs_by_name["message"]
+_EXONUMMESSAGE.oneofs_by_name["message"].fields.append(_EXONUMMESSAGE.fields_by_name["transactions_response"])
+_EXONUMMESSAGE.fields_by_name["transactions_response"].containing_oneof = _EXONUMMESSAGE.oneofs_by_name["message"]
+_EXONUMMESSAGE.oneofs_by_name["message"].fields.append(_EXONUMMESSAGE.fields_by_name["block_response"])
+_EXONUMMESSAGE.fields_by_name["block_response"].containing_oneof = _EXONUMMESSAGE.oneofs_by_name["message"]
+_EXONUMMESSAGE.oneofs_by_name["message"].fields.append(_EXONUMMESSAGE.fields_by_name["propose_request"])
+_EXONUMMESSAGE.fields_by_name["propose_request"].containing_oneof = _EXONUMMESSAGE.oneofs_by_name["message"]
+_EXONUMMESSAGE.oneofs_by_name["message"].fields.append(_EXONUMMESSAGE.fields_by_name["transactions_request"])
+_EXONUMMESSAGE.fields_by_name["transactions_request"].containing_oneof = _EXONUMMESSAGE.oneofs_by_name["message"]
+_EXONUMMESSAGE.oneofs_by_name["message"].fields.append(_EXONUMMESSAGE.fields_by_name["prevotes_request"])
+_EXONUMMESSAGE.fields_by_name["prevotes_request"].containing_oneof = _EXONUMMESSAGE.oneofs_by_name["message"]
+_EXONUMMESSAGE.oneofs_by_name["message"].fields.append(_EXONUMMESSAGE.fields_by_name["peers_request"])
+_EXONUMMESSAGE.fields_by_name["peers_request"].containing_oneof = _EXONUMMESSAGE.oneofs_by_name["message"]
+_EXONUMMESSAGE.oneofs_by_name["message"].fields.append(_EXONUMMESSAGE.fields_by_name["block_request"])
+_EXONUMMESSAGE.fields_by_name["block_request"].containing_oneof = _EXONUMMESSAGE.oneofs_by_name["message"]
+DESCRIPTOR.message_types_by_name["SignedMessage"] = _SIGNEDMESSAGE
+DESCRIPTOR.message_types_by_name["Connect"] = _CONNECT
+DESCRIPTOR.message_types_by_name["Status"] = _STATUS
+DESCRIPTOR.message_types_by_name["Propose"] = _PROPOSE
+DESCRIPTOR.message_types_by_name["Prevote"] = _PREVOTE
+DESCRIPTOR.message_types_by_name["Precommit"] = _PRECOMMIT
+DESCRIPTOR.message_types_by_name["BlockResponse"] = _BLOCKRESPONSE
+DESCRIPTOR.message_types_by_name["TransactionsResponse"] = _TRANSACTIONSRESPONSE
+DESCRIPTOR.message_types_by_name["ProposeRequest"] = _PROPOSEREQUEST
+DESCRIPTOR.message_types_by_name["TransactionsRequest"] = _TRANSACTIONSREQUEST
+DESCRIPTOR.message_types_by_name["PrevotesRequest"] = _PREVOTESREQUEST
+DESCRIPTOR.message_types_by_name["PeersRequest"] = _PEERSREQUEST
+DESCRIPTOR.message_types_by_name["BlockRequest"] = _BLOCKREQUEST
+DESCRIPTOR.message_types_by_name["ExonumMessage"] = _EXONUMMESSAGE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
-SignedMessage = _reflection.GeneratedProtocolMessageType('SignedMessage', (_message.Message,), dict(
-  DESCRIPTOR = _SIGNEDMESSAGE,
-  __module__ = 'consensus_pb2'
-  # @@protoc_insertion_point(class_scope:exonum.consensus.SignedMessage)
-  ))
+SignedMessage = _reflection.GeneratedProtocolMessageType(
+    "SignedMessage",
+    (_message.Message,),
+    dict(
+        DESCRIPTOR=_SIGNEDMESSAGE,
+        __module__="consensus_pb2"
+        # @@protoc_insertion_point(class_scope:exonum.consensus.SignedMessage)
+    ),
+)
 _sym_db.RegisterMessage(SignedMessage)
 
-Connect = _reflection.GeneratedProtocolMessageType('Connect', (_message.Message,), dict(
-  DESCRIPTOR = _CONNECT,
-  __module__ = 'consensus_pb2'
-  # @@protoc_insertion_point(class_scope:exonum.consensus.Connect)
-  ))
+Connect = _reflection.GeneratedProtocolMessageType(
+    "Connect",
+    (_message.Message,),
+    dict(
+        DESCRIPTOR=_CONNECT,
+        __module__="consensus_pb2"
+        # @@protoc_insertion_point(class_scope:exonum.consensus.Connect)
+    ),
+)
 _sym_db.RegisterMessage(Connect)
 
-Status = _reflection.GeneratedProtocolMessageType('Status', (_message.Message,), dict(
-  DESCRIPTOR = _STATUS,
-  __module__ = 'consensus_pb2'
-  # @@protoc_insertion_point(class_scope:exonum.consensus.Status)
-  ))
+Status = _reflection.GeneratedProtocolMessageType(
+    "Status",
+    (_message.Message,),
+    dict(
+        DESCRIPTOR=_STATUS,
+        __module__="consensus_pb2"
+        # @@protoc_insertion_point(class_scope:exonum.consensus.Status)
+    ),
+)
 _sym_db.RegisterMessage(Status)
 
-Propose = _reflection.GeneratedProtocolMessageType('Propose', (_message.Message,), dict(
-  DESCRIPTOR = _PROPOSE,
-  __module__ = 'consensus_pb2'
-  # @@protoc_insertion_point(class_scope:exonum.consensus.Propose)
-  ))
+Propose = _reflection.GeneratedProtocolMessageType(
+    "Propose",
+    (_message.Message,),
+    dict(
+        DESCRIPTOR=_PROPOSE,
+        __module__="consensus_pb2"
+        # @@protoc_insertion_point(class_scope:exonum.consensus.Propose)
+    ),
+)
 _sym_db.RegisterMessage(Propose)
 
-Prevote = _reflection.GeneratedProtocolMessageType('Prevote', (_message.Message,), dict(
-  DESCRIPTOR = _PREVOTE,
-  __module__ = 'consensus_pb2'
-  # @@protoc_insertion_point(class_scope:exonum.consensus.Prevote)
-  ))
+Prevote = _reflection.GeneratedProtocolMessageType(
+    "Prevote",
+    (_message.Message,),
+    dict(
+        DESCRIPTOR=_PREVOTE,
+        __module__="consensus_pb2"
+        # @@protoc_insertion_point(class_scope:exonum.consensus.Prevote)
+    ),
+)
 _sym_db.RegisterMessage(Prevote)
 
-Precommit = _reflection.GeneratedProtocolMessageType('Precommit', (_message.Message,), dict(
-  DESCRIPTOR = _PRECOMMIT,
-  __module__ = 'consensus_pb2'
-  # @@protoc_insertion_point(class_scope:exonum.consensus.Precommit)
-  ))
+Precommit = _reflection.GeneratedProtocolMessageType(
+    "Precommit",
+    (_message.Message,),
+    dict(
+        DESCRIPTOR=_PRECOMMIT,
+        __module__="consensus_pb2"
+        # @@protoc_insertion_point(class_scope:exonum.consensus.Precommit)
+    ),
+)
 _sym_db.RegisterMessage(Precommit)
 
-BlockResponse = _reflection.GeneratedProtocolMessageType('BlockResponse', (_message.Message,), dict(
-  DESCRIPTOR = _BLOCKRESPONSE,
-  __module__ = 'consensus_pb2'
-  # @@protoc_insertion_point(class_scope:exonum.consensus.BlockResponse)
-  ))
+BlockResponse = _reflection.GeneratedProtocolMessageType(
+    "BlockResponse",
+    (_message.Message,),
+    dict(
+        DESCRIPTOR=_BLOCKRESPONSE,
+        __module__="consensus_pb2"
+        # @@protoc_insertion_point(class_scope:exonum.consensus.BlockResponse)
+    ),
+)
 _sym_db.RegisterMessage(BlockResponse)
 
-TransactionsResponse = _reflection.GeneratedProtocolMessageType('TransactionsResponse', (_message.Message,), dict(
-  DESCRIPTOR = _TRANSACTIONSRESPONSE,
-  __module__ = 'consensus_pb2'
-  # @@protoc_insertion_point(class_scope:exonum.consensus.TransactionsResponse)
-  ))
+TransactionsResponse = _reflection.GeneratedProtocolMessageType(
+    "TransactionsResponse",
+    (_message.Message,),
+    dict(
+        DESCRIPTOR=_TRANSACTIONSRESPONSE,
+        __module__="consensus_pb2"
+        # @@protoc_insertion_point(class_scope:exonum.consensus.TransactionsResponse)
+    ),
+)
 _sym_db.RegisterMessage(TransactionsResponse)
 
-ProposeRequest = _reflection.GeneratedProtocolMessageType('ProposeRequest', (_message.Message,), dict(
-  DESCRIPTOR = _PROPOSEREQUEST,
-  __module__ = 'consensus_pb2'
-  # @@protoc_insertion_point(class_scope:exonum.consensus.ProposeRequest)
-  ))
+ProposeRequest = _reflection.GeneratedProtocolMessageType(
+    "ProposeRequest",
+    (_message.Message,),
+    dict(
+        DESCRIPTOR=_PROPOSEREQUEST,
+        __module__="consensus_pb2"
+        # @@protoc_insertion_point(class_scope:exonum.consensus.ProposeRequest)
+    ),
+)
 _sym_db.RegisterMessage(ProposeRequest)
 
-TransactionsRequest = _reflection.GeneratedProtocolMessageType('TransactionsRequest', (_message.Message,), dict(
-  DESCRIPTOR = _TRANSACTIONSREQUEST,
-  __module__ = 'consensus_pb2'
-  # @@protoc_insertion_point(class_scope:exonum.consensus.TransactionsRequest)
-  ))
+TransactionsRequest = _reflection.GeneratedProtocolMessageType(
+    "TransactionsRequest",
+    (_message.Message,),
+    dict(
+        DESCRIPTOR=_TRANSACTIONSREQUEST,
+        __module__="consensus_pb2"
+        # @@protoc_insertion_point(class_scope:exonum.consensus.TransactionsRequest)
+    ),
+)
 _sym_db.RegisterMessage(TransactionsRequest)
 
-PrevotesRequest = _reflection.GeneratedProtocolMessageType('PrevotesRequest', (_message.Message,), dict(
-  DESCRIPTOR = _PREVOTESREQUEST,
-  __module__ = 'consensus_pb2'
-  # @@protoc_insertion_point(class_scope:exonum.consensus.PrevotesRequest)
-  ))
+PrevotesRequest = _reflection.GeneratedProtocolMessageType(
+    "PrevotesRequest",
+    (_message.Message,),
+    dict(
+        DESCRIPTOR=_PREVOTESREQUEST,
+        __module__="consensus_pb2"
+        # @@protoc_insertion_point(class_scope:exonum.consensus.PrevotesRequest)
+    ),
+)
 _sym_db.RegisterMessage(PrevotesRequest)
 
-PeersRequest = _reflection.GeneratedProtocolMessageType('PeersRequest', (_message.Message,), dict(
-  DESCRIPTOR = _PEERSREQUEST,
-  __module__ = 'consensus_pb2'
-  # @@protoc_insertion_point(class_scope:exonum.consensus.PeersRequest)
-  ))
+PeersRequest = _reflection.GeneratedProtocolMessageType(
+    "PeersRequest",
+    (_message.Message,),
+    dict(
+        DESCRIPTOR=_PEERSREQUEST,
+        __module__="consensus_pb2"
+        # @@protoc_insertion_point(class_scope:exonum.consensus.PeersRequest)
+    ),
+)
 _sym_db.RegisterMessage(PeersRequest)
 
-BlockRequest = _reflection.GeneratedProtocolMessageType('BlockRequest', (_message.Message,), dict(
-  DESCRIPTOR = _BLOCKREQUEST,
-  __module__ = 'consensus_pb2'
-  # @@protoc_insertion_point(class_scope:exonum.consensus.BlockRequest)
-  ))
+BlockRequest = _reflection.GeneratedProtocolMessageType(
+    "BlockRequest",
+    (_message.Message,),
+    dict(
+        DESCRIPTOR=_BLOCKREQUEST,
+        __module__="consensus_pb2"
+        # @@protoc_insertion_point(class_scope:exonum.consensus.BlockRequest)
+    ),
+)
 _sym_db.RegisterMessage(BlockRequest)
 
-ExonumMessage = _reflection.GeneratedProtocolMessageType('ExonumMessage', (_message.Message,), dict(
-  DESCRIPTOR = _EXONUMMESSAGE,
-  __module__ = 'consensus_pb2'
-  # @@protoc_insertion_point(class_scope:exonum.consensus.ExonumMessage)
-  ))
+ExonumMessage = _reflection.GeneratedProtocolMessageType(
+    "ExonumMessage",
+    (_message.Message,),
+    dict(
+        DESCRIPTOR=_EXONUMMESSAGE,
+        __module__="consensus_pb2"
+        # @@protoc_insertion_point(class_scope:exonum.consensus.ExonumMessage)
+    ),
+)
 _sym_db.RegisterMessage(ExonumMessage)
 
 

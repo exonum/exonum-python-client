@@ -22,7 +22,7 @@ class ProofPath:
         LEN_POS = KEY_SIZE + 1
 
     @staticmethod
-    def parse(bits: str) -> 'ProofPath':
+    def parse(bits: str) -> "ProofPath":
         """
         This method parses a ProofPath from string.
 
@@ -44,18 +44,18 @@ class ProofPath:
 
         length = len(bits)
         if length == 0 or length > 8 * KEY_SIZE:
-            error = 'Incorrect MapProof path length: {}'.format(length)
+            error = "Incorrect MapProof path length: {}".format(length)
             raise MalformedMapProofError.malformed_entry(bits, error)
 
         data = [0] * KEY_SIZE
 
         for i, ch in enumerate(bits):
-            if ch == '0':
+            if ch == "0":
                 pass
-            elif ch == '1':
+            elif ch == "1":
                 data[i // 8] += 1 << (i % 8)
             else:
-                error = 'Unexpected MapProof path symbol: {}'.format(ch)
+                error = "Unexpected MapProof path symbol: {}".format(ch)
                 raise MalformedMapProofError.malformed_entry(bits, error)
 
         data_bytes = bytes(data)
@@ -66,7 +66,7 @@ class ProofPath:
             return ProofPath.from_bytes(data_bytes).prefix(length)
 
     @staticmethod
-    def from_bytes(data_bytes: bytes) -> 'ProofPath':
+    def from_bytes(data_bytes: bytes) -> "ProofPath":
         """
         Builds a ProofPath from bytes sequence.
 
@@ -86,12 +86,12 @@ class ProofPath:
             If the length of provided array is not equal to KEY_SIZE constant.
         """
         if len(data_bytes) != KEY_SIZE:
-            raise ValueError('Incorrect data size')
+            raise ValueError("Incorrect data size")
 
         inner = bytearray([0] * PROOF_PATH_SIZE)
 
         inner[0] = ProofPath.KeyPrefix.LEAF
-        inner[ProofPath.Positions.KEY_POS:ProofPath.Positions.KEY_POS + KEY_SIZE] = data_bytes[:]
+        inner[ProofPath.Positions.KEY_POS : ProofPath.Positions.KEY_POS + KEY_SIZE] = data_bytes[:]
         inner[ProofPath.Positions.LEN_POS] = 0
 
         return ProofPath(inner, 0)
@@ -103,7 +103,7 @@ class ProofPath:
 
     def __repr__(self) -> str:
         """ Conversion to string. """
-        bits_str = ''
+        bits_str = ""
 
         raw_key = self.raw_key()
         for byte_idx in range(len(raw_key)):
@@ -112,13 +112,13 @@ class ProofPath:
             for bit in range(7, -1, -1):
                 i = byte_idx * 8 + bit
                 if i < self.start() or i >= self.end():
-                    bits_str += '_'
+                    bits_str += "_"
                 else:
-                    bits_str += '0' if (1 << bit) & chunk == 0 else '1'
+                    bits_str += "0" if (1 << bit) & chunk == 0 else "1"
 
-            bits_str += '|'
+            bits_str += "|"
 
-        format_str = 'ProofPath [ start: {}, end: {}, bits: {} ]'.format(self.start(), self.end(), bits_str)
+        format_str = "ProofPath [ start: {}, end: {}, bits: {} ]".format(self.start(), self.end(), bits_str)
         return format_str
 
     def __len__(self) -> int:
@@ -170,7 +170,7 @@ class ProofPath:
 
     def raw_key(self) -> bytes:
         """ Returns the stored key as raw bytes """
-        return bytes(self.data_bytes[ProofPath.Positions.KEY_POS:ProofPath.Positions.KEY_POS + KEY_SIZE])
+        return bytes(self.data_bytes[ProofPath.Positions.KEY_POS : ProofPath.Positions.KEY_POS + KEY_SIZE])
 
     def set_end(self, end: Optional[int]):
         """ Sets tha right border of the proof path. """
@@ -181,14 +181,14 @@ class ProofPath:
             self.data_bytes[0] = self.KeyPrefix.LEAF
             self.data_bytes[self.Positions.LEN_POS] = 0
 
-    def prefix(self, length) -> 'ProofPath':
+    def prefix(self, length) -> "ProofPath":
         """ Creates a copy of this path shortened to the specified length. """
 
         end = self._start + length
         key_len = KEY_SIZE * 8
 
         if end >= key_len:
-            raise ValueError('Length of prefix ({}) should not be greater than KEY_SIZE * 8'.format(end))
+            raise ValueError("Length of prefix ({}) should not be greater than KEY_SIZE * 8".format(end))
 
         key = ProofPath(bytearray(self.data_bytes), self._start)
         key.set_end(end)

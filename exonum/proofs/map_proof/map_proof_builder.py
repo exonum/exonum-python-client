@@ -42,7 +42,7 @@ class MapProofBuilder:
         structure_name: str,
         main_module: Optional[str] = None,
         service_name: Optional[str] = None,
-        service_module: Optional[str] = None
+        service_module: Optional[str] = None,
     ):
         try:
             if main_module:
@@ -54,11 +54,7 @@ class MapProofBuilder:
 
             return getattr(module, structure_name)
         except (ModuleNotFoundError, ImportError):
-            error_data = {
-                "main_module": main_module,
-                "service_name": service_name,
-                "service_module": service_module
-            }
+            error_data = {"main_module": main_module, "service_name": service_name, "service_module": service_module}
 
             raise MapProofBuilderError("Incorrect module data", error_data)
         except AttributeError:
@@ -70,8 +66,8 @@ class MapProofBuilder:
         structure_name: str,
         main_module: Optional[str] = None,
         service_name: Optional[str] = None,
-        service_module: Optional[str] = None
-    ) -> 'MapProofBuilder':
+        service_module: Optional[str] = None,
+    ) -> "MapProofBuilder":
         """
         Method to set the key encoder.
 
@@ -103,8 +99,8 @@ class MapProofBuilder:
         structure_name: str,
         main_module: Optional[str] = None,
         service_name: Optional[str] = None,
-        service_module: Optional[str] = None
-    ) -> 'MapProofBuilder':
+        service_module: Optional[str] = None,
+    ) -> "MapProofBuilder":
         """
         Method to set the value encoder.
 

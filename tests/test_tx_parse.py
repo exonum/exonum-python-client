@@ -12,29 +12,29 @@ class TestTxParse(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Add folder with pre-compiled protobuf messages to the path (so it can be imported)
-        sys.path.append(os.path.abspath('tests/proto_dir'))
+        sys.path.append(os.path.abspath("tests/proto_dir"))
 
         # Unload any previously loaded `exonum_main` modules from test_exonum_client
         loaded_modules = list(sys.modules.keys())
         for module in loaded_modules:
-            if module.startswith('exonum_modules'):
+            if module.startswith("exonum_modules"):
                 del sys.modules[module]
 
         # Gen init data
         keys = crypto_sign_keypair()
 
         # Prepare original message
-        cryptocurrency_service_name = 'exonum-cryptocurrency-advanced:0.11.0'
+        cryptocurrency_service_name = "exonum-cryptocurrency-advanced:0.11.0"
 
-        cryptocurrency_module = ModuleManager.import_service_module(cryptocurrency_service_name, 'service')
+        cryptocurrency_module = ModuleManager.import_service_module(cryptocurrency_service_name, "service")
 
         cryptocurrency_message_generator = MessageGenerator(1024, cryptocurrency_service_name)
 
         create_wallet_alice = cryptocurrency_module.CreateWallet()
-        create_wallet_alice.name = 'Alice'
+        create_wallet_alice.name = "Alice"
 
         # Create original message
-        create_wallet_alice_tx = cryptocurrency_message_generator.create_message('CreateWallet', create_wallet_alice)
+        create_wallet_alice_tx = cryptocurrency_message_generator.create_message("CreateWallet", create_wallet_alice)
         create_wallet_alice_tx.sign(keys)
 
         cls.keys = keys
@@ -44,14 +44,14 @@ class TestTxParse(unittest.TestCase):
     @classmethod
     def tearDownClass(self):
         # Remove protobuf directory from the path.
-        sys.path.remove(os.path.abspath('tests/proto_dir'))
+        sys.path.remove(os.path.abspath("tests/proto_dir"))
 
     def test_tx_success_parse(self):
         exonum_message = self.exonum_message
         service_name = self.cryptocurrency_service_name
 
         # Parse message
-        parsed_message = ExonumMessage.from_hex(exonum_message.raw.hex(), service_name, 'CreateWallet')
+        parsed_message = ExonumMessage.from_hex(exonum_message.raw.hex(), service_name, "CreateWallet")
 
         self.assertEqual(parsed_message.get_author(), TestTxParse.keys[0])
         self.assertEqual(parsed_message.service_id, exonum_message.service_id)
@@ -63,8 +63,8 @@ class TestTxParse(unittest.TestCase):
         service_name = self.cryptocurrency_service_name
 
         # Parse message
-        corrupted_message = '1a' + exonum_message.raw.hex()
-        parsed_message = ExonumMessage.from_hex(corrupted_message, service_name, 'CreateWallet')
+        corrupted_message = "1a" + exonum_message.raw.hex()
+        parsed_message = ExonumMessage.from_hex(corrupted_message, service_name, "CreateWallet")
 
         self.assertIsNone(parsed_message)
 

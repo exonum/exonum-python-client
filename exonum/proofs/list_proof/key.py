@@ -8,23 +8,24 @@ from .errors import MalformedListProofError
 @total_ordering
 class ProofListKey:
     """ A structure that represents a key in the list proof. """
+
     def __init__(self, height: int, index: int):
         self.height = height
         self.index = index
 
     @classmethod
-    def parse(cls, data: Dict[Any, Any]) -> 'ProofListKey':
+    def parse(cls, data: Dict[Any, Any]) -> "ProofListKey":
         """ Parses ProofListKey from dict. """
-        if not is_field_int(data, 'index') or not is_field_int(data, 'height'):
+        if not is_field_int(data, "index") or not is_field_int(data, "height"):
             raise MalformedListProofError.parse_error(str(data))
 
-        return cls(data['height'], data['index'])
+        return cls(data["height"], data["index"])
 
     def is_left(self) -> bool:
         """ Returns true if this key is in the left branch of the proof. """
         return self.index % 2 == 0
 
-    def parent(self) -> 'ProofListKey':
+    def parent(self) -> "ProofListKey":
         """ Returns the parent key for this key. """
         return ProofListKey(self.height + 1, self.index >> 1)
 

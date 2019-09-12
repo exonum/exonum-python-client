@@ -3,11 +3,13 @@
 # source: blockchain.proto
 
 import sys
-_b=sys.version_info[0]<3 and (lambda x:x) or (lambda x:x.encode('latin1'))
+
+_b = sys.version_info[0] < 3 and (lambda x: x) or (lambda x: x.encode("latin1"))
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
+
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
@@ -17,186 +19,299 @@ from . import helpers_pb2 as helpers__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
-  name='blockchain.proto',
-  package='exonum',
-  syntax='proto3',
-  serialized_options=None,
-  serialized_pb=_b('\n\x10\x62lockchain.proto\x12\x06\x65xonum\x1a\rhelpers.proto\"\xa0\x01\n\x05\x42lock\x12\x13\n\x0bproposer_id\x18\x01 \x01(\r\x12\x0e\n\x06height\x18\x02 \x01(\x04\x12\x10\n\x08tx_count\x18\x03 \x01(\r\x12\x1f\n\tprev_hash\x18\x04 \x01(\x0b\x32\x0c.exonum.Hash\x12\x1d\n\x07tx_hash\x18\x05 \x01(\x0b\x32\x0c.exonum.Hash\x12 \n\nstate_hash\x18\x06 \x01(\x0b\x32\x0c.exonum.Hash\"F\n\x0f\x43onfigReference\x12\x13\n\x0b\x61\x63tual_from\x18\x01 \x01(\x04\x12\x1e\n\x08\x63\x66g_hash\x18\x02 \x01(\x0b\x32\x0c.exonum.Hash\"=\n\nTxLocation\x12\x14\n\x0c\x62lock_height\x18\x01 \x01(\x04\x12\x19\n\x11position_in_block\x18\x02 \x01(\x04\x62\x06proto3')
-  ,
-  dependencies=[helpers__pb2.DESCRIPTOR,])
-
-
+    name="blockchain.proto",
+    package="exonum",
+    syntax="proto3",
+    serialized_options=None,
+    serialized_pb=_b(
+        '\n\x10\x62lockchain.proto\x12\x06\x65xonum\x1a\rhelpers.proto"\xa0\x01\n\x05\x42lock\x12\x13\n\x0bproposer_id\x18\x01 \x01(\r\x12\x0e\n\x06height\x18\x02 \x01(\x04\x12\x10\n\x08tx_count\x18\x03 \x01(\r\x12\x1f\n\tprev_hash\x18\x04 \x01(\x0b\x32\x0c.exonum.Hash\x12\x1d\n\x07tx_hash\x18\x05 \x01(\x0b\x32\x0c.exonum.Hash\x12 \n\nstate_hash\x18\x06 \x01(\x0b\x32\x0c.exonum.Hash"F\n\x0f\x43onfigReference\x12\x13\n\x0b\x61\x63tual_from\x18\x01 \x01(\x04\x12\x1e\n\x08\x63\x66g_hash\x18\x02 \x01(\x0b\x32\x0c.exonum.Hash"=\n\nTxLocation\x12\x14\n\x0c\x62lock_height\x18\x01 \x01(\x04\x12\x19\n\x11position_in_block\x18\x02 \x01(\x04\x62\x06proto3'
+    ),
+    dependencies=[helpers__pb2.DESCRIPTOR],
+)
 
 
 _BLOCK = _descriptor.Descriptor(
-  name='Block',
-  full_name='exonum.Block',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='proposer_id', full_name='exonum.Block.proposer_id', index=0,
-      number=1, type=13, cpp_type=3, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='height', full_name='exonum.Block.height', index=1,
-      number=2, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='tx_count', full_name='exonum.Block.tx_count', index=2,
-      number=3, type=13, cpp_type=3, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='prev_hash', full_name='exonum.Block.prev_hash', index=3,
-      number=4, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='tx_hash', full_name='exonum.Block.tx_hash', index=4,
-      number=5, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='state_hash', full_name='exonum.Block.state_hash', index=5,
-      number=6, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=44,
-  serialized_end=204,
+    name="Block",
+    full_name="exonum.Block",
+    filename=None,
+    file=DESCRIPTOR,
+    containing_type=None,
+    fields=[
+        _descriptor.FieldDescriptor(
+            name="proposer_id",
+            full_name="exonum.Block.proposer_id",
+            index=0,
+            number=1,
+            type=13,
+            cpp_type=3,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="height",
+            full_name="exonum.Block.height",
+            index=1,
+            number=2,
+            type=4,
+            cpp_type=4,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="tx_count",
+            full_name="exonum.Block.tx_count",
+            index=2,
+            number=3,
+            type=13,
+            cpp_type=3,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="prev_hash",
+            full_name="exonum.Block.prev_hash",
+            index=3,
+            number=4,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="tx_hash",
+            full_name="exonum.Block.tx_hash",
+            index=4,
+            number=5,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="state_hash",
+            full_name="exonum.Block.state_hash",
+            index=5,
+            number=6,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+    ],
+    extensions=[],
+    nested_types=[],
+    enum_types=[],
+    serialized_options=None,
+    is_extendable=False,
+    syntax="proto3",
+    extension_ranges=[],
+    oneofs=[],
+    serialized_start=44,
+    serialized_end=204,
 )
 
 
 _CONFIGREFERENCE = _descriptor.Descriptor(
-  name='ConfigReference',
-  full_name='exonum.ConfigReference',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='actual_from', full_name='exonum.ConfigReference.actual_from', index=0,
-      number=1, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='cfg_hash', full_name='exonum.ConfigReference.cfg_hash', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=206,
-  serialized_end=276,
+    name="ConfigReference",
+    full_name="exonum.ConfigReference",
+    filename=None,
+    file=DESCRIPTOR,
+    containing_type=None,
+    fields=[
+        _descriptor.FieldDescriptor(
+            name="actual_from",
+            full_name="exonum.ConfigReference.actual_from",
+            index=0,
+            number=1,
+            type=4,
+            cpp_type=4,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="cfg_hash",
+            full_name="exonum.ConfigReference.cfg_hash",
+            index=1,
+            number=2,
+            type=11,
+            cpp_type=10,
+            label=1,
+            has_default_value=False,
+            default_value=None,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+    ],
+    extensions=[],
+    nested_types=[],
+    enum_types=[],
+    serialized_options=None,
+    is_extendable=False,
+    syntax="proto3",
+    extension_ranges=[],
+    oneofs=[],
+    serialized_start=206,
+    serialized_end=276,
 )
 
 
 _TXLOCATION = _descriptor.Descriptor(
-  name='TxLocation',
-  full_name='exonum.TxLocation',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='block_height', full_name='exonum.TxLocation.block_height', index=0,
-      number=1, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='position_in_block', full_name='exonum.TxLocation.position_in_block', index=1,
-      number=2, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=278,
-  serialized_end=339,
+    name="TxLocation",
+    full_name="exonum.TxLocation",
+    filename=None,
+    file=DESCRIPTOR,
+    containing_type=None,
+    fields=[
+        _descriptor.FieldDescriptor(
+            name="block_height",
+            full_name="exonum.TxLocation.block_height",
+            index=0,
+            number=1,
+            type=4,
+            cpp_type=4,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+        _descriptor.FieldDescriptor(
+            name="position_in_block",
+            full_name="exonum.TxLocation.position_in_block",
+            index=1,
+            number=2,
+            type=4,
+            cpp_type=4,
+            label=1,
+            has_default_value=False,
+            default_value=0,
+            message_type=None,
+            enum_type=None,
+            containing_type=None,
+            is_extension=False,
+            extension_scope=None,
+            serialized_options=None,
+            file=DESCRIPTOR,
+        ),
+    ],
+    extensions=[],
+    nested_types=[],
+    enum_types=[],
+    serialized_options=None,
+    is_extendable=False,
+    syntax="proto3",
+    extension_ranges=[],
+    oneofs=[],
+    serialized_start=278,
+    serialized_end=339,
 )
 
-_BLOCK.fields_by_name['prev_hash'].message_type = helpers__pb2._HASH
-_BLOCK.fields_by_name['tx_hash'].message_type = helpers__pb2._HASH
-_BLOCK.fields_by_name['state_hash'].message_type = helpers__pb2._HASH
-_CONFIGREFERENCE.fields_by_name['cfg_hash'].message_type = helpers__pb2._HASH
-DESCRIPTOR.message_types_by_name['Block'] = _BLOCK
-DESCRIPTOR.message_types_by_name['ConfigReference'] = _CONFIGREFERENCE
-DESCRIPTOR.message_types_by_name['TxLocation'] = _TXLOCATION
+_BLOCK.fields_by_name["prev_hash"].message_type = helpers__pb2._HASH
+_BLOCK.fields_by_name["tx_hash"].message_type = helpers__pb2._HASH
+_BLOCK.fields_by_name["state_hash"].message_type = helpers__pb2._HASH
+_CONFIGREFERENCE.fields_by_name["cfg_hash"].message_type = helpers__pb2._HASH
+DESCRIPTOR.message_types_by_name["Block"] = _BLOCK
+DESCRIPTOR.message_types_by_name["ConfigReference"] = _CONFIGREFERENCE
+DESCRIPTOR.message_types_by_name["TxLocation"] = _TXLOCATION
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
-Block = _reflection.GeneratedProtocolMessageType('Block', (_message.Message,), dict(
-  DESCRIPTOR = _BLOCK,
-  __module__ = 'blockchain_pb2'
-  # @@protoc_insertion_point(class_scope:exonum.Block)
-  ))
+Block = _reflection.GeneratedProtocolMessageType(
+    "Block",
+    (_message.Message,),
+    dict(
+        DESCRIPTOR=_BLOCK,
+        __module__="blockchain_pb2"
+        # @@protoc_insertion_point(class_scope:exonum.Block)
+    ),
+)
 _sym_db.RegisterMessage(Block)
 
-ConfigReference = _reflection.GeneratedProtocolMessageType('ConfigReference', (_message.Message,), dict(
-  DESCRIPTOR = _CONFIGREFERENCE,
-  __module__ = 'blockchain_pb2'
-  # @@protoc_insertion_point(class_scope:exonum.ConfigReference)
-  ))
+ConfigReference = _reflection.GeneratedProtocolMessageType(
+    "ConfigReference",
+    (_message.Message,),
+    dict(
+        DESCRIPTOR=_CONFIGREFERENCE,
+        __module__="blockchain_pb2"
+        # @@protoc_insertion_point(class_scope:exonum.ConfigReference)
+    ),
+)
 _sym_db.RegisterMessage(ConfigReference)
 
-TxLocation = _reflection.GeneratedProtocolMessageType('TxLocation', (_message.Message,), dict(
-  DESCRIPTOR = _TXLOCATION,
-  __module__ = 'blockchain_pb2'
-  # @@protoc_insertion_point(class_scope:exonum.TxLocation)
-  ))
+TxLocation = _reflection.GeneratedProtocolMessageType(
+    "TxLocation",
+    (_message.Message,),
+    dict(
+        DESCRIPTOR=_TXLOCATION,
+        __module__="blockchain_pb2"
+        # @@protoc_insertion_point(class_scope:exonum.TxLocation)
+    ),
+)
 _sym_db.RegisterMessage(TxLocation)
 
 
