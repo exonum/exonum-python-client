@@ -12,11 +12,10 @@ def example_run():
     import requests
 
     client = ExonumClient(hostname="127.0.0.1", public_api_port=8080, private_api_port=8081)
+
     with client.protobuf_loader() as loader:
         loader.load_main_proto_files()
         loader.load_service_proto_files(0, "exonum-supervisor:0.12.0")
-
-        main_module = ModuleManager.import_main_module("consensus")
 
         service_module = ModuleManager.import_service_module("exonum-supervisor:0.12.0", "service")
 
@@ -38,6 +37,8 @@ def example_run():
         request_json = json.dumps(hex_request)
         supervisor_endpoint = "http://127.0.0.1:8081/api/services/supervisor/{}"
         deploy_endpoint = supervisor_endpoint.format("deploy-artifact")
+
+        print(client.service_endpoint("supervisor", "deploy-artifact", private=True))
 
         response = requests.post(deploy_endpoint, request_json, headers={"content-type": "application/json"})
 
@@ -114,6 +115,8 @@ def example_run():
         # Show transactions statuses
 
         for response in responses:
+            print("RESPONSE")
+            print(response.json())
             res = client.get_tx_info(response.json()["tx_hash"])
             print(res.json())
 
@@ -124,9 +127,9 @@ def example_run():
             print("Block info: \n{}\n-----\n".format(block_info))
 
         # Some additional info.
-        print(client.health_info())
+        print(client.health_info().json())
         print(client.mempool())
-        print(client.user_agent())
+        print(client.user_agent().json())
 
         subscriber.stop()
 

@@ -122,7 +122,7 @@ class TestProtobufLoader(ModuleUserTestCase):
             with self.assertRaises(ProtobufLoaderEntityExists):
                 client.protobuf_loader()
 
-    @patch("exonum.client.get", new=mock_requests_get)
+    @patch("exonum.client._get", new=mock_requests_get)
     def test_main_sources_download(self):
         client = ExonumClient(
             hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
@@ -132,7 +132,7 @@ class TestProtobufLoader(ModuleUserTestCase):
 
             runtime_mod = ModuleManager.import_main_module("runtime")
 
-    @patch("exonum.client.get", new=mock_requests_get)
+    @patch("exonum.client._get", new=mock_requests_get)
     def test_service_sources_download(self):
         client = ExonumClient(
             hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
@@ -148,7 +148,7 @@ class TestExonumClient(unittest.TestCase):
     # This test case replaces get function from exonum client with the mock one.
     # Thus testing of HTTP interacting could be done without actual exonum client.
 
-    @patch("exonum.client.get", new=mock_requests_get)
+    @patch("exonum.client._get", new=mock_requests_get)
     def test_helthcheck(self):
         client = ExonumClient(
             hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
@@ -156,7 +156,7 @@ class TestExonumClient(unittest.TestCase):
         resp = client.health_info()
         self.assertEqual(resp.status_code, 200)
 
-    @patch("exonum.client.get", new=mock_requests_get)
+    @patch("exonum.client._get", new=mock_requests_get)
     def test_mempool(self):
         client = ExonumClient(
             hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
@@ -164,7 +164,7 @@ class TestExonumClient(unittest.TestCase):
         resp = client.mempool()
         self.assertEqual(resp.status_code, 200)
 
-    @patch("exonum.client.get", new=mock_requests_get)
+    @patch("exonum.client._get", new=mock_requests_get)
     def test_user_agent(self):
         client = ExonumClient(
             hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
