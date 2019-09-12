@@ -221,4 +221,4 @@ Apache 2.0 - see [LICENSE](LICENSE) for more information.
 
 [exonum]: https://github.com/exonum/exonum
 [protoc]: https://developers.google.com/protocol-buffers/docs/reference/python-generated
-[proof]: python-client/PROOF.MD
+[proof]: PROOF.MD
