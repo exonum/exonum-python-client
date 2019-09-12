@@ -12,8 +12,11 @@ dist: bionic
 jobs:
   include:
     - name: lints
-      install: pip install pycodestyle
-      script: pycodestyle . --max-line-length=120 --exclude="*_pb2.py"
+      install:
+        - pip install black
+        - pip install pylint
+      script:
+        - black --check -l 120 .
     - name: tests
       addons:
         apt:
