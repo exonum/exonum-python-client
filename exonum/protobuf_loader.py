@@ -65,6 +65,9 @@ class ProtobufLoader:
 
     def load_main_proto_files(self):
         # TODO error handling
+
+        # This method is not intended to be used by the end users, but it's OK to call it here.
+        # pylint: disable=protected-access
         proto_contents = self.client._get_main_proto_sources().json()
 
         # Save proto_sources in proto/main directory.
@@ -77,7 +80,10 @@ class ProtobufLoader:
 
     def load_service_proto_files(self, runtime_id, service_name):
         # TODO error handling
-        proto_contents = self.client._get_proto_sources_for_service(runtime_id, service_name).json()
+
+        # This method is not intended to be used by the end users, but it's OK to call it here.
+        # pylint: disable=protected-access
+        proto_contents = self.client._get_proto_sources_for_artifact(runtime_id, service_name).json()
 
         # Save proto_sources in proto/service_name directory.
         service_module_name = re.sub(r"[-. :/]", "_", service_name)

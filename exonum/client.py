@@ -16,12 +16,15 @@ import requests
 from .protobuf_loader import ProtobufLoader
 from .message import ExonumMessage
 
-BLOCK_URL = "{}://{}:{}/api/explorer/v1/block?height={}"
-BLOCKS_URL = "{}://{}:{}/api/explorer/v1/blocks"
-SERVICE_URL = "{}://{}:{}/api/services/{}/"
-SYSTEM_URL = "{}://{}:{}/api/system/v1/{}"
-TX_URL = "{}://{}:{}/api/explorer/v1/transactions"
-WEBSOCKET_URI = "ws://{}:{}/api/explorer/v1/blocks/subscribe"
+# Example of formatted prefix: "https://127.0.0.1:8000"
+_ENDPOINT_PREFIX = "{}://{}:{}"
+
+_TX_URL = _ENDPOINT_PREFIX + "/api/explorer/v1/transactions"
+_BLOCK_URL = _ENDPOINT_PREFIX + "/api/explorer/v1/block"
+_BLOCKS_URL = _ENDPOINT_PREFIX + "/api/explorer/v1/blocks"
+_SYSTEM_URL = _ENDPOINT_PREFIX + "/api/system/v1/{}"
+_SERVICE_URL = _ENDPOINT_PREFIX + "/api/services/{}/"
+_WEBSOCKET_URI = "ws://{}:{}/api/explorer/v1/blocks/subscribe"
 
 
 class Subscriber(object):
@@ -42,7 +45,7 @@ class Subscriber(object):
         post: int
             Port of the exonum node.
         """
-        self._address = WEBSOCKET_URI.format(address, port)
+        self._address = _WEBSOCKET_URI.format(address, port)
         self._is_running = False
         self._connected = False
         self._ws_client = WebSocket()
@@ -103,6 +106,13 @@ class Subscriber(object):
 class ExonumClient(object):
     """ExonumClient class is capable of interaction with ExonumBlockchain.
 
+    All the methods that perform requests to the Exonum REST API return a requests.Response object.
+    So user should manually verify that status code of the request is correct and get the contents
+    of the request via `response.json()`.
+
+    Since ExonumClient uses `requests` library for the communication, user should expect that every
+    method that performs an API call can raise `requests` exception (e.g. `requests.exceptions.ConnectionError`).
+
     Example usage:
 
     >>> client = ExonumClient(hostname="127.0.0.1", public_api_port=8080, private_api_port=8081)
@@ -131,23 +141,68 @@ class ExonumClient(object):
         self.hostname = hostname
         self.public_api_port = public_api_port
         self.private_api_port = private_api_port
-        self.tx_url = TX_URL.format(self.schema, hostname, public_api_port)
-
-    def _get_main_proto_sources(self) -> requests.Response:
-        return _get(SYSTEM_URL.format(self.schema, self.hostname, self.public_api_port, "proto-sources"))
-
-    def _get_proto_sources_for_service(self, runtime_id: int, service_name: str) -> requests.Response:
-        params = {"artifact": "{}:{}".format(runtime_id, service_name)}
-        return _get(SYSTEM_URL.format(self.schema, self.hostname, self.public_api_port, "proto-sources"), params=params)
+        self.tx_url = _TX_URL.format(self.schema, hostname, public_api_port)
 
     def protobuf_loader(self) -> ProtobufLoader:
-        """Creates a ProtobufLoader object connected with use of this client.
+        """
+        Creates a ProtobufLoader from the current ExonumClient object.
 
-        See ProtobufLoader docs for more details."""
+        See ProtobufLoader docs for more details.
+
+        Example:
+        >>> with client.protobuf_loader() as loader:
+        >>>     loader.load_main_proto_files()
+        >>>     loader.load_service_proto_files(0, "exonum-supervisor:0.12.0")
+        """
         return ProtobufLoader(self)
 
+    def create_subscriber(self) -> Subscriber:
+        """
+        Creates a Subscriber object from the current ExonumClient object.
+
+        See Subscriber docs for details.
+
+        Example:
+        >>> with client.create_subscriber() as subscriber:
+        >>>     subscriber.wait_for_new_block()
+        """
+        subscriber = Subscriber(self.hostname, self.public_api_port)
+        return subscriber
+
+    def service_endpoint(self, service_name: str, sub_uri: str, private: bool = False) -> str:
+        """
+        Creates a service endpoint for a given service name and sub-uri.
+
+        Example:
+        >>> client.service_endpoint("supervisor", "deploy-artifact", private=True)
+        http://127.0.0.1:8081/api/services/supervisor/deploy-artifact
+
+        Parameters
+        ----------
+        service_name: str
+            Name of the service instance.
+        sub_uri: str
+            Additional part of the URL to be added to the endpoint, e.g. "some/sub/uri?parameter=value"
+        private: bool
+            Denotes if the private port should be used. Defaults to False.
+
+        Returns
+        -------
+        url: str
+            Returns a service REST API url based on provided parameters.
+        """
+        port = self.public_api_port if not private else self.private_api_port
+
+        service_url = _SERVICE_URL.format(self.schema, self.hostname, port, service_name)
+
+        return service_url + sub_uri
+
+    # API section
+    # Methods below perform REST API calls to the Exonum node.
+
     def available_services(self) -> requests.Response:
-        """ Gets a list of available services from Exonum.
+        """
+        Gets a list of available services from Exonum.
 
         Example:
         >>> available_services = client.available_services().json()
@@ -171,10 +226,11 @@ class ExonumClient(object):
           ]
         }
         """
-        return _get(SYSTEM_URL.format(self.schema, self.hostname, self.public_api_port, "services"))
+        return _get(_SYSTEM_URL.format(self.schema, self.hostname, self.public_api_port, "services"))
 
     def send_transaction(self, message: ExonumMessage) -> requests.Response:
-        """Sends a transaction into Exonum node via REST API.
+        """
+        Sends a transaction into Exonum node via REST API.
 
         Example:
         >>> response = client.send_transaction(message)
@@ -192,11 +248,12 @@ class ExonumClient(object):
             Result of the POST request.
             If the transaction was correct and it was accepted, it will contain a json with hash of the transaction.
         """
-        response = requests.post(self.tx_url, data=message.to_json(), headers={"content-type": "application/json"})
+        response = _post(self.tx_url, data=message.to_json(), headers={"content-type": "application/json"})
         return response
 
     def send_transactions(self, messages: Iterable[ExonumMessage]) -> List[requests.Response]:
-        """ Same as send_transaction, but for any iterable over ExonumMessage.
+        """
+        Same as send_transaction, but for any iterable over ExonumMessage.
 
         Parameters
         ----------
@@ -211,7 +268,8 @@ class ExonumClient(object):
         return [self.send_transaction(message) for message in messages]
 
     def get_block(self, height: int) -> requests.Response:
-        """ Gets the block at the provided height.
+        """
+        Gets the block at the provided height.
 
         Example:
         >>> block = client.get_block(2).json()
@@ -241,12 +299,14 @@ class ExonumClient(object):
             Result of the API call.
             If it was successfull, a json representation of the block will be in responce.
         """
-        return _get(BLOCK_URL.format(self.schema, self.hostname, self.public_api_port, height))
+        return _get(_BLOCK_URL.format(self.schema, self.hostname, self.public_api_port), params={"height": height})
 
     def get_blocks(
         self, count: int, latest: Optional[int] = None, skip_empty_blocks: bool = False, add_blocks_time: bool = False
     ) -> requests.Response:
-        """ Gets a range of blocks.
+        """
+        Gets a range of blocks.
+
         Blocks will be returned in a reversed order starting from the latest to the `latest - count + `.
         See `latest` parameter description for details.
 
@@ -269,7 +329,7 @@ class ExonumClient(object):
             Result of the API call.
             If it was successfull, a json representation of the block range will be in responce.
         """
-        blocks_url = BLOCKS_URL.format(self.schema, self.hostname, self.public_api_port)
+        blocks_url = _BLOCKS_URL.format(self.schema, self.hostname, self.public_api_port)
         params: Dict[str, Union[int, str]] = dict()
         params["count"] = count
 
@@ -283,7 +343,8 @@ class ExonumClient(object):
         return _get(blocks_url, params=params)
 
     def get_tx_info(self, tx_hash: str) -> requests.Response:
-        """Gets the information about the transaction with the provided hash.
+        """
+        Gets the information about the transaction with the provided hash.
 
         Example:
         >>> tx_info = client.get_tx_info(tx_hash).json()
@@ -325,37 +386,11 @@ class ExonumClient(object):
             Result of the API call.
             If it was successfull, a json representation of the transaction info will be in responce.
         """
-        return _get(TX_URL.format(self.schema, self.hostname, self.public_api_port), params={"hash": tx_hash})
-
-    def service_endpoint(self, service_name: str, sub_uri: str, private: bool = False) -> str:
-        """Creates a service endpoint for a given service name and sub-uri.
-
-        Example:
-        >>> client.service_endpoint("supervisor", "deploy-artifact", private=True)
-        http://127.0.0.1:8081/api/services/supervisor/deploy-artifact
-
-        Parameters
-        ----------
-        service_name: str
-            Name of the service instance.
-        sub_uri: str
-            Additional part of the URL to be added to the endpoint, e.g. "some/sub/uri?parameter=value"
-        private: bool
-            Denotes if the private port should be used. Defaults to False.
-
-        Returns
-        -------
-        url: str
-            Returns a service REST API url based on provided parameters.
-        """
-        port = self.public_api_port if not private else self.private_api_port
-
-        service_url = SERVICE_URL.format(self.schema, self.hostname, port, service_name)
-
-        return service_url + sub_uri
+        return _get(_TX_URL.format(self.schema, self.hostname, self.public_api_port), params={"hash": tx_hash})
 
     def get_service(self, service_name: str, sub_uri: str, private: bool = False) -> requests.Response:
-        """ Performes a GET request to the endpoint generated by the `service_endpoint` method.
+        """
+        Performs a GET request to the endpoint generated by the `service_endpoint` method.
 
         Parameters are the same as in `service_endpoint`.
 
@@ -366,25 +401,51 @@ class ExonumClient(object):
         """
         return _get(self.service_endpoint(service_name, sub_uri, private))
 
+    def post_service(self, service_name: str, sub_uri: str, data: str, private: bool = False) -> requests.Response:
+        """
+        Performs a POST request to the endpoint generated by the `service_endpoint` method.
+
+        Parameters are the same as in `service_endpoint` except for `data`.
+        `data` is expected to be a serialized JSON value.
+
+        Returns
+        -------
+        response: requests.Response
+            Result of the API call.
+        """
+        json_headers = {"content-type": "application/json"}
+        return _post(self.service_endpoint(service_name, sub_uri, private), data=data, headers=json_headers)
+
     def health_info(self) -> requests.Response:
-        """ Performes a GET request to the healthcheck Exonum endpoint. """
-        return _get(SYSTEM_URL.format(self.schema, self.hostname, self.public_api_port, "healthcheck"))
+        """ Performs a GET request to the healthcheck Exonum endpoint. """
+        return _get(self._system_endpoint("healthcheck"))
 
     def mempool(self) -> requests.Response:
-        """ Performes a GET request to the mempool Exonum endpoint. """
-        return _get(SYSTEM_URL.format(self.schema, self.hostname, self.public_api_port, "mempool"))
+        """ Performs a GET request to the mempool Exonum endpoint. """
+        return _get(self._system_endpoint("mempool"))
 
     def user_agent(self) -> requests.Response:
-        """ Performes a GET request to the user_agent Exonum endpoint. """
-        return _get(SYSTEM_URL.format(self.schema, self.hostname, self.public_api_port, "user_agent"))
+        """ Performs a GET request to the user_agent Exonum endpoint. """
+        return _get(self._system_endpoint("user_agent"))
 
-    def create_subscriber(self) -> Subscriber:
-        """ Creates a Subscriber object from the current ExonumClient object.
+    def _get_main_proto_sources(self) -> requests.Response:
+        # Performs a GET request to the `proto-sources` Exonum endpoint.
+        return _get(self._system_endpoint("proto-sources"))
 
-        See Subscriber docs for details."""
-        subscriber = Subscriber(self.hostname, self.public_api_port)
-        return subscriber
+    def _get_proto_sources_for_artifact(self, runtime_id: int, artifact_name: str) -> requests.Response:
+        # Performs a GET request to the `proto-sources` Exonum endpoint with a provided runtime ID and artifact name.
+        params = {"artifact": "{}:{}".format(runtime_id, artifact_name)}
+        return _get(self._system_endpoint("proto-sources"), params=params)
+
+    def _system_endpoint(self, endpoint: str) -> str:
+        return _SYSTEM_URL.format(self.schema, self.hostname, self.public_api_port, endpoint)
 
 
 def _get(url: str, params: Optional[Dict[Any, Any]] = None) -> requests.Response:
+    # Internal wrapper over requests.get
     return requests.get(url, params=params)
+
+
+def _post(url: str, data: str, headers: Dict[str, str]) -> requests.Response:
+    # Internal wrapper over requests.post
+    return requests.post(url, data=data, headers=headers)
