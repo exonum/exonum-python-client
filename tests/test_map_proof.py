@@ -1,6 +1,7 @@
 import unittest
 import random
 
+from exonum.proofs.encoder import build_encoder_function
 from exonum.proofs.map_proof import MapProof
 from exonum.proofs.map_proof.proof_path import ProofPath
 from exonum.proofs.map_proof.constants import KEY_SIZE
@@ -237,7 +238,7 @@ class TestMapProof(PrecompiledModuleUserTestCase):
         cryptocurrency_service_name = 'exonum-cryptocurrency-advanced:0.11.0'
         cryptocurrency_module = ModuleManager.import_service_module(cryptocurrency_service_name, 'service')
 
-        cryptocurrency_decoder = MapProofBuilder.build_encoder_function(cryptocurrency_module.Wallet)
+        cryptocurrency_decoder = build_encoder_function(cryptocurrency_module.Wallet)
 
         parsed_proof = MapProof.parse(proof, lambda x: bytes.fromhex(x), cryptocurrency_decoder)
 
@@ -282,7 +283,7 @@ class TestMapProof(PrecompiledModuleUserTestCase):
         cryptocurrency_service_name = 'exonum-cryptocurrency-advanced:0.11.0'
         cryptocurrency_module = ModuleManager.import_service_module(cryptocurrency_service_name, 'service')
 
-        cryptocurrency_decoder = MapProofBuilder.build_encoder_function(cryptocurrency_module.Wallet)
+        cryptocurrency_decoder = build_encoder_function(cryptocurrency_module.Wallet)
 
         parsed_proof = MapProof.parse(proof, lambda x: bytes.fromhex(x), cryptocurrency_decoder)
 

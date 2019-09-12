@@ -48,7 +48,7 @@ First of all we need to install our client library:
 
 ```shell
 git clone git@github.com:exonum/python-client.git
-pip3 -e install python-client
+pip3 install -e python-client
 ```
 
 ### Exonum Client Initialization
