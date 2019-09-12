@@ -1,6 +1,5 @@
-# coding: utf-8
 """
-Exonum python light client.
+Exonum Python light client.
 
 This library is designed to provide useful interfaces for Exonum blockchain.
 

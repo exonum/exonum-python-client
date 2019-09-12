@@ -1,50 +1,42 @@
+"""This module is capable of creating and signing of the Exonum transactions."""
+
+from typing import Tuple, Dict, Optional
 import json
-import codecs
-from struct import pack, unpack
 
 from pysodium import crypto_sign_keypair, crypto_hash_sha256, crypto_sign_detached, crypto_sign_verify_detached
-from google.protobuf.message import DecodeError as ProtobufDecodeError
+from google.protobuf.message import Message as ProtobufMessage, DecodeError as ProtobufDecodeError
 
 from .module_manager import ModuleManager
 
-MINIMUM_TX_BODY_LENGTH_HEX = 204  # It calculated as first 76 metadata bytes plus signature with 128 bytes length
-PUBLIC_KEY_LENGTH_HEX = 64
-SIGNATURE_LENGTH_HEX = 128
-SIGNATURE_LENGTH_BYTES = SIGNATURE_LENGTH_HEX // 2
-SERVICE_ID_START_POSITION_TX = 68
-MESSAGE_ID_START_POSITION_TX = 72
-PROTO_MESSAGE_START_POSITION_TX = 76
-U16_LENGTH_HEX = 4
-
 
 class MessageGenerator:
-    def __init__(self, service_id, service_name):
+    def __init__(self, service_id: int, service_name: str):
         self.service_id = service_id
 
         self.service_name = service_name
-        self.message_ids = dict()
+        self.message_ids: Dict[str, int] = dict()
 
         self.service_module = ModuleManager.import_service_module(service_name, "service")
         for i, message in enumerate(self.service_module.DESCRIPTOR.message_types_by_name):
             self.message_ids[message] = i
 
-    def create_message(self, tx_name, msg):
-        return ExonumMessage(self.service_id, self.message_ids[tx_name], msg)
+    def create_message(self, tx_name: str, message: ProtobufMessage) -> "ExonumMessage":
+        return ExonumMessage(self.service_id, self.message_ids[tx_name], message)
 
 
 class ExonumMessage:
-    def __init__(self, service_id, message_id, msg):
-        self.author = None
+    def __init__(self, service_id: int, message_id: int, msg: ProtobufMessage):
+        self.author: Optional[bytes] = None
         self.service_id = service_id
         self.message_id = message_id
         self.msg = msg
-        self.payload = None
-        self.signature = None
-        self.raw = bytearray()
+        self.payload: Optional[bytes] = None
+        self.signature: Optional[bytes] = None
+        self.raw = bytes()
 
         self._build_message()
 
-    def _build_message(self):
+    def _build_message(self) -> None:
         runtime_mod = ModuleManager.import_main_module("runtime")
         consensus_mod = ModuleManager.import_main_module("consensus")
 
@@ -63,18 +55,18 @@ class ExonumMessage:
 
         self.payload = exonum_message.SerializeToString()
 
-    def sign(self, keys):
-        pk, sk = keys
-        self.author = pk
+    def sign(self, keys: Tuple[bytes, bytes]) -> "ExonumMessage":
+        public_key, secret_key = keys
+        self.author = public_key
 
         consensus_mod = ModuleManager.import_main_module("consensus")
         helpers_mod = ModuleManager.import_main_module("helpers")
 
         signed_message = consensus_mod.SignedMessage()
         signed_message.payload = self.payload
-        signed_message.author.CopyFrom(helpers_mod.PublicKey(data=pk))
+        signed_message.author.CopyFrom(helpers_mod.PublicKey(data=public_key))
 
-        signature = bytes(crypto_sign_detached(signed_message.payload, sk))
+        signature = bytes(crypto_sign_detached(signed_message.payload, secret_key))
 
         signed_message.signature.CopyFrom(helpers_mod.Signature(data=signature))
 
@@ -83,17 +75,17 @@ class ExonumMessage:
         self.raw = bytes(signed_message.SerializeToString())
         return self
 
-    def to_json(self):
-        return json.dumps({"tx_body": encode(self.raw)}, indent=4)
+    def to_json(self) -> str:
+        return json.dumps({"tx_body": self.raw.hex()}, indent=4)
 
-    def hash(self):
-        tx_hash = crypto_hash_sha256(bytes(self.raw))
-        return encode(tx_hash)
+    def hash(self) -> str:
+        tx_hash = _hash(self.raw)
+        return tx_hash.hex()
 
-    def get_author(self):
+    def get_author(self) -> Optional[bytes]:
         return self.author
 
-    def validate(self):
+    def validate(self) -> bool:
         """
         Validates message
         Checks tx signature is correct
@@ -111,14 +103,13 @@ class ExonumMessage:
         return True
 
     @staticmethod
-    def from_hex(tx_hex, service_name, tx_name):
+    def from_hex(tx_hex: str, service_name: str, tx_name: str) -> Optional["ExonumMessage"]:
         try:
             consensus_mod = ModuleManager.import_main_module("consensus")
-            runtime_mod = ModuleManager.import_main_module("runtime")
             service_mod = ModuleManager.import_service_module(service_name, "service")
             transaction_class = getattr(service_mod, tx_name)
 
-            tx_raw = bytes.fromhex(tx_hex)
+            tx_raw = bytes(bytes.fromhex(tx_hex))
 
             signed_msg = consensus_mod.SignedMessage()
             signed_msg.ParseFromString(tx_raw)
@@ -131,7 +122,6 @@ class ExonumMessage:
             decoded_msg = transaction_class()
             decoded_msg.ParseFromString(any_tx.arguments)
 
-            # TODO check correctness of the data getting
             service_id = any_tx.call_info.instance_id
             message_id = any_tx.call_info.method_id
             signature = signed_msg.signature.data[:]
@@ -147,13 +137,9 @@ class ExonumMessage:
             return None
 
 
-def gen_keypair():
+def gen_keypair() -> Tuple[bytes, bytes]:
     return crypto_sign_keypair()
 
 
-def encode(bytes):
-    return codecs.encode(bytes, "hex").decode("utf-8")
-
-
-def hash(data):
+def _hash(data: bytes) -> bytes:
     return crypto_hash_sha256(data)
