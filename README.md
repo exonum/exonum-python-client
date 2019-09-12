@@ -91,7 +91,7 @@ loader.load_service_proto_files(runtime_id=0, service_name='exonum-supervisor:0.
 The following example shows how to create a transaction message.
 
 ```python
-keys = gen_keypair()
+alice_keys = gen_keypair()
 
 cryptocurrency_service_name = 'exonum-cryptocurrency-advanced:0.11.0'
 loader.load_service_proto_files(runtime_id=0, cryptocurrency_service_name)
@@ -104,7 +104,7 @@ create_wallet_alice = cryptocurrency_module.CreateWallet()
 create_wallet_alice.name = 'Alice'
 
 create_wallet_alice_tx = cryptocurrency_message_generator.create_message('CreateWallet', create_wallet_alice)
-create_wallet_alice_tx.sign(keys)
+create_wallet_alice_tx.sign(alice_keys)
 ```
 
 - 1024 - service instance ID.
@@ -114,6 +114,8 @@ system.
 
 After invoking sign method we get a signed transaction. 
 This transaction is ready for sending to the Exonum node.
+
+To see more examples and learn how to work with proofs go [here](proof).
 
 ### Getting data on availiable services
 
@@ -219,3 +221,4 @@ Apache 2.0 - see [LICENSE](LICENSE) for more information.
 
 [exonum]: https://github.com/exonum/exonum
 [protoc]: https://developers.google.com/protocol-buffers/docs/reference/python-generated
+[proof]: python-client/PROOF.MD
