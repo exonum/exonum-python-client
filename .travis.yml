@@ -17,8 +17,9 @@ jobs:
         - pip install pylint
         - pip install mypy
       script:
-        - black --check -l 120 .
-        - mypy --ignore-missing-imports --disallow-untyped-defs .
+        - black --check -l 120 . --exclude=".*_pb2.py"
+        - mypy --ignore-missing-imports --disallow-untyped-defs ./exonum ./examples
+        - pylint exonum --max-line-length=120 --disable=fixme,bad-continuation,too-few-public-methods; exit $(($? & 3))
     - name: tests
       addons:
         apt:
