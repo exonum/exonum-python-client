@@ -19,6 +19,7 @@ class ProtobufLoader:
         ProtobufLoader.entity = self
         self.client = client
         self.protoc = Protoc()
+        self.proto_dir = None
 
     def __enter__(self):
         self.initialize()

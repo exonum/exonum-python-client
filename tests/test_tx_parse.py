@@ -34,7 +34,7 @@ class TestTxParse(unittest.TestCase):
         create_wallet_alice.name = "Alice"
 
         # Create original message
-        create_wallet_alice_tx = cryptocurrency_message_generator.create_message("CreateWallet", create_wallet_alice)
+        create_wallet_alice_tx = cryptocurrency_message_generator.create_message(create_wallet_alice)
         create_wallet_alice_tx.sign(keys)
 
         cls.keys = keys
@@ -51,11 +51,11 @@ class TestTxParse(unittest.TestCase):
         service_name = self.cryptocurrency_service_name
 
         # Parse message
-        parsed_message = ExonumMessage.from_hex(exonum_message.raw.hex(), service_name, "CreateWallet")
+        parsed_message = ExonumMessage.from_hex(exonum_message.signed_raw().hex(), service_name, "CreateWallet")
 
-        self.assertEqual(parsed_message.get_author(), TestTxParse.keys[0])
-        self.assertEqual(parsed_message.service_id, exonum_message.service_id)
-        self.assertEqual(parsed_message.message_id, exonum_message.message_id)
+        self.assertEqual(parsed_message.author(), TestTxParse.keys[0])
+        self.assertEqual(parsed_message._instance_id, exonum_message._instance_id)
+        self.assertEqual(parsed_message._message_id, exonum_message._message_id)
         self.assertEqual(parsed_message.hash(), exonum_message.hash())
 
     def test_tx_fail_parse(self):
@@ -63,7 +63,7 @@ class TestTxParse(unittest.TestCase):
         service_name = self.cryptocurrency_service_name
 
         # Parse message
-        corrupted_message = "1a" + exonum_message.raw.hex()
+        corrupted_message = "1a" + exonum_message.signed_raw().hex()
         parsed_message = ExonumMessage.from_hex(corrupted_message, service_name, "CreateWallet")
 
         self.assertIsNone(parsed_message)
@@ -79,19 +79,19 @@ class TestTxParse(unittest.TestCase):
 
         # Check corrupted author message
         corrupt_message = copy.deepcopy(exonum_message)
-        corrupt_message.author = fake_keys[0]
+        corrupt_message._author = fake_keys[0]
         self.assertFalse(corrupt_message.validate())
 
         # Check corrupted signature message
         corrupt_message = copy.deepcopy(exonum_message)
-        sig = bytearray(corrupt_message.signature)
+        sig = bytearray(corrupt_message._signature)
         sig[0] = sig[0] ^ 1
-        corrupt_message.signature = bytes(sig)
+        corrupt_message._signature = bytes(sig)
         self.assertFalse(corrupt_message.validate())
 
         # Check corrupted payload message
         corrupt_message = copy.deepcopy(exonum_message)
-        raw = bytearray(corrupt_message.raw)
+        raw = bytearray(corrupt_message._signed_tx_raw)
         raw[0] = raw[0] ^ 1
-        corrupt_message.raw = bytes(raw)
+        corrupt_message._signed_tx_raw = bytes(raw)
         self.assertFalse(corrupt_message.validate())

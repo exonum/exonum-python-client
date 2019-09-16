@@ -94,14 +94,14 @@ def example_run():
 
         create_wallet_alice = cryptocurrency_module.CreateWallet()
         create_wallet_alice.name = "Alice1"
-        create_wallet_alice_tx = cryptocurrency_message_generator.create_message("CreateWallet", create_wallet_alice)
+        create_wallet_alice_tx = cryptocurrency_message_generator.create_message(create_wallet_alice)
         create_wallet_alice_tx.sign(keys_1)
 
         # Create wallet for Bob
 
         create_wallet_bob = cryptocurrency_module.CreateWallet()
         create_wallet_bob.name = "Bob2"
-        create_wallet_bob_tx = cryptocurrency_message_generator.create_message("CreateWallet", create_wallet_bob)
+        create_wallet_bob_tx = cryptocurrency_message_generator.create_message(create_wallet_bob)
         create_wallet_bob_tx.sign(keys_2)
 
         responses = client.send_transactions([create_wallet_alice_tx, create_wallet_bob_tx])
