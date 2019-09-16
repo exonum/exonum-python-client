@@ -1,4 +1,5 @@
-from typing import Optional, Callable, Dict, Any
+"""MapProofBuilder module."""
+from typing import Optional, Dict, Any
 
 from exonum.module_manager import ModuleManager
 from .map_proof import MapProof
@@ -31,19 +32,18 @@ class MapProofBuilder:
     returns a converter function.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """ Constructor of the MapProofBuilder. """
-        self._map_proof = None
-        self._key_encoder = None
-        self._value_encoder = None
+        self._key_encoder: Optional[type] = None
+        self._value_encoder: Optional[type] = None
 
+    @staticmethod
     def _get_encoder(
-        self,
         structure_name: str,
         main_module: Optional[str] = None,
         service_name: Optional[str] = None,
         service_module: Optional[str] = None,
-    ):
+    ) -> type:
         try:
             if main_module:
                 module = ModuleManager.import_main_module(main_module)

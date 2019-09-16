@@ -1,9 +1,11 @@
+"""Tools for creating value binary encoders."""
 from typing import Callable, Dict, Any
 import json
-from google.protobuf import json_format
 
 import base64
 import copy
+
+from google.protobuf import json_format
 
 
 # TODO This custom is required because of the bug in python protobuf implementation:
@@ -12,7 +14,7 @@ import copy
 # but currently exonum does not have them, so I guess it's ok. When the issue will be fixed,
 # this code will be removed.
 def _encode_byte_lists_to_base64(obj: Dict[Any, Any]) -> Dict[Any, Any]:
-    def _visit(entries):
+    def _visit(entries: Dict[Any, Any]) -> None:
         for key, value in entries.items():
             if isinstance(value, dict):
                 _visit(value)
@@ -45,7 +47,7 @@ def build_encoder_function(encoder_class: type) -> Callable[[Dict[Any, Any]], by
         A converter function from value to bytes.
     """
 
-    def func(data: Dict[Any, Any]):
+    def func(data: Dict[Any, Any]) -> bytes:
         # TODO temporary workaround for a problem described above.
         preencoded_data = _encode_byte_lists_to_base64(data)
 

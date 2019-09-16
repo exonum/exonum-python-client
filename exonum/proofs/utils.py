@@ -1,28 +1,33 @@
+"""Common utils for proofs modules."""
+from typing import Any, Dict, Callable, Optional
 import re
 
+# Those utils are internal and very simple, so they don't require docs.
+# pylint: disable=missing-docstring
 
-def is_dict(json):
+
+def is_dict(json: Any) -> bool:
     return isinstance(json, dict)
 
 
-def is_field_dict(json, field):
+def is_field_dict(json: Dict[Any, Any], field: str) -> bool:
     return isinstance(json.get(field), dict)
 
 
-def is_field_hash(json, field):
-    field = json.get(field)
-    return isinstance(field, str) and re.match(r"^[0-9A-Fa-f]{64}$", field)
+def is_field_hash(json: Dict[Any, Any], field: str) -> bool:
+    field_value = json.get(field)
+    return isinstance(field_value, str) and bool(re.match(r"^[0-9A-Fa-f]{64}$", field_value))
 
 
-def is_field_hash_or_none(json, field):
+def is_field_hash_or_none(json: Dict[Any, Any], field: str) -> bool:
     return not json.get(field) or is_field_hash(json, field)
 
 
-def is_field_int(json, field):
+def is_field_int(json: Dict[Any, Any], field: str) -> bool:
     return isinstance(json.get(field), int)
 
 
-def is_field_convertible(json, field, value_to_bytes):
+def is_field_convertible(json: Dict[Any, Any], field: str, value_to_bytes: Callable[[Any], bytes]) -> bool:
     try:
         if not json.get(field):
             return False
@@ -32,32 +37,32 @@ def is_field_convertible(json, field, value_to_bytes):
         return False
 
 
-def to_bytes(hex_data):
+def to_bytes(hex_data: str) -> Optional[bytes]:
     if not hex_data:
         return None
 
     return bytes.fromhex(hex_data)
 
 
-def calculate_height(number):
+def calculate_height(number: int) -> int:
     if number < 0:
-        raise ValueError("Number {} is less than zero".format(number))
-    elif number == 0:
+        raise ValueError(f"Number {number} is less than zero")
+    if number == 0:
         return 1
-    else:
-        # Amount of trailing zeroes for the next power of two
-        # This works because we can calculate the next power of two as 1 << (number - 1).bit_length()
-        # So, (number - 1).bit_length() is the shift => there will be that amount of trailing zeroes in number.
-        trailing_zeroes_amount = (number - 1).bit_length()
 
-        return trailing_zeroes_amount + 1
+    # Amount of trailing zeroes for the next power of two
+    # This works because we can calculate the next power of two as 1 << (number - 1).bit_length()
+    # So, (number - 1).bit_length() is the shift => there will be that amount of trailing zeroes in number.
+    trailing_zeroes_amount = (number - 1).bit_length()
 
-
-def div_ceil(a, b):
-    return (a + b - 1) // b
+    return trailing_zeroes_amount + 1
 
 
-def reset_bits(value, pos):
+def div_ceil(dividend: int, divider: int) -> int:
+    return (dividend + divider - 1) // divider
+
+
+def reset_bits(value: int, pos: int) -> int:
     """ Resets bits higher than the given pos. """
     reset_bits_mask = ~(255 << pos)
     value &= reset_bits_mask
