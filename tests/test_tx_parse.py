@@ -5,6 +5,7 @@ import sys
 import os
 
 from exonum.message import ExonumMessage, MessageGenerator
+from exonum.crypto import KeyPair
 from exonum.module_manager import ModuleManager
 
 
@@ -21,7 +22,7 @@ class TestTxParse(unittest.TestCase):
                 del sys.modules[module]
 
         # Gen init data
-        keys = crypto_sign_keypair()
+        keys = KeyPair.generate()
 
         # Prepare original message
         cryptocurrency_service_name = "exonum-cryptocurrency-advanced:0.11.0"
@@ -53,7 +54,7 @@ class TestTxParse(unittest.TestCase):
         # Parse message
         parsed_message = ExonumMessage.from_hex(exonum_message.signed_raw().hex(), service_name, "CreateWallet")
 
-        self.assertEqual(parsed_message.author(), TestTxParse.keys[0])
+        self.assertEqual(parsed_message.author(), TestTxParse.keys.public_key)
         self.assertEqual(parsed_message._instance_id, exonum_message._instance_id)
         self.assertEqual(parsed_message._message_id, exonum_message._message_id)
         self.assertEqual(parsed_message.hash(), exonum_message.hash())
@@ -72,21 +73,21 @@ class TestTxParse(unittest.TestCase):
         exonum_message = self.exonum_message
 
         # Gen init data
-        fake_keys = crypto_sign_keypair()
+        fake_keys = KeyPair.generate()
 
         # Checks that origin message validates right
         self.assertTrue(exonum_message.validate())
 
         # Check corrupted author message
         corrupt_message = copy.deepcopy(exonum_message)
-        corrupt_message._author = fake_keys[0]
+        corrupt_message._author = fake_keys.public_key
         self.assertFalse(corrupt_message.validate())
 
         # Check corrupted signature message
         corrupt_message = copy.deepcopy(exonum_message)
-        sig = bytearray(corrupt_message._signature)
+        sig = bytearray(corrupt_message._signature.value)
         sig[0] = sig[0] ^ 1
-        corrupt_message._signature = bytes(sig)
+        corrupt_message._signature.value = bytes(sig)
         self.assertFalse(corrupt_message.validate())
 
         # Check corrupted payload message

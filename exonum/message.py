@@ -1,11 +1,11 @@
 """This module is capable of creating and signing of the Exonum transactions."""
 
-from typing import Tuple, Dict, Optional
+from typing import Dict, Optional
 import json
 
-from pysodium import crypto_sign_keypair, crypto_hash_sha256, crypto_sign_detached, crypto_sign_verify_detached
 from google.protobuf.message import Message as ProtobufMessage, DecodeError as ProtobufDecodeError
 
+from .crypto import PublicKey, Hash, Signature, KeyPair
 from .module_manager import ModuleManager
 
 
@@ -96,19 +96,19 @@ class ExonumMessage:
 
     Other methods:
     >>> message = ExonumMessage.from_hex(...)
-    >>> author = message.author() # Get the author's public key as bytes.
-    >>> tx_hash = message.hash() # Get the transaction hash as hexadecimal string.
-    >>> signature = message.signature() # Get the transaction signature as bytes.
+    >>> author = message.author() # Get the author's public key.
+    >>> tx_hash = message.hash() # Get the transaction hash.
+    >>> signature = message.signature() # Get the transaction signature.
     >>> any_tx_raw = message.any_tx_raw() # Get the message's AnyTx serialized to bytes.
     >>> signed_tx_raw = message.signed_tx_raw() # Get the message's SignedMessage serialized to bytes.
     >>> tx_json = message.pack_into_json() # Create the JSON with the transaction in the format expected by Exonum.
     """
 
-    def __init__(self, instance_id: int, message_id: int, msg: ProtobufMessage, prebuilt: bool = False):
+    def __init__(self, instance_id: int, message_id: int, msg: ProtobufMessage, prebuilt: Optional[bytes] = None):
         """Exonum Message constructor. It's not intended to be used directly, see `MessageGenerator.create_message`
         and `ExonumMessage.from_hex` instead."""
         # Author's public key as bytes.
-        self._author: Optional[bytes] = None
+        self._author: Optional[PublicKey] = None
         # ID of the service instance.
         self._instance_id = instance_id
         # ID of the message (to be set in the CallInfo).
@@ -116,15 +116,16 @@ class ExonumMessage:
         # Protobuf message.
         self._msg = msg
         # Signature as bytes.
-        self._signature: Optional[bytes] = None
+        self._signature: Optional[Signature] = None
         # AnyTx message serialized to bytes.
-        self._any_tx_raw: Optional[bytes] = None
         # SignedMessage serialized to bytes.
         self._signed_tx_raw: Optional[bytes] = None
 
         # If we're parsing the received message, we don't have to build anything.
-        if not prebuilt:
-            self._build_message()
+        if prebuilt is None:
+            self._any_tx_raw = self._build_message()
+        else:
+            self._any_tx_raw = prebuilt
 
     @classmethod
     def from_hex(cls, message_hex: str, artifact_name: str, tx_name: str) -> Optional["ExonumMessage"]:
@@ -169,24 +170,26 @@ class ExonumMessage:
             signature = signed_msg.signature.data[:]
             author = signed_msg.author.data[:]
 
-            exonum_message = cls(service_id, message_id, decoded_msg, prebuilt=True)
+            any_tx_raw = signed_msg.payload
+            exonum_message = cls(service_id, message_id, decoded_msg, prebuilt=any_tx_raw)
 
-            cls._set_message(exonum_message, author, signature, signed_msg.payload, tx_raw)
+            cls._set_signature_data(exonum_message, author, signature, tx_raw)
             return exonum_message
         except ProtobufDecodeError:
             return None
 
-    def sign(self, keys: Tuple[bytes, bytes]) -> None:
+    def sign(self, keys: KeyPair) -> None:
         """Signs the message with the provided pair of the keys.
 
         Please note that signing is required before sending a message to the Exonum blockchain.
 
         Parameters
         ----------
-        keys: Tuple[bytes, bytes]
+        keys: exonum.crypto.KeyPair
             A pair of public_key and secret_key as bytes.
         """
-        public_key, secret_key = keys
+
+        public_key, secret_key = keys.public_key, keys.secret_key
         self._author = public_key
 
         consensus_mod = ModuleManager.import_main_module("consensus")
@@ -194,11 +197,11 @@ class ExonumMessage:
 
         signed_message = consensus_mod.SignedMessage()
         signed_message.payload = self._any_tx_raw
-        signed_message.author.CopyFrom(helpers_mod.PublicKey(data=public_key))
+        signed_message.author.CopyFrom(helpers_mod.PublicKey(data=public_key.value))
 
-        signature = bytes(crypto_sign_detached(signed_message.payload, secret_key))
+        signature = Signature.sign(signed_message.payload, secret_key)
 
-        signed_message.signature.CopyFrom(helpers_mod.Signature(data=signature))
+        signed_message.signature.CopyFrom(helpers_mod.Signature(data=signature.value))
 
         self._signature = signature
 
@@ -210,13 +213,16 @@ class ExonumMessage:
         Checks tx signature is correct
         :return: bool
         """
+        if self._signature is None or self._author is None:
+            return False
+
         try:
             consensus_mod = ModuleManager.import_main_module("consensus")
 
             signed_msg = consensus_mod.SignedMessage()
             signed_msg.ParseFromString(self._signed_tx_raw)
 
-            crypto_sign_verify_detached(self._signature, signed_msg.payload, self._author)
+            self._signature.verify(signed_msg.payload, self._author)
         except (ProtobufDecodeError, ValueError):
             return False
         return True
@@ -240,40 +246,34 @@ class ExonumMessage:
             raise RuntimeError("Attempt to call `to_json` on the unsigned message.")
         return json.dumps({"tx_body": self._signed_tx_raw.hex()}, indent=4)
 
-    def hash(self) -> str:
+    def hash(self) -> Hash:
         """Returns the hash of the message. If message was not signed, an hash of empty message will be returned."""
-        if self._signed_tx_raw is None:
-            # Empty transaction hex.
-            return _hash(bytes()).hex()
-        tx_hash = _hash(self._signed_tx_raw)
-        return tx_hash.hex()
+        return Hash.hash_data(self._signed_tx_raw)
 
     # Getters section.
 
-    def author(self) -> Optional[bytes]:
-        """Returns the author's public key as bytes. If author was not set, None will be returned."""
+    def author(self) -> Optional[PublicKey]:
+        """Returns the author's public key. If author was not set, None will be returned."""
         return self._author
 
-    def signature(self) -> Optional[bytes]:
-        """Returns the signature as bytes. If message was not signed, None will be returned."""
+    def signature(self) -> Optional[Signature]:
+        """Returns the signature. If message was not signed, None will be returned."""
         return self._signature
 
     def any_tx_raw(self) -> bytes:
         """Returns the serialized AnyTx message as bytes."""
-        assert self._any_tx_raw is not None, "Called any_tx_raw with _any_tx_raw unset."
         return self._any_tx_raw
 
     def signed_raw(self) -> Optional[bytes]:
         """Returns the serialized SignedMessage as bytes. If message was not signed, None will be returned."""
         return self._signed_tx_raw
 
-    def _set_message(self, author: bytes, signature: bytes, payload: bytes, raw: bytes) -> None:
-        self._author = author
-        self._signature = signature
-        self._any_tx_raw = payload
+    def _set_signature_data(self, author: bytes, signature: bytes, raw: bytes) -> None:
+        self._author = PublicKey(author)
+        self._signature = Signature(signature)
         self._signed_tx_raw = raw
 
-    def _build_message(self) -> None:
+    def _build_message(self) -> bytes:
         """Builds the raw AnyTx message."""
         runtime_mod = ModuleManager.import_main_module("runtime")
         consensus_mod = ModuleManager.import_main_module("consensus")
@@ -291,13 +291,4 @@ class ExonumMessage:
         exonum_message = consensus_mod.ExonumMessage()
         exonum_message.any_tx.CopyFrom(any_tx)
 
-        self._any_tx_raw = exonum_message.SerializeToString()
-
-
-def gen_keypair() -> Tuple[bytes, bytes]:
-    """Generates a tuple of public_key and secret_key."""
-    return crypto_sign_keypair()
-
-
-def _hash(data: bytes) -> bytes:
-    return crypto_hash_sha256(data)
+        return exonum_message.SerializeToString()

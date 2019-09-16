@@ -5,7 +5,8 @@ def event_handler(data):
 def example_run():
     # Example of usage.
 
-    from exonum import ExonumClient, ModuleManager, MessageGenerator, gen_keypair
+    from exonum import ExonumClient, ModuleManager, MessageGenerator
+    from exonum.crypto import KeyPair
     import codecs
     import json
     import time
@@ -81,8 +82,8 @@ def example_run():
 
         # Work with cryptocurrency
 
-        keys_1 = gen_keypair()
-        keys_2 = gen_keypair()
+        keys_1 = KeyPair.generate()
+        keys_2 = KeyPair.generate()
 
         loader.load_service_proto_files(0, cryptocurrency_service_name)
 

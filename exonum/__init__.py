@@ -17,6 +17,6 @@ Main modules you can be interested in:
 """
 
 from .client import ExonumClient
-from .message import MessageGenerator, ExonumMessage, gen_keypair
+from .message import MessageGenerator, ExonumMessage
 from .module_manager import ModuleManager
 from .proofs import ListProof
