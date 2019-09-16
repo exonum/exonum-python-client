@@ -27,7 +27,7 @@ _SERVICE_URL = _ENDPOINT_PREFIX + "/api/services/{}/"
 _WEBSOCKET_URI = "ws://{}:{}/api/explorer/v1/blocks/subscribe"
 
 
-class Subscriber(object):
+class Subscriber:
     """ Subscriber objects are used to subscribe to Exonum blocks via websockets. """
 
     # Type of received data (it can be either bytes or string).

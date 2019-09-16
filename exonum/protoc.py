@@ -10,8 +10,8 @@ PROTOC_ENV_NAME = "PROTOC"
 def _find_protoc() -> Optional[str]:
     if PROTOC_ENV_NAME in os.environ:
         return os.getenv(PROTOC_ENV_NAME)
-    else:
-        return shutil.which("protoc")
+
+    return shutil.which("protoc")
 
 
 def _find_proto_files(path: str) -> List[str]:

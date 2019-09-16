@@ -42,5 +42,5 @@ class ProofListKey:
         # Try to compare by height, otherwise compare by index.
         if self.height != other.height:
             return self.height < other.height
-        else:
-            return self.index < other.index
+
+        return self.index < other.index

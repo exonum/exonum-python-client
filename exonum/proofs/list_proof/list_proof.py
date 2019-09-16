@@ -186,10 +186,10 @@ class ListProof:
         tree_root = self._collect()
 
         calculated_hash = Hasher.hash_list_node(self._length, tree_root)
-        if calculated_hash == expected_hash:
-            return self._entries
-        else:
+        if calculated_hash != expected_hash:
             raise ListProofVerificationError(expected_hash.value, calculated_hash.value)
+
+        return self._entries
 
     @staticmethod
     def _parse_entry(data: List[Any]) -> Tuple[int, Any]:
@@ -201,8 +201,14 @@ class ListProof:
     def _tree_height_by_length(length: int) -> int:
         if length == 0:
             return 0
-        else:
-            return calculate_height(length)
+
+        return calculate_height(length)
+
+    @staticmethod
+    def _check_duplicates(entries: List[Any]) -> None:
+        for idx in range(1, len(entries)):
+            if entries[idx][0] == entries[idx - 1][0]:
+                raise MalformedListProofError.duplicate_key()
 
     def _collect(self) -> Hash:
         def _hash_entry(entry: Tuple[int, Any]) -> HashedEntry:
@@ -243,13 +249,8 @@ class ListProof:
         self._proof.sort(key=lambda el: el.key)
 
         # Check that there is no duplicates.
-        for idx in range(1, len(self._entries)):
-            if self._entries[idx][0] == self._entries[idx - 1][0]:
-                raise MalformedListProofError.duplicate_key()
-
-        for idx in range(1, len(self._proof)):
-            if self._proof[idx].key == self._proof[idx - 1].key:
-                raise MalformedListProofError.duplicate_key()
+        self._check_duplicates(self._entries)
+        self._check_duplicates(self._proof)
 
         # Check that hashes on each height have indices in the allowed range.
         for entry in self._proof:

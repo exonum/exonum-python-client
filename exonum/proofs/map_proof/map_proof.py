@@ -1,3 +1,4 @@
+"""MapProof module."""
 from typing import Optional, Dict, Any, List, Iterator, Callable
 
 from exonum.crypto import Hash
@@ -27,9 +28,11 @@ class _MapProofEntry:
         path_bits = data["path"]
         path = ProofPath.parse(path_bits)
 
-        data_hash = Hash(to_bytes(data["hash"]))
+        data_hash = to_bytes(data["hash"])
+        if data_hash is None:
+            raise MalformedMapProofError.malformed_entry(data)
 
-        return _MapProofEntry(path, data_hash)
+        return _MapProofEntry(path, Hash(data_hash))
 
 
 def collect(entries: List[_MapProofEntry]) -> Hash:
@@ -65,8 +68,8 @@ def collect(entries: List[_MapProofEntry]) -> Hash:
         if len(contour) > 1:
             penultimate_entry = contour[len(contour) - 2]
             return common_prefix(penultimate_entry.path, last_prefix)
-        else:
-            return None
+
+        return None
 
     if not entries:
         return Hash(Hasher.DEFAULT_HASH)

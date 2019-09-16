@@ -1,6 +1,6 @@
 """This module is capable of creating and signing of the Exonum transactions."""
 
-from typing import Dict, Optional
+from typing import Dict, Optional, Tuple, Any
 import json
 
 from google.protobuf.message import Message as ProtobufMessage, DecodeError as ProtobufDecodeError
@@ -148,32 +148,16 @@ class ExonumMessage:
             Otherwise the return value will be None.
         """
         try:
-            consensus_mod = ModuleManager.import_main_module("consensus")
-            service_mod = ModuleManager.import_service_module(artifact_name, "service")
-            transaction_class = getattr(service_mod, tx_name)
+            signed_msg, exonum_msg, decoded_msg = cls._deserialize_message(message_hex, artifact_name, tx_name)
 
-            tx_raw = bytes(bytes.fromhex(message_hex))
-
-            signed_msg = consensus_mod.SignedMessage()
-            signed_msg.ParseFromString(tx_raw)
-
-            exonum_msg = consensus_mod.ExonumMessage()
-            exonum_msg.ParseFromString(signed_msg.payload)
-
-            any_tx = exonum_msg.any_tx
-
-            decoded_msg = transaction_class()
-            decoded_msg.ParseFromString(any_tx.arguments)
-
-            service_id = any_tx.call_info.instance_id
-            message_id = any_tx.call_info.method_id
+            service_id = exonum_msg.any_tx.call_info.instance_id
+            message_id = exonum_msg.any_tx.call_info.method_id
             signature = signed_msg.signature.data[:]
             author = signed_msg.author.data[:]
 
-            any_tx_raw = signed_msg.payload
-            exonum_message = cls(service_id, message_id, decoded_msg, prebuilt=any_tx_raw)
+            exonum_message = cls(service_id, message_id, decoded_msg, prebuilt=exonum_msg.any_tx.SerializeToString())
 
-            cls._set_signature_data(exonum_message, author, signature, tx_raw)
+            cls._set_signature_data(exonum_message, author, signature, bytes.fromhex(message_hex))
             return exonum_message
         except ProtobufDecodeError:
             return None
@@ -291,3 +275,30 @@ class ExonumMessage:
         exonum_message.any_tx.CopyFrom(any_tx)
 
         return exonum_message.SerializeToString()
+
+    @staticmethod
+    def _deserialize_message(message_hex: str, artifact_name: str, tx_name: str) -> Tuple[Any, Any, Any]:
+        """Takes a serialized message as an argument and returns a tuple
+        [SignedMessage, ExonumMessage,DecodedMessage]."""
+
+        # Load modules and prepare expected message class for parsing.
+        consensus_mod = ModuleManager.import_main_module("consensus")
+        service_mod = ModuleManager.import_service_module(artifact_name, "service")
+        transaction_class = getattr(service_mod, tx_name)
+
+        # Convert message from hex to bytes.
+        tx_raw = bytes.fromhex(message_hex)
+
+        # Parse SignedMessage.
+        signed_msg = consensus_mod.SignedMessage()
+        signed_msg.ParseFromString(tx_raw)
+
+        # Parse ExonumMessage from SignedMessage's payload.
+        exonum_msg = consensus_mod.ExonumMessage()
+        exonum_msg.ParseFromString(signed_msg.payload)
+
+        # Parse expected message from ExonumMessage's AnyTx arguments.
+        decoded_msg = transaction_class()
+        decoded_msg.ParseFromString(exonum_msg.any_tx.arguments)
+
+        return signed_msg, exonum_msg, decoded_msg

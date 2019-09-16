@@ -1,8 +1,8 @@
-from typing import Optional, Dict, Any, List, Iterator, Callable
+"""ProofPath module."""
+from typing import Optional
 from functools import total_ordering
 from enum import IntEnum
 
-from ..hasher import Hasher, EMPTY_MAP_HASH
 from ..utils import div_ceil, reset_bits, leb128_encode_unsigned
 
 from .constants import KEY_SIZE, PROOF_PATH_SIZE
@@ -11,12 +11,14 @@ from .errors import MalformedMapProofError
 
 @total_ordering
 class ProofPath:
-    class KeyPrefix(IntEnum):
+    """ProofPath is a representation of the key in the MapProof."""
+
+    class _KeyPrefix(IntEnum):
         BRANCH = 0
         LEAF = 1
         VALUE = 2
 
-    class Positions(IntEnum):
+    class _Positions(IntEnum):
         KIND_POS = 0
         KEY_POS = 1
         LEN_POS = KEY_SIZE + 1
@@ -49,21 +51,21 @@ class ProofPath:
 
         data = [0] * KEY_SIZE
 
-        for i, ch in enumerate(bits):
-            if ch == "0":
+        for i, char in enumerate(bits):
+            if char == "0":
                 pass
-            elif ch == "1":
+            elif char == "1":
                 data[i // 8] += 1 << (i % 8)
             else:
-                error = "Unexpected MapProof path symbol: {}".format(ch)
+                error = "Unexpected MapProof path symbol: {}".format(char)
                 raise MalformedMapProofError.malformed_entry(bits, error)
 
         data_bytes = bytes(data)
 
         if length == 8 * KEY_SIZE:
             return ProofPath.from_bytes(data_bytes)
-        else:
-            return ProofPath.from_bytes(data_bytes).prefix(length)
+
+        return ProofPath.from_bytes(data_bytes).prefix(length)
 
     @staticmethod
     def from_bytes(data_bytes: bytes) -> "ProofPath":
@@ -90,9 +92,9 @@ class ProofPath:
 
         inner = bytearray([0] * PROOF_PATH_SIZE)
 
-        inner[0] = ProofPath.KeyPrefix.LEAF
-        inner[ProofPath.Positions.KEY_POS : ProofPath.Positions.KEY_POS + KEY_SIZE] = data_bytes[:]
-        inner[ProofPath.Positions.LEN_POS] = 0
+        inner[0] = ProofPath._KeyPrefix.LEAF
+        inner[ProofPath._Positions.KEY_POS : ProofPath._Positions.KEY_POS + KEY_SIZE] = data_bytes[:]
+        inner[ProofPath._Positions.LEN_POS] = 0
 
         return ProofPath(inner, 0)
 
@@ -106,8 +108,7 @@ class ProofPath:
         bits_str = ""
 
         raw_key = self.raw_key()
-        for byte_idx in range(len(raw_key)):
-            chunk = raw_key[byte_idx]
+        for byte_idx, chunk in enumerate(raw_key):
             # Range from 7 to 0 inclusively.
             for bit in range(7, -1, -1):
                 i = byte_idx * 8 + bit
@@ -124,16 +125,22 @@ class ProofPath:
     def __len__(self) -> int:
         return self.end() - self.start()
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, ProofPath):
+            raise ValueError("Attempt to compare ProofPath with an object of other type")
         return len(self) == len(other) and self.starts_with(other)
 
-    def bit(self, idx):
+    def bit(self, idx: int) -> int:
+        """Returns a bit of the path at the specified position."""
         pos = self.start() + idx
         chunk = self.raw_key()[(pos // 8)]
         bit = pos % 8
         return ((1 << bit) & chunk) >> bit
 
-    def __lt__(self, other) -> bool:
+    def __lt__(self, other: object) -> bool:
+        if not isinstance(other, ProofPath):
+            raise ValueError("Attempt to compare ProofPath with an object of other type")
+
         if self.start() != other.start():
             return NotImplemented
 
@@ -153,35 +160,35 @@ class ProofPath:
 
         return self.bit(pos) < other.bit(pos)
 
-    def is_leaf(self):
+    def is_leaf(self) -> bool:
         """ Returns True if ProofPath is leaf and False otherwise """
-        return self.data_bytes[0] == ProofPath.KeyPrefix.LEAF
+        return self.data_bytes[0] == ProofPath._KeyPrefix.LEAF
 
-    def start(self):
+    def start(self) -> int:
         """ Returns the index of the start bit. """
         return self._start
 
-    def end(self):
+    def end(self) -> int:
         """ Returns the index of the end bit. """
         if self.is_leaf():
             return KEY_SIZE * 8
-        else:
-            return self.data_bytes[ProofPath.Positions.LEN_POS]
+
+        return self.data_bytes[ProofPath._Positions.LEN_POS]
 
     def raw_key(self) -> bytes:
         """ Returns the stored key as raw bytes """
-        return bytes(self.data_bytes[ProofPath.Positions.KEY_POS : ProofPath.Positions.KEY_POS + KEY_SIZE])
+        return bytes(self.data_bytes[ProofPath._Positions.KEY_POS : ProofPath._Positions.KEY_POS + KEY_SIZE])
 
-    def set_end(self, end: Optional[int]):
+    def set_end(self, end: Optional[int]) -> None:
         """ Sets tha right border of the proof path. """
         if end is not None:
-            self.data_bytes[0] = self.KeyPrefix.BRANCH
-            self.data_bytes[self.Positions.LEN_POS] = end
+            self.data_bytes[0] = self._KeyPrefix.BRANCH
+            self.data_bytes[self._Positions.LEN_POS] = end
         else:
-            self.data_bytes[0] = self.KeyPrefix.LEAF
-            self.data_bytes[self.Positions.LEN_POS] = 0
+            self.data_bytes[0] = self._KeyPrefix.LEAF
+            self.data_bytes[self._Positions.LEN_POS] = 0
 
-    def prefix(self, length) -> "ProofPath":
+    def prefix(self, length: int) -> "ProofPath":
         """ Creates a copy of this path shortened to the specified length. """
 
         end = self._start + length
@@ -195,11 +202,12 @@ class ProofPath:
 
         return key
 
-    def match_len(self, other, from_bit) -> int:
+    def match_len(self, other: "ProofPath", from_bit: int) -> int:
         """ Returns the length of the common segment. """
         if self.start() != other.start():
             raise ValueError("Misaligned bit ranges")
-        elif from_bit < self.start() or from_bit > self.end():
+
+        if from_bit < self.start() or from_bit > self.end():
             raise ValueError("Incorrect from_bit value: {}".format(from_bit))
 
         len_to_the_end = min(len(self), len(other))
@@ -209,14 +217,14 @@ class ProofPath:
 
         return len_to_the_end
 
-    def common_prefix_len(self, other) -> int:
+    def common_prefix_len(self, other: "ProofPath") -> int:
         """ Returns the length of the common prefix. """
         if self.start() == other.start():
             return self.match_len(other, self.start())
-        else:
-            return 0
 
-    def starts_with(self, other) -> bool:
+        return 0
+
+    def starts_with(self, other: "ProofPath") -> bool:
         """ Returns True if other is a prefix of self and False otherwise. """
         return self.common_prefix_len(other) == len(other)
 
