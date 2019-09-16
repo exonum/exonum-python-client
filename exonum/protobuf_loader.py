@@ -1,5 +1,5 @@
 """Module containing the ProtobufLoader class, which is capable of downloading protobuf sources from the Exonum."""
-from typing import List, Dict, Optional, Any, NamedTuple
+from typing import List, Optional, Any, NamedTuple
 import shutil
 import sys
 import os
