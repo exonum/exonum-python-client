@@ -222,10 +222,9 @@ class ExonumMessage:
             signed_msg = consensus_mod.SignedMessage()
             signed_msg.ParseFromString(self._signed_tx_raw)
 
-            self._signature.verify(signed_msg.payload, self._author)
+            return self._signature.verify(signed_msg.payload, self._author)
         except (ProtobufDecodeError, ValueError):
             return False
-        return True
 
     def pack_into_json(self) -> str:
         """Packs the serialized signed message into the JSON format expected by Exonum.

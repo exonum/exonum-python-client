@@ -115,4 +115,9 @@ class Signature(_FixedByteArray):
     def verify(self, data: bytes, key: PublicKey) -> bool:
         """Verifies the signature against provided data and public key."""
 
-        return crypto_sign_verify_detached(self.value, data, key.value)
+        try:
+            crypto_sign_verify_detached(self.value, data, key.value)
+            return True
+        except ValueError:
+            # ValueError is raised if verification is failed.
+            return False
