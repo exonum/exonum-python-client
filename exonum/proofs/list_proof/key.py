@@ -1,3 +1,4 @@
+""" ProofListKey module. """
 from typing import Dict, Any
 from functools import total_ordering
 
@@ -29,10 +30,15 @@ class ProofListKey:
         """ Returns the parent key for this key. """
         return ProofListKey(self.height + 1, self.index >> 1)
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, ProofListKey):
+            raise ValueError("Attempt to compare ProofListKey with an object of different type")
         return self.index == other.index and self.height == other.height
 
-    def __lt__(self, other) -> bool:
+    def __lt__(self, other: object) -> bool:
+        if not isinstance(other, ProofListKey):
+            raise ValueError("Attempt to compare ProofListKey with an object of different type")
+
         # Try to compare by height, otherwise compare by index.
         if self.height != other.height:
             return self.height < other.height

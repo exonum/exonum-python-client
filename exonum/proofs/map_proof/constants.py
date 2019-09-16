@@ -1,3 +1,4 @@
+"""Common constants for MapProof module."""
 from ..hasher import Hasher
 
 # Size in bytes of the Hash. Equal to the hash function output (32).

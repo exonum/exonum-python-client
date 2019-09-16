@@ -1,6 +1,9 @@
+"""Proof verification module for a `ProofListIndex`es from Exonum."""
+
 from typing import Dict, List, Tuple, Any, Callable
 import itertools
 
+from exonum.crypto import Hash
 from ..utils import is_field_hash, is_field_int, calculate_height
 from ..hasher import Hasher
 from .key import ProofListKey
@@ -10,7 +13,7 @@ from .errors import MalformedListProofError, ListProofVerificationError
 class HashedEntry:
     """ Element of a proof with a key and hash. """
 
-    def __init__(self, key: ProofListKey, entry_hash: bytes):
+    def __init__(self, key: ProofListKey, entry_hash: Hash):
         self.key = key
         self.entry_hash = entry_hash
 
@@ -21,9 +24,11 @@ class HashedEntry:
             raise MalformedListProofError.parse_error(str(dict))
 
         key = ProofListKey.parse(data)
-        return HashedEntry(key, bytes.fromhex(data["hash"]))
+        return HashedEntry(key, Hash(bytes.fromhex(data["hash"])))
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, HashedEntry):
+            raise ValueError("Attempt to compare HashedEntry with an object of different type")
         return self.key == other.key and self.entry_hash == other.entry_hash
 
 
@@ -59,6 +64,23 @@ def _hash_layer(layer: List[HashedEntry], last_index: int) -> List[HashedEntry]:
 
 
 class ListProof:
+    """ListProof class provides an interface to parse and verify proofs for ProofListIndex retrieved
+    from the Exonum blockchain.
+
+    Example workflow:
+    >>> proof_json = {
+    >>>     "proof": [
+    >>>         {"index": 1, "height": 1, "hash": "eae60adeb5c681110eb5226a4ef95faa4f993c4a838d368b66f7c98501f2c8f9"}
+    >>>     ],
+    >>>     "entries": [[0, "6b70d869aeed2fe090e708485d9f4b4676ae6984206cf05efc136d663610e5c9"]],
+    >>>     "length": 2,
+    >>> }
+    >>> expected_hash = "07df67b1a853551eb05470a03c9245483e5a3731b4b558e634908ff356b69857"
+    >>> proof = ListProof.parse(proof_json)
+    >>> result = proof.validate(bytes.fromhex(expected_hash))
+    >>> assert result == [(0, stored_val)]
+    """
+
     def __init__(
         self,
         proof: List[HashedEntry],
@@ -137,14 +159,14 @@ class ListProof:
 
         return ListProof(proof, entries, length, value_to_bytes)
 
-    def validate(self, expected_hash: bytes) -> List[Tuple[int, Any]]:
+    def validate(self, expected_hash: Hash) -> List[Tuple[int, Any]]:
         """
         This method validates the provided proof against the given expected hash.
 
         Parameters
         ----------
-        expected_hash: bytes
-            Hexadecimal expected hash as bytes.
+        expected_hash: Hash
+            Expected root hash.
 
         Returns
         -------
@@ -158,8 +180,8 @@ class ListProof:
         MalformedListProofError
             If proof is malformed, an exception `MalformedListProofError` is raised.
         """
-        if not isinstance(expected_hash, bytes):
-            raise ValueError("expected_hash should be bytes")
+        if not isinstance(expected_hash, Hash):
+            raise ValueError("expected_hash should be Hash")
 
         tree_root = self._collect()
 
@@ -167,10 +189,10 @@ class ListProof:
         if calculated_hash == expected_hash:
             return self._entries
         else:
-            raise ListProofVerificationError(expected_hash, calculated_hash)
+            raise ListProofVerificationError(expected_hash.value, calculated_hash.value)
 
     @staticmethod
-    def _parse_entry(data: List[Any]):
+    def _parse_entry(data: List[Any]) -> Tuple[int, Any]:
         if not isinstance(data, list) or not len(data) == 2:
             raise MalformedListProofError.parse_error(str(data))
         return data[0], data[1]
@@ -182,16 +204,18 @@ class ListProof:
         else:
             return calculate_height(length)
 
-    def _collect(self) -> bytes:
+    def _collect(self) -> Hash:
         def _hash_entry(entry: Tuple[int, Any]) -> HashedEntry:
             """ Creates a hash entry from value. """
             key = ProofListKey(1, entry[0])
             entry_hash = Hasher.hash_leaf(self._value_to_bytes(entry[1]))
             return HashedEntry(key, entry_hash)
 
-        def _split_hashes_by_height(hashes: List[HashedEntry], h: int) -> Tuple[List[HashedEntry], List[HashedEntry]]:
+        def _split_hashes_by_height(
+            hashes: List[HashedEntry], height: int
+        ) -> Tuple[List[HashedEntry], List[HashedEntry]]:
             """ Splits list of hashed entries into two lists by the given height. """
-            current = list(itertools.takewhile(lambda x: x.key.height == h, hashes))
+            current = list(itertools.takewhile(lambda x: x.key.height == height, hashes))
             remaining = hashes[len(current) :]
 
             return current, remaining

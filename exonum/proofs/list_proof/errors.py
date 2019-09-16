@@ -1,4 +1,8 @@
+"""Common errors that can occur during work with ListProofs."""
 from enum import Enum, auto as enum_auto
+
+# Methods are self-documenting here.
+# pylint: disable=missing-docstring
 
 
 class MalformedListProofError(Exception):
@@ -29,7 +33,7 @@ class MalformedListProofError(Exception):
         PARSE_ERROR = enum_auto()
         DUPLICATE_KEY = enum_auto()
 
-    def __init__(self, message, error_kind):
+    def __init__(self, message: str, error_kind: "ErrorKind") -> None:
         super().__init__(message)
 
         self.error_kind = error_kind
@@ -70,7 +74,7 @@ class MalformedListProofError(Exception):
         return cls(error_msg, error_kind)
 
     @classmethod
-    def parse_error(cls, message) -> "MalformedListProofError":
+    def parse_error(cls, message: str) -> "MalformedListProofError":
         error_msg = f"Parsing error: could not parse {message}"
         error_kind = cls.ErrorKind.PARSE_ERROR
 
@@ -87,8 +91,8 @@ class MalformedListProofError(Exception):
 class ListProofVerificationError(Exception):
     """ Error raised when provided root hash doesn't match calculated one. """
 
-    def __init__(self, provided_hash, calculated_hash):
-        def _short_hash(hash_bytes: bytes):
+    def __init__(self, provided_hash: bytes, calculated_hash: bytes) -> None:
+        def _short_hash(hash_bytes: bytes) -> str:
             hash_str = hash_bytes.hex()
             return hash_str[:4] + ".." + hash_str[-4:]
 
