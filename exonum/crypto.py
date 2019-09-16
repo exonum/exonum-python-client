@@ -1,7 +1,7 @@
 """Module with the common cryptography-assotiated utils.
 
 This module uses libsodium as a backend."""
-from typing import Optional, Type
+from typing import Optional
 
 from pysodium import (
     crypto_sign_keypair,

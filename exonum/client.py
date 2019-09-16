@@ -13,7 +13,7 @@ from threading import Thread
 from websocket import WebSocket
 import requests
 
-from .protobuf_loader import ProtobufLoader
+from .protobuf_loader import ProtobufLoader, ProtobufProviderInterface, ProtoFile
 from .message import ExonumMessage
 
 # Example of formatted prefix: "https://127.0.0.1:8000"
@@ -103,7 +103,7 @@ class Subscriber(object):
             self._is_running = False
 
 
-class ExonumClient(object):
+class ExonumClient(ProtobufProviderInterface):
     """ExonumClient class is capable of interaction with ExonumBlockchain.
 
     All the methods that perform requests to the Exonum REST API return a requests.Response object.
@@ -248,7 +248,7 @@ class ExonumClient(object):
             Result of the POST request.
             If the transaction was correct and it was accepted, it will contain a json with hash of the transaction.
         """
-        response = _post(self.tx_url, data=message.to_json(), headers={"content-type": "application/json"})
+        response = _post(self.tx_url, data=message.pack_into_json(), headers={"content-type": "application/json"})
         return response
 
     def send_transactions(self, messages: Iterable[ExonumMessage]) -> List[requests.Response]:
@@ -428,14 +428,27 @@ class ExonumClient(object):
         """ Performs a GET request to the user_agent Exonum endpoint. """
         return _get(self._system_endpoint("user_agent"))
 
-    def _get_main_proto_sources(self) -> requests.Response:
-        # Performs a GET request to the `proto-sources` Exonum endpoint.
-        return _get(self._system_endpoint("proto-sources"))
+    # Implementation of the ProtobufProviderInterface.
+    def _get_proto_sources(self, params: Optional[Dict[str, str]] = None) -> List[ProtoFile]:
+        response = _get(self._system_endpoint("proto-sources"), params=params)
+        if response.status_code != 200 or "application/json" not in response.headers["content-type"]:
+            raise RuntimeError("Unsuccessfully attempted to retrieve protobuf sources: {}".format(response.content))
 
-    def _get_proto_sources_for_artifact(self, runtime_id: int, artifact_name: str) -> requests.Response:
+        proto_files = [
+            ProtoFile(name=proto_file["name"], content=proto_file["content"]) for proto_file in response.json()
+        ]
+
+        return proto_files
+
+    def get_main_proto_sources(self) -> List[ProtoFile]:
+        # Performs a GET request to the `proto-sources` Exonum endpoint.
+        return self._get_proto_sources()
+
+    def get_proto_sources_for_artifact(self, runtime_id: int, artifact_name: str) -> List[ProtoFile]:
         # Performs a GET request to the `proto-sources` Exonum endpoint with a provided runtime ID and artifact name.
         params = {"artifact": "{}:{}".format(runtime_id, artifact_name)}
-        return _get(self._system_endpoint("proto-sources"), params=params)
+
+        return self._get_proto_sources(params=params)
 
     def _system_endpoint(self, endpoint: str) -> str:
         return _SYSTEM_URL.format(self.schema, self.hostname, self.public_api_port, endpoint)
