@@ -3,13 +3,11 @@
 # source: runtime.proto
 
 import sys
-
-_b = sys.version_info[0] < 3 and (lambda x: x) or (lambda x: x.encode("latin1"))
+_b=sys.version_info[0]<3 and (lambda x:x) or (lambda x:x.encode('latin1'))
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
-
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
@@ -19,478 +17,319 @@ from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
-    name="runtime.proto",
-    package="exonum.runtime",
-    syntax="proto3",
-    serialized_options=None,
-    serialized_pb=_b(
-        '\n\rruntime.proto\x12\x0e\x65xonum.runtime\x1a\x1bgoogle/protobuf/empty.proto"2\n\x08\x43\x61llInfo\x12\x13\n\x0binstance_id\x18\x01 \x01(\r\x12\x11\n\tmethod_id\x18\x02 \x01(\r"G\n\x05\x41nyTx\x12+\n\tcall_info\x18\x01 \x01(\x0b\x32\x18.exonum.runtime.CallInfo\x12\x11\n\targuments\x18\x02 \x01(\x0c".\n\nArtifactId\x12\x12\n\nruntime_id\x18\x01 \x01(\r\x12\x0c\n\x04name\x18\x02 \x01(\t"V\n\x0cInstanceSpec\x12\n\n\x02id\x18\x01 \x01(\r\x12\x0c\n\x04name\x18\x02 \x01(\t\x12,\n\x08\x61rtifact\x18\x03 \x01(\x0b\x32\x1a.exonum.runtime.ArtifactId"A\n\x0e\x45xecutionError\x12\x0c\n\x04kind\x18\x01 \x01(\r\x12\x0c\n\x04\x63ode\x18\x02 \x01(\r\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t"r\n\x0f\x45xecutionStatus\x12$\n\x02ok\x18\x01 \x01(\x0b\x32\x16.google.protobuf.EmptyH\x00\x12/\n\x05\x65rror\x18\x02 \x01(\x0b\x32\x1e.exonum.runtime.ExecutionErrorH\x00\x42\x08\n\x06resultb\x06proto3'
-    ),
-    dependencies=[google_dot_protobuf_dot_empty__pb2.DESCRIPTOR],
-)
+  name='runtime.proto',
+  package='exonum.runtime',
+  syntax='proto3',
+  serialized_options=None,
+  serialized_pb=_b('\n\rruntime.proto\x12\x0e\x65xonum.runtime\x1a\x1bgoogle/protobuf/empty.proto\"2\n\x08\x43\x61llInfo\x12\x13\n\x0binstance_id\x18\x01 \x01(\r\x12\x11\n\tmethod_id\x18\x02 \x01(\r\"G\n\x05\x41nyTx\x12+\n\tcall_info\x18\x01 \x01(\x0b\x32\x18.exonum.runtime.CallInfo\x12\x11\n\targuments\x18\x02 \x01(\x0c\".\n\nArtifactId\x12\x12\n\nruntime_id\x18\x01 \x01(\r\x12\x0c\n\x04name\x18\x02 \x01(\t\"V\n\x0cInstanceSpec\x12\n\n\x02id\x18\x01 \x01(\r\x12\x0c\n\x04name\x18\x02 \x01(\t\x12,\n\x08\x61rtifact\x18\x03 \x01(\x0b\x32\x1a.exonum.runtime.ArtifactId\"A\n\x0e\x45xecutionError\x12\x0c\n\x04kind\x18\x01 \x01(\r\x12\x0c\n\x04\x63ode\x18\x02 \x01(\r\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\"r\n\x0f\x45xecutionStatus\x12$\n\x02ok\x18\x01 \x01(\x0b\x32\x16.google.protobuf.EmptyH\x00\x12/\n\x05\x65rror\x18\x02 \x01(\x0b\x32\x1e.exonum.runtime.ExecutionErrorH\x00\x42\x08\n\x06resultb\x06proto3')
+  ,
+  dependencies=[google_dot_protobuf_dot_empty__pb2.DESCRIPTOR,])
+
+
 
 
 _CALLINFO = _descriptor.Descriptor(
-    name="CallInfo",
-    full_name="exonum.runtime.CallInfo",
-    filename=None,
-    file=DESCRIPTOR,
-    containing_type=None,
-    fields=[
-        _descriptor.FieldDescriptor(
-            name="instance_id",
-            full_name="exonum.runtime.CallInfo.instance_id",
-            index=0,
-            number=1,
-            type=13,
-            cpp_type=3,
-            label=1,
-            has_default_value=False,
-            default_value=0,
-            message_type=None,
-            enum_type=None,
-            containing_type=None,
-            is_extension=False,
-            extension_scope=None,
-            serialized_options=None,
-            file=DESCRIPTOR,
-        ),
-        _descriptor.FieldDescriptor(
-            name="method_id",
-            full_name="exonum.runtime.CallInfo.method_id",
-            index=1,
-            number=2,
-            type=13,
-            cpp_type=3,
-            label=1,
-            has_default_value=False,
-            default_value=0,
-            message_type=None,
-            enum_type=None,
-            containing_type=None,
-            is_extension=False,
-            extension_scope=None,
-            serialized_options=None,
-            file=DESCRIPTOR,
-        ),
-    ],
-    extensions=[],
-    nested_types=[],
-    enum_types=[],
-    serialized_options=None,
-    is_extendable=False,
-    syntax="proto3",
-    extension_ranges=[],
-    oneofs=[],
-    serialized_start=62,
-    serialized_end=112,
+  name='CallInfo',
+  full_name='exonum.runtime.CallInfo',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='instance_id', full_name='exonum.runtime.CallInfo.instance_id', index=0,
+      number=1, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='method_id', full_name='exonum.runtime.CallInfo.method_id', index=1,
+      number=2, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=62,
+  serialized_end=112,
 )
 
 
 _ANYTX = _descriptor.Descriptor(
-    name="AnyTx",
-    full_name="exonum.runtime.AnyTx",
-    filename=None,
-    file=DESCRIPTOR,
-    containing_type=None,
-    fields=[
-        _descriptor.FieldDescriptor(
-            name="call_info",
-            full_name="exonum.runtime.AnyTx.call_info",
-            index=0,
-            number=1,
-            type=11,
-            cpp_type=10,
-            label=1,
-            has_default_value=False,
-            default_value=None,
-            message_type=None,
-            enum_type=None,
-            containing_type=None,
-            is_extension=False,
-            extension_scope=None,
-            serialized_options=None,
-            file=DESCRIPTOR,
-        ),
-        _descriptor.FieldDescriptor(
-            name="arguments",
-            full_name="exonum.runtime.AnyTx.arguments",
-            index=1,
-            number=2,
-            type=12,
-            cpp_type=9,
-            label=1,
-            has_default_value=False,
-            default_value=_b(""),
-            message_type=None,
-            enum_type=None,
-            containing_type=None,
-            is_extension=False,
-            extension_scope=None,
-            serialized_options=None,
-            file=DESCRIPTOR,
-        ),
-    ],
-    extensions=[],
-    nested_types=[],
-    enum_types=[],
-    serialized_options=None,
-    is_extendable=False,
-    syntax="proto3",
-    extension_ranges=[],
-    oneofs=[],
-    serialized_start=114,
-    serialized_end=185,
+  name='AnyTx',
+  full_name='exonum.runtime.AnyTx',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='call_info', full_name='exonum.runtime.AnyTx.call_info', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='arguments', full_name='exonum.runtime.AnyTx.arguments', index=1,
+      number=2, type=12, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b(""),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=114,
+  serialized_end=185,
 )
 
 
 _ARTIFACTID = _descriptor.Descriptor(
-    name="ArtifactId",
-    full_name="exonum.runtime.ArtifactId",
-    filename=None,
-    file=DESCRIPTOR,
-    containing_type=None,
-    fields=[
-        _descriptor.FieldDescriptor(
-            name="runtime_id",
-            full_name="exonum.runtime.ArtifactId.runtime_id",
-            index=0,
-            number=1,
-            type=13,
-            cpp_type=3,
-            label=1,
-            has_default_value=False,
-            default_value=0,
-            message_type=None,
-            enum_type=None,
-            containing_type=None,
-            is_extension=False,
-            extension_scope=None,
-            serialized_options=None,
-            file=DESCRIPTOR,
-        ),
-        _descriptor.FieldDescriptor(
-            name="name",
-            full_name="exonum.runtime.ArtifactId.name",
-            index=1,
-            number=2,
-            type=9,
-            cpp_type=9,
-            label=1,
-            has_default_value=False,
-            default_value=_b("").decode("utf-8"),
-            message_type=None,
-            enum_type=None,
-            containing_type=None,
-            is_extension=False,
-            extension_scope=None,
-            serialized_options=None,
-            file=DESCRIPTOR,
-        ),
-    ],
-    extensions=[],
-    nested_types=[],
-    enum_types=[],
-    serialized_options=None,
-    is_extendable=False,
-    syntax="proto3",
-    extension_ranges=[],
-    oneofs=[],
-    serialized_start=187,
-    serialized_end=233,
+  name='ArtifactId',
+  full_name='exonum.runtime.ArtifactId',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='runtime_id', full_name='exonum.runtime.ArtifactId.runtime_id', index=0,
+      number=1, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='name', full_name='exonum.runtime.ArtifactId.name', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=187,
+  serialized_end=233,
 )
 
 
 _INSTANCESPEC = _descriptor.Descriptor(
-    name="InstanceSpec",
-    full_name="exonum.runtime.InstanceSpec",
-    filename=None,
-    file=DESCRIPTOR,
-    containing_type=None,
-    fields=[
-        _descriptor.FieldDescriptor(
-            name="id",
-            full_name="exonum.runtime.InstanceSpec.id",
-            index=0,
-            number=1,
-            type=13,
-            cpp_type=3,
-            label=1,
-            has_default_value=False,
-            default_value=0,
-            message_type=None,
-            enum_type=None,
-            containing_type=None,
-            is_extension=False,
-            extension_scope=None,
-            serialized_options=None,
-            file=DESCRIPTOR,
-        ),
-        _descriptor.FieldDescriptor(
-            name="name",
-            full_name="exonum.runtime.InstanceSpec.name",
-            index=1,
-            number=2,
-            type=9,
-            cpp_type=9,
-            label=1,
-            has_default_value=False,
-            default_value=_b("").decode("utf-8"),
-            message_type=None,
-            enum_type=None,
-            containing_type=None,
-            is_extension=False,
-            extension_scope=None,
-            serialized_options=None,
-            file=DESCRIPTOR,
-        ),
-        _descriptor.FieldDescriptor(
-            name="artifact",
-            full_name="exonum.runtime.InstanceSpec.artifact",
-            index=2,
-            number=3,
-            type=11,
-            cpp_type=10,
-            label=1,
-            has_default_value=False,
-            default_value=None,
-            message_type=None,
-            enum_type=None,
-            containing_type=None,
-            is_extension=False,
-            extension_scope=None,
-            serialized_options=None,
-            file=DESCRIPTOR,
-        ),
-    ],
-    extensions=[],
-    nested_types=[],
-    enum_types=[],
-    serialized_options=None,
-    is_extendable=False,
-    syntax="proto3",
-    extension_ranges=[],
-    oneofs=[],
-    serialized_start=235,
-    serialized_end=321,
+  name='InstanceSpec',
+  full_name='exonum.runtime.InstanceSpec',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='id', full_name='exonum.runtime.InstanceSpec.id', index=0,
+      number=1, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='name', full_name='exonum.runtime.InstanceSpec.name', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='artifact', full_name='exonum.runtime.InstanceSpec.artifact', index=2,
+      number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=235,
+  serialized_end=321,
 )
 
 
 _EXECUTIONERROR = _descriptor.Descriptor(
-    name="ExecutionError",
-    full_name="exonum.runtime.ExecutionError",
-    filename=None,
-    file=DESCRIPTOR,
-    containing_type=None,
-    fields=[
-        _descriptor.FieldDescriptor(
-            name="kind",
-            full_name="exonum.runtime.ExecutionError.kind",
-            index=0,
-            number=1,
-            type=13,
-            cpp_type=3,
-            label=1,
-            has_default_value=False,
-            default_value=0,
-            message_type=None,
-            enum_type=None,
-            containing_type=None,
-            is_extension=False,
-            extension_scope=None,
-            serialized_options=None,
-            file=DESCRIPTOR,
-        ),
-        _descriptor.FieldDescriptor(
-            name="code",
-            full_name="exonum.runtime.ExecutionError.code",
-            index=1,
-            number=2,
-            type=13,
-            cpp_type=3,
-            label=1,
-            has_default_value=False,
-            default_value=0,
-            message_type=None,
-            enum_type=None,
-            containing_type=None,
-            is_extension=False,
-            extension_scope=None,
-            serialized_options=None,
-            file=DESCRIPTOR,
-        ),
-        _descriptor.FieldDescriptor(
-            name="description",
-            full_name="exonum.runtime.ExecutionError.description",
-            index=2,
-            number=3,
-            type=9,
-            cpp_type=9,
-            label=1,
-            has_default_value=False,
-            default_value=_b("").decode("utf-8"),
-            message_type=None,
-            enum_type=None,
-            containing_type=None,
-            is_extension=False,
-            extension_scope=None,
-            serialized_options=None,
-            file=DESCRIPTOR,
-        ),
-    ],
-    extensions=[],
-    nested_types=[],
-    enum_types=[],
-    serialized_options=None,
-    is_extendable=False,
-    syntax="proto3",
-    extension_ranges=[],
-    oneofs=[],
-    serialized_start=323,
-    serialized_end=388,
+  name='ExecutionError',
+  full_name='exonum.runtime.ExecutionError',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='kind', full_name='exonum.runtime.ExecutionError.kind', index=0,
+      number=1, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='code', full_name='exonum.runtime.ExecutionError.code', index=1,
+      number=2, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='description', full_name='exonum.runtime.ExecutionError.description', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=323,
+  serialized_end=388,
 )
 
 
 _EXECUTIONSTATUS = _descriptor.Descriptor(
-    name="ExecutionStatus",
-    full_name="exonum.runtime.ExecutionStatus",
-    filename=None,
-    file=DESCRIPTOR,
-    containing_type=None,
-    fields=[
-        _descriptor.FieldDescriptor(
-            name="ok",
-            full_name="exonum.runtime.ExecutionStatus.ok",
-            index=0,
-            number=1,
-            type=11,
-            cpp_type=10,
-            label=1,
-            has_default_value=False,
-            default_value=None,
-            message_type=None,
-            enum_type=None,
-            containing_type=None,
-            is_extension=False,
-            extension_scope=None,
-            serialized_options=None,
-            file=DESCRIPTOR,
-        ),
-        _descriptor.FieldDescriptor(
-            name="error",
-            full_name="exonum.runtime.ExecutionStatus.error",
-            index=1,
-            number=2,
-            type=11,
-            cpp_type=10,
-            label=1,
-            has_default_value=False,
-            default_value=None,
-            message_type=None,
-            enum_type=None,
-            containing_type=None,
-            is_extension=False,
-            extension_scope=None,
-            serialized_options=None,
-            file=DESCRIPTOR,
-        ),
-    ],
-    extensions=[],
-    nested_types=[],
-    enum_types=[],
-    serialized_options=None,
-    is_extendable=False,
-    syntax="proto3",
-    extension_ranges=[],
-    oneofs=[
-        _descriptor.OneofDescriptor(
-            name="result", full_name="exonum.runtime.ExecutionStatus.result", index=0, containing_type=None, fields=[]
-        )
-    ],
-    serialized_start=390,
-    serialized_end=504,
+  name='ExecutionStatus',
+  full_name='exonum.runtime.ExecutionStatus',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='ok', full_name='exonum.runtime.ExecutionStatus.ok', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='error', full_name='exonum.runtime.ExecutionStatus.error', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+    _descriptor.OneofDescriptor(
+      name='result', full_name='exonum.runtime.ExecutionStatus.result',
+      index=0, containing_type=None, fields=[]),
+  ],
+  serialized_start=390,
+  serialized_end=504,
 )
 
-_ANYTX.fields_by_name["call_info"].message_type = _CALLINFO
-_INSTANCESPEC.fields_by_name["artifact"].message_type = _ARTIFACTID
-_EXECUTIONSTATUS.fields_by_name["ok"].message_type = google_dot_protobuf_dot_empty__pb2._EMPTY
-_EXECUTIONSTATUS.fields_by_name["error"].message_type = _EXECUTIONERROR
-_EXECUTIONSTATUS.oneofs_by_name["result"].fields.append(_EXECUTIONSTATUS.fields_by_name["ok"])
-_EXECUTIONSTATUS.fields_by_name["ok"].containing_oneof = _EXECUTIONSTATUS.oneofs_by_name["result"]
-_EXECUTIONSTATUS.oneofs_by_name["result"].fields.append(_EXECUTIONSTATUS.fields_by_name["error"])
-_EXECUTIONSTATUS.fields_by_name["error"].containing_oneof = _EXECUTIONSTATUS.oneofs_by_name["result"]
-DESCRIPTOR.message_types_by_name["CallInfo"] = _CALLINFO
-DESCRIPTOR.message_types_by_name["AnyTx"] = _ANYTX
-DESCRIPTOR.message_types_by_name["ArtifactId"] = _ARTIFACTID
-DESCRIPTOR.message_types_by_name["InstanceSpec"] = _INSTANCESPEC
-DESCRIPTOR.message_types_by_name["ExecutionError"] = _EXECUTIONERROR
-DESCRIPTOR.message_types_by_name["ExecutionStatus"] = _EXECUTIONSTATUS
+_ANYTX.fields_by_name['call_info'].message_type = _CALLINFO
+_INSTANCESPEC.fields_by_name['artifact'].message_type = _ARTIFACTID
+_EXECUTIONSTATUS.fields_by_name['ok'].message_type = google_dot_protobuf_dot_empty__pb2._EMPTY
+_EXECUTIONSTATUS.fields_by_name['error'].message_type = _EXECUTIONERROR
+_EXECUTIONSTATUS.oneofs_by_name['result'].fields.append(
+  _EXECUTIONSTATUS.fields_by_name['ok'])
+_EXECUTIONSTATUS.fields_by_name['ok'].containing_oneof = _EXECUTIONSTATUS.oneofs_by_name['result']
+_EXECUTIONSTATUS.oneofs_by_name['result'].fields.append(
+  _EXECUTIONSTATUS.fields_by_name['error'])
+_EXECUTIONSTATUS.fields_by_name['error'].containing_oneof = _EXECUTIONSTATUS.oneofs_by_name['result']
+DESCRIPTOR.message_types_by_name['CallInfo'] = _CALLINFO
+DESCRIPTOR.message_types_by_name['AnyTx'] = _ANYTX
+DESCRIPTOR.message_types_by_name['ArtifactId'] = _ARTIFACTID
+DESCRIPTOR.message_types_by_name['InstanceSpec'] = _INSTANCESPEC
+DESCRIPTOR.message_types_by_name['ExecutionError'] = _EXECUTIONERROR
+DESCRIPTOR.message_types_by_name['ExecutionStatus'] = _EXECUTIONSTATUS
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
-CallInfo = _reflection.GeneratedProtocolMessageType(
-    "CallInfo",
-    (_message.Message,),
-    dict(
-        DESCRIPTOR=_CALLINFO,
-        __module__="runtime_pb2"
-        # @@protoc_insertion_point(class_scope:exonum.runtime.CallInfo)
-    ),
-)
+CallInfo = _reflection.GeneratedProtocolMessageType('CallInfo', (_message.Message,), dict(
+  DESCRIPTOR = _CALLINFO,
+  __module__ = 'runtime_pb2'
+  # @@protoc_insertion_point(class_scope:exonum.runtime.CallInfo)
+  ))
 _sym_db.RegisterMessage(CallInfo)
 
-AnyTx = _reflection.GeneratedProtocolMessageType(
-    "AnyTx",
-    (_message.Message,),
-    dict(
-        DESCRIPTOR=_ANYTX,
-        __module__="runtime_pb2"
-        # @@protoc_insertion_point(class_scope:exonum.runtime.AnyTx)
-    ),
-)
+AnyTx = _reflection.GeneratedProtocolMessageType('AnyTx', (_message.Message,), dict(
+  DESCRIPTOR = _ANYTX,
+  __module__ = 'runtime_pb2'
+  # @@protoc_insertion_point(class_scope:exonum.runtime.AnyTx)
+  ))
 _sym_db.RegisterMessage(AnyTx)
 
-ArtifactId = _reflection.GeneratedProtocolMessageType(
-    "ArtifactId",
-    (_message.Message,),
-    dict(
-        DESCRIPTOR=_ARTIFACTID,
-        __module__="runtime_pb2"
-        # @@protoc_insertion_point(class_scope:exonum.runtime.ArtifactId)
-    ),
-)
+ArtifactId = _reflection.GeneratedProtocolMessageType('ArtifactId', (_message.Message,), dict(
+  DESCRIPTOR = _ARTIFACTID,
+  __module__ = 'runtime_pb2'
+  # @@protoc_insertion_point(class_scope:exonum.runtime.ArtifactId)
+  ))
 _sym_db.RegisterMessage(ArtifactId)
 
-InstanceSpec = _reflection.GeneratedProtocolMessageType(
-    "InstanceSpec",
-    (_message.Message,),
-    dict(
-        DESCRIPTOR=_INSTANCESPEC,
-        __module__="runtime_pb2"
-        # @@protoc_insertion_point(class_scope:exonum.runtime.InstanceSpec)
-    ),
-)
+InstanceSpec = _reflection.GeneratedProtocolMessageType('InstanceSpec', (_message.Message,), dict(
+  DESCRIPTOR = _INSTANCESPEC,
+  __module__ = 'runtime_pb2'
+  # @@protoc_insertion_point(class_scope:exonum.runtime.InstanceSpec)
+  ))
 _sym_db.RegisterMessage(InstanceSpec)
 
-ExecutionError = _reflection.GeneratedProtocolMessageType(
-    "ExecutionError",
-    (_message.Message,),
-    dict(
-        DESCRIPTOR=_EXECUTIONERROR,
-        __module__="runtime_pb2"
-        # @@protoc_insertion_point(class_scope:exonum.runtime.ExecutionError)
-    ),
-)
+ExecutionError = _reflection.GeneratedProtocolMessageType('ExecutionError', (_message.Message,), dict(
+  DESCRIPTOR = _EXECUTIONERROR,
+  __module__ = 'runtime_pb2'
+  # @@protoc_insertion_point(class_scope:exonum.runtime.ExecutionError)
+  ))
 _sym_db.RegisterMessage(ExecutionError)
 
-ExecutionStatus = _reflection.GeneratedProtocolMessageType(
-    "ExecutionStatus",
-    (_message.Message,),
-    dict(
-        DESCRIPTOR=_EXECUTIONSTATUS,
-        __module__="runtime_pb2"
-        # @@protoc_insertion_point(class_scope:exonum.runtime.ExecutionStatus)
-    ),
-)
+ExecutionStatus = _reflection.GeneratedProtocolMessageType('ExecutionStatus', (_message.Message,), dict(
+  DESCRIPTOR = _EXECUTIONSTATUS,
+  __module__ = 'runtime_pb2'
+  # @@protoc_insertion_point(class_scope:exonum.runtime.ExecutionStatus)
+  ))
 _sym_db.RegisterMessage(ExecutionStatus)
 
 
