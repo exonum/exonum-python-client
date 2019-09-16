@@ -24,14 +24,22 @@ SIGNATURE_BYTES_LEN = crypto_sign_BYTES
 
 
 class _FixedByteArray:
+    """Base class for types which store a bytes sequence of a fixed length."""
+
     def __init__(self, data: bytes, expected_len: int):
         if len(data) != expected_len:
             raise ValueError("Incorrect data length (expected {}, got {}".format(expected_len, len(data)))
 
         self.value = data
 
-    def __eq__(self, other: Type["_FixedByteArray"]) -> bool:
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, _FixedByteArray):
+            return False
         return self.value == other.value
+
+    def __str__(self) -> str:
+        # Represents the stored value as a hexadecimal string.
+        return self.value.hex()
 
 
 class Hash(_FixedByteArray):
