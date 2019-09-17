@@ -6,22 +6,24 @@ Python client for [Exonum Framework][exonum].
 
 ## Overview
 
-Exonum light client is a Python library for working with Exonum blockchain 
-from the client side. It can be easily integrated to an existing 
-application. Also, Exonum light client provides access to common utils 
+Exonum light client is a Python library for working with Exonum blockchain
+from the client side. It can be easily integrated to an existing
+application. Also, Exonum light client provides access to common utils
 toolkit which contains some helpful functions for hashing, cryptography,
 serialization, etc.
 
 ## Capabilities
+
 By using the client you are able to perform the following operations:
 
 - Submit transactions to the node
 - Receive information on transactions
 - Receive information on blockchain blocks
 - Receive information on the node system
-- Receive information on the node status 
+- Receive information on the node status
 
 ## Compatibility
+
 The following table shows versions compatibility:  
 
 | Light Client | Exonum                  |
@@ -33,7 +35,7 @@ The following table shows versions compatibility:
 ## System Dependencies
 
 - Python 3.5 or above.
-- Package installer for Python3 (pip3) 
+- Package installer for Python3 (pip3)
 
 ## Examples
 
@@ -52,6 +54,7 @@ pip3 install -e python-client
 ```
 
 ### Exonum Client Initialization
+
 ```python
 from exonum import ExonumClient, MessageGenerator, ModuleManager, gen_keypair
 
@@ -77,7 +80,6 @@ loader.initialize()
 loader.deinitialize()
 ```
 
-
 Then we need to run the following code:
 
 ```python
@@ -88,6 +90,7 @@ loader.load_service_proto_files(runtime_id=0, service_name='exonum-supervisor:0.
 - runtime_id=0 here means, that service works in Rust runtime.
 
 ### Creating Transaction Messages
+
 The following example shows how to create a transaction message.
 
 ```python
@@ -122,7 +125,9 @@ client.available_services().json()
 ```
 
 It will show list of artifacts available to start, and list of working services.
+
 Format of the output:
+
 ```python
 {
   'artifacts': [
@@ -193,9 +198,14 @@ subscriber.stop()
 
 Keep in mind that if you'll forget to stop subscriber, you may discover HTTP errors when you'll try to use Exonum API.
 
+### More examples
+
+You can find the sample scripts at the [examples](examples) section.
+
 ### Testing
 
 To run tests, use the following command:
+
 ```sh
 python3 -m unittest
 ```
@@ -203,6 +213,7 @@ python3 -m unittest
 ### Known problems
 
 If within use you discover a following error:
+
 ```sh
 TypeError: Couldn't build proto file into descriptor pool!
 ```
@@ -215,6 +226,7 @@ pip install --no-binary=protobuf protobuf
 ```
 
 ## License
+
 Apache 2.0 - see [LICENSE](LICENSE) for more information.
 
 [exonum]: https://github.com/exonum/exonum
