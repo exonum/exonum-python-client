@@ -191,8 +191,8 @@ class MapProof:
 
         Example of the expected proof format:
 
-        ```python
-        proof = {
+        >>>
+        {
           "entries": [
             {
               "key": "e610db75b0bbbd4c606c4f8ca3fca9f916e9c8ae9a93b5b767082172454344b3",
@@ -218,7 +218,6 @@ class MapProof:
             }
           ]
         }
-        ```
 
         Parameters
         ----------

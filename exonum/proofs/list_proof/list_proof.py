@@ -1,4 +1,4 @@
-"""Proof verification module for a `ProofListIndex`es from Exonum."""
+"""Proof verification module for a `ProofListIndex` es from Exonum."""
 
 from typing import Dict, List, Tuple, Any, Callable
 import itertools
@@ -28,9 +28,7 @@ class HashedEntry:
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, HashedEntry):
-            raise ValueError(
-                "Attempt to compare HashedEntry with an object of different type"
-            )
+            raise ValueError("Attempt to compare HashedEntry with an object of different type")
         return self.key == other.key and self.entry_hash == other.entry_hash
 
 
@@ -46,17 +44,12 @@ def _hash_layer(layer: List[HashedEntry], last_index: int) -> List[HashedEntry]:
         # Check if there is both right and left indices in the layer.
         if len(layer) > right_idx:
             # Verify that entries in the correct order.
-            if (
-                not layer[left_idx].key.is_left()
-                or layer[right_idx].key.index != layer[left_idx].key.index + 1
-            ):
+            if not layer[left_idx].key.is_left() or layer[right_idx].key.index != layer[left_idx].key.index + 1:
                 raise MalformedListProofError.missing_hash()
 
             left_hash = layer[left_idx].entry_hash
             right_hash = layer[right_idx].entry_hash
-            new_entry = HashedEntry(
-                layer[left_idx].key.parent(), Hasher.hash_node(left_hash, right_hash)
-            )
+            new_entry = HashedEntry(layer[left_idx].key.parent(), Hasher.hash_node(left_hash, right_hash))
         else:
             # If there is an odd number of entries, the index of last one should be equal to provided last_index.
             full_layer_length = last_index + 1
@@ -64,9 +57,7 @@ def _hash_layer(layer: List[HashedEntry], last_index: int) -> List[HashedEntry]:
                 raise MalformedListProofError.missing_hash()
 
             left_hash = layer[left_idx].entry_hash
-            new_entry = HashedEntry(
-                layer[left_idx].key.parent(), Hasher.hash_single_node(left_hash)
-            )
+            new_entry = HashedEntry(layer[left_idx].key.parent(), Hasher.hash_single_node(left_hash))
         new_layer.append(new_entry)
 
     return new_layer
@@ -77,6 +68,7 @@ class ListProof:
     from the Exonum blockchain.
 
     Example workflow:
+
     >>> proof_json = {
     >>>     "proof": [
     >>>         {"index": 1, "height": 1, "hash": "eae60adeb5c681110eb5226a4ef95faa4f993c4a838d368b66f7c98501f2c8f9"}
@@ -118,14 +110,13 @@ class ListProof:
         self._value_to_bytes = value_to_bytes
 
     @classmethod
-    def parse(
-        cls,
-        proof_dict: Dict[str, Any],
-        value_to_bytes: Callable[[Any], bytes] = bytes.fromhex,
-    ) -> "ListProof":
+    def parse(cls, proof_dict: Dict[str, Any], value_to_bytes: Callable[[Any], bytes] = bytes.fromhex) -> "ListProof":
         """
         Method to parse a ListProof from a dict.
+
         Expected dict format:
+
+        >>>
         {
             'proof': [
                 {'index': 1, 'height': 1, 'hash': 'eae60adeb5c681110eb5226a4ef95faa4f993c4a838d368b66f7c98501f2c8f9'}
@@ -135,6 +126,7 @@ class ListProof:
             ],
             'length': 2
         }
+
         If no errors occured during parsing, a ListProof object will be returned.
         However, successfull parsing doesn't mean that proof isn't malformed (it only means that provided dict structure
         matches the expected one).
@@ -234,9 +226,7 @@ class ListProof:
             hashes: List[HashedEntry], height: int
         ) -> Tuple[List[HashedEntry], List[HashedEntry]]:
             """ Splits list of hashed entries into two lists by the given height. """
-            current = list(
-                itertools.takewhile(lambda x: x.key.height == height, hashes)
-            )
+            current = list(itertools.takewhile(lambda x: x.key.height == height, hashes))
             remaining = hashes[len(current) :]
 
             return current, remaining
@@ -275,9 +265,7 @@ class ListProof:
 
             # self._length -1 is the index of the last element at `height = 1`.
             # This index is divided by 2 with each new height.
-            if height >= tree_height or entry.key.index > (self._length - 1) >> (
-                height - 1
-            ):
+            if height >= tree_height or entry.key.index > (self._length - 1) >> (height - 1):
                 raise MalformedListProofError.unexpected_branch()
 
         # Create the first layer.

@@ -16,13 +16,13 @@ class MalformedListProofError(Exception):
     class ErrorKind(Enum):
         """
         Kind of the error. Possible variants:
-        - UNEXPECTED_LEAF: Proof contains a hash in a place where a value was expected.
-        - UNEXPECTED_BRANCH: Proof contains a hash in the position which is impossible according to the list length.
-        - REDUNDANT_HASH: There are redundant hashes in the proof: the hash of the underlying list can be calculated
+          - UNEXPECTED_LEAF: Proof contains a hash in a place where a value was expected.
+          - UNEXPECTED_BRANCH: Proof contains a hash in the position which is impossible according to the list length.
+          - REDUNDANT_HASH: There are redundant hashes in the proof: the hash of the underlying list can be calculated
             without some of them.
-        - MISSING_HASH: Proof does not contain necessary information to compute the hash of the underlying list.
-        - NON_EMPTY_PROOF: Non-empty proof for an empty list.
-        - DUPLICATE_KEY: Same key is used more than once in the proof.
+          - MISSING_HASH: Proof does not contain necessary information to compute the hash of the underlying list.
+          - NON_EMPTY_PROOF: Non-empty proof for an empty list.
+          - DUPLICATE_KEY: Same key is used more than once in the proof.
         """
 
         UNEXPECTED_LEAF = enum_auto()
