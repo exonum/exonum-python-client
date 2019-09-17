@@ -1,8 +1,3 @@
-.. Exonum Python light client documentation master file, created by
-   sphinx-quickstart on Tue Sep 17 12:22:21 2019.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Welcome to Exonum Python light client's documentation!
 ======================================================
 
@@ -95,10 +90,13 @@ The following example shows how to create a transaction message.
 
 >>> from exonum.crypto import KeyPair
 >>> keys = KeyPair.generate()
+>>> 
 >>> cryptocurrency_service_name = 'exonum-cryptocurrency-advanced:0.11.0'
 >>> loader.load_service_proto_files(runtime_id=0, cryptocurrency_service_name)
+>>> 
 >>> cryptocurrency_module = ModuleManager.import_service_module(cryptocurrency_service_name, 'service')
 >>> cryptocurrency_message_generator = MessageGenerator(service_id=1024, service_name=cryptocurrency_service_name)
+>>> 
 >>> create_wallet_alice = cryptocurrency_module.CreateWallet()
 >>> create_wallet_alice.name = 'Alice'
 >>> create_wallet_alice_tx = cryptocurrency_message_generator.create_message('CreateWallet', create_wallet_alice)
@@ -149,11 +147,28 @@ Code below will show list of artifacts available to start, and list of working s
   ]
 }
 
+-------------
+More examples
+-------------
+
+You can find the sample scripts at the github repo `examples <https://github.com/exonum/python-client/examples/>`_ section.
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
 
+=====================
+Modules documentation
+=====================
+
+Documentation for the modules in the Exonum Python light client:
+
+.. toctree::
+   :maxdepth: 2
+   :caption: API documentation:
+
+   modules
 
 Indices and tables
 ==================
