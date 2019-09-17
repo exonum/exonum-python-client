@@ -2,10 +2,8 @@
 Exonum Client module.
 
 This module provides you two handy classes:
-- ExonumClient:
-    Main entity to interact with Exonum blockchain.
-- Subscriber:
-    Entity that can be used to receive signals on new block creation.
+  - ExonumClient: Main entity to interact with Exonum blockchain.
+  - Subscriber: Entity that can be used to receive signals on new block creation.
 """
 from typing import Optional, Any, Callable, Union, Iterable, List, Dict
 
@@ -150,6 +148,7 @@ class ExonumClient(ProtobufProviderInterface):
         See ProtobufLoader docs for more details.
 
         Example:
+
         >>> with client.protobuf_loader() as loader:
         >>>     loader.load_main_proto_files()
         >>>     loader.load_service_proto_files(0, "exonum-supervisor:0.12.0")
@@ -163,6 +162,7 @@ class ExonumClient(ProtobufProviderInterface):
         See Subscriber docs for details.
 
         Example:
+
         >>> with client.create_subscriber() as subscriber:
         >>>     subscriber.wait_for_new_block()
         """
@@ -174,6 +174,7 @@ class ExonumClient(ProtobufProviderInterface):
         Creates a service endpoint for a given service name and sub-uri.
 
         Example:
+
         >>> client.service_endpoint("supervisor", "deploy-artifact", private=True)
         http://127.0.0.1:8081/api/services/supervisor/deploy-artifact
 
@@ -205,6 +206,7 @@ class ExonumClient(ProtobufProviderInterface):
         Gets a list of available services from Exonum.
 
         Example:
+
         >>> available_services = client.available_services().json()
         >>> print(json.dumps(available_services, indent=2))
         {
@@ -233,6 +235,7 @@ class ExonumClient(ProtobufProviderInterface):
         Sends a transaction into Exonum node via REST API.
 
         Example:
+
         >>> response = client.send_transaction(message)
         >>> response.json()
         {'tx_hash': '713de312f48fe15559c0d4f7fb3f274dfbd3893a8a80d9f4224e97248f0e314e'}
@@ -272,6 +275,7 @@ class ExonumClient(ProtobufProviderInterface):
         Gets the block at the provided height.
 
         Example:
+
         >>> block = client.get_block(2).json()
         >>> print(json.dumps(block, indent=2))
         {
@@ -347,6 +351,7 @@ class ExonumClient(ProtobufProviderInterface):
         Gets the information about the transaction with the provided hash.
 
         Example:
+
         >>> tx_info = client.get_tx_info(tx_hash).json()
         >>> print(json.dumps(tx_info, indent=2))
         {

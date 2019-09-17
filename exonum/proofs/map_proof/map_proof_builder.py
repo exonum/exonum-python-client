@@ -17,12 +17,10 @@ class MapProofBuilder:
 
     Designed workflow example:
 
-    ```python
-    proof_builder = MapProofBuilder()
-    proof_builder.set_key_encoder('BitVec', main_module='helpers')
-    proof_builder.set_value_encoder('Wallet', service_name='cryptocurrency', service_module='service')
-    proof = proof_builder.build_proof(map_proof)
-    ```
+    >>> proof_builder = MapProofBuilder()
+    >>> proof_builder.set_key_encoder('BitVec', main_module='helpers')
+    >>> proof_builder.set_value_encoder('Wallet', service_name='cryptocurrency', service_module='service')
+    >>> proof = proof_builder.build_proof(map_proof)
 
     If your key/value type should not be converted to bytes through protobuf, use `MapProof.parse`
     instead and provide your converter functions by yourself.
