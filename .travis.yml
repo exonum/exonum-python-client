@@ -9,6 +9,16 @@ matrix:
 sudo: false
 dist: bionic
 
+addons:
+  apt:
+    sources:
+      - sourceline: 'ppa:maarten-fonville/protobuf'
+    packages:
+      - libsodium-dev
+      - libprotobuf-dev
+      - protobuf-compiler
+install: pip install --no-binary=protobuf protobuf pysodium requests websocket
+
 jobs:
   include:
     - name: lints
@@ -21,13 +31,4 @@ jobs:
         - mypy --ignore-missing-imports --disallow-untyped-defs ./exonum ./examples
         - pylint exonum --max-line-length=120 --disable=fixme,bad-continuation,too-few-public-methods; exit $(($? & 3))
     - name: tests
-      addons:
-        apt:
-          sources:
-            - sourceline: 'ppa:maarten-fonville/protobuf'
-          packages:
-            - libsodium-dev
-            - libprotobuf-dev
-            - protobuf-compiler
-      install: pip install --no-binary=protobuf protobuf pysodium requests websocket
       script: python -m unittest
