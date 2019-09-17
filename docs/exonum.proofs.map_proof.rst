@@ -1,6 +1,12 @@
 exonum.proofs.map\_proof package
 ================================
 
+Module contents
+---------------
+
+.. automodule:: exonum.proofs.map_proof
+   :members:
+
 Submodules
 ----------
 
@@ -20,10 +26,4 @@ exonum.proofs.map\_proof.errors module
 --------------------------------------
 
 .. automodule:: exonum.proofs.map_proof.errors
-   :members:
-
-Module contents
----------------
-
-.. automodule:: exonum.proofs.map_proof
    :members:

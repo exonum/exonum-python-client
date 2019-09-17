@@ -1,6 +1,12 @@
 exonum.proofs package
 =====================
 
+Module contents
+---------------
+
+.. automodule:: exonum.proofs
+   :members:
+
 Subpackages
 -----------
 
@@ -17,30 +23,4 @@ exonum.proofs.encoder module
 
 .. automodule:: exonum.proofs.encoder
    :members:
-   :undoc-members:
-   :show-inheritance:
 
-exonum.proofs.hasher module
----------------------------
-
-.. automodule:: exonum.proofs.hasher
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-exonum.proofs.utils module
---------------------------
-
-.. automodule:: exonum.proofs.utils
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: exonum.proofs
-   :members:
-   :undoc-members:
-   :show-inheritance:
