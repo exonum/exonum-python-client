@@ -22,7 +22,7 @@ Obtain the wallet and check if a balance was increased:
     alice_wallet = client.get_service(instance_name, "v1/wallets/info?pub_key=" + encode(alice_keys[0])).json()
  
  # Transfer funds
- First of all, create another wallet:
+ First of all, we need to create another wallet:
 
     bob_keys = gen_keypair()  
     create_wallet_bob = cryptocurrency_module.CreateWallet()  
