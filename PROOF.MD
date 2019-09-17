@@ -17,7 +17,7 @@ Send transaction:
 
     client.send_transaction(issue_alice_tx)
 
-Obtain wallet and check that balance was increased:
+Obtain the wallet and check if a balance was increased:
 
     alice_wallet = client.get_service(instance_name, "v1/wallets/info?pub_key=" + encode(alice_keys[0])).json()
  
