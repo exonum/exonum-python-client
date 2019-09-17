@@ -51,7 +51,7 @@ def mock_requests_get(url, params=None):
     proto_sources_endpoint = exonum_public_base + SYSTEM_ENDPOINT_POSTFIX.format("proto-sources")
 
     healthcheck_endpoint = exonum_public_base + SYSTEM_ENDPOINT_POSTFIX.format("healthcheck")
-    mempool_endpoint = exonum_public_base + SYSTEM_ENDPOINT_POSTFIX.format("mempool")
+    stats_endpoint = exonum_public_base + SYSTEM_ENDPOINT_POSTFIX.format("stats")
     user_agent_endpoint = exonum_public_base + SYSTEM_ENDPOINT_POSTFIX.format("user_agent")
 
     responses = {
@@ -62,7 +62,7 @@ def mock_requests_get(url, params=None):
         (proto_sources_endpoint, "{'artifact': '0:exonum-supervisor:0.11.0'}"): proto_sources_response("supervisor"),
         # Sustem endpoints
         (healthcheck_endpoint, "None"): ok_response(),
-        (mempool_endpoint, "None"): ok_response(),
+        (stats_endpoint, "None"): ok_response(),
         (user_agent_endpoint, "None"): ok_response(),
     }
 
@@ -181,11 +181,11 @@ class TestExonumClient(unittest.TestCase):
         self.assertEqual(resp.status_code, 200)
 
     @patch("exonum.client._get", new=mock_requests_get)
-    def test_mempool(self):
+    def test_stats(self):
         client = ExonumClient(
             hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
         )
-        resp = client.mempool()
+        resp = client.stats()
         self.assertEqual(resp.status_code, 200)
 
     @patch("exonum.client._get", new=mock_requests_get)
