@@ -39,7 +39,7 @@ jobs:
         # At first try to build docs to see that it don't fail.
         - make html
         # Then check that there is no warnings at the build.
-        - WARNINGS_COUNT=`make clean && make html | grep warning | wc -l`
+        - WARNINGS_COUNT=`make clean > /dev/null && make html | grep warning | wc -l`
         - if [ $WARNINGS_COUNT != 0 ]; then exit 1; fi
     - name: tests
       install: pip install --no-binary=protobuf protobuf pysodium requests websocket-client-py3
