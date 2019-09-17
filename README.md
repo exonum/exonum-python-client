@@ -210,6 +210,10 @@ To run tests, use the following command:
 python3 -m unittest
 ```
 
+### Contributing
+
+You can see notes for developers at the [contributing](CONTRIBUTING.md) page.
+
 ### Known problems
 
 If within use you discover a following error:
