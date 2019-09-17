@@ -38,7 +38,10 @@ class _FixedByteArray:
         return self.value == other.value
 
     def __str__(self) -> str:
-        # Represents the stored value as a hexadecimal string.
+        return self.hex()
+
+    def hex(self) -> str:
+        """Returns the hex representation of the value."""
         return self.value.hex()
 
 
