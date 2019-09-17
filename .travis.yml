@@ -34,7 +34,7 @@ jobs:
       install:
         - pip install sphinx
       script:
-        - pip install -e exonum
+        - pip install -e .
         - cd docs
         # At first try to build docs to see that it don't fail.
         - make html
