@@ -62,10 +62,6 @@ class Hash(_FixedByteArray):
             hash_bytes = crypto_hash_sha256(bytes())
         return cls(hash_bytes)
 
-    def hex(self) -> str:
-        """Returns hash as a hexadecimal string."""
-        return self.value.hex()
-
 
 class PublicKey(_FixedByteArray):
     """Representation of Curve25519 Public Key"""
