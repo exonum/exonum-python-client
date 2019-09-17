@@ -41,7 +41,7 @@ The following table shows versions compatibility:
 
 The following example shows how to create an instance of the Exonum client
 which will be able to work with Exonum node with
-cryptocurrency-advanced service, at http://localhost:8080
+cryptocurrency-advanced service, at `http://localhost:8080`
 address:
 
 ### Installing Python Light Client
@@ -112,10 +112,10 @@ create_wallet_alice_tx.sign(keys)
 
 - 1024 - service instance ID.
 - "CreateWallet" - name of the message.
-- key_pair - public and private keys of the ed25519 public-key signature 
+- key_pair - public and private keys of the ed25519 public-key signature
 system.
 
-After invoking sign method we get a signed transaction. 
+After invoking sign method we get a signed transaction.
 This transaction is ready for sending to the Exonum node.
 
 ### Getting data on availiable services
