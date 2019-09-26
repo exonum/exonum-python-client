@@ -117,7 +117,7 @@ This transaction is ready for sending to the Exonum node.
 
 To see more examples and find out how to work with proofs go [here][proof].
 
-### Getting data on availiable services
+### Getting Data on the Available Services
 
 ```python
 client.available_services().json()
