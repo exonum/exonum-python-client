@@ -2,13 +2,13 @@
 
 [![Travis Build Status](https://travis-ci.com/exonum/python-client.svg?token=DyxSqsiCaQvPg4SYLXqu&branch=master)](https://travis-ci.com/exonum/python-client)
 
-Python client for [Exonum Framework][exonum].
+Python client for the [Exonum Framework][exonum].
 
 ## Overview
 
-Exonum light client is a Python library for working with Exonum blockchain
+Exonum Light Client is a Python library for working with Exonum blockchain
 from the client side. It can be easily integrated to an existing
-application. Also, Exonum light client provides access to common utils
+application. Also, Exonum Light Client provides access to common utils
 toolkit which contains some helpful functions for hashing, cryptography,
 serialization, etc.
 
@@ -40,8 +40,8 @@ The following table shows versions compatibility:
 ## Examples
 
 The following example shows how to create an instance of the Exonum client
-which will be able to work with Exonum node with
-cryptocurrency-advanced service, at `http://localhost:8080`
+which will be able to work with an Exonum node with the
+Cryptocurrency Advanced service mounted on it, at `http://localhost:8080`
 address:
 
 ### Installing Python Light Client
@@ -115,16 +115,17 @@ create_wallet_alice_tx.sign(keys)
 - key_pair - public and private keys of the ed25519 public-key signature
 system.
 
-After invoking sign method we get a signed transaction.
+After invoking the sign method, we get a signed transaction.
 This transaction is ready for sending to the Exonum node.
 
-### Getting data on availiable services
+### Getting Data on the Available Services
 
 ```python
 client.available_services().json()
 ```
 
-It will show list of artifacts available to start, and list of working services.
+The code will show a list of the artifacts available for the start and a list of
+working services.
 
 Format of the output:
 
@@ -196,9 +197,10 @@ subscriber.connect()
 subscriber.stop()
 ```
 
-Keep in mind that if you'll forget to stop subscriber, you may discover HTTP errors when you'll try to use Exonum API.
+Keep in mind that if you forget to stop the subscriber, you may discover HTTP
+errors when you try to use Exonum API.
 
-### More examples
+### More Examples
 
 You can find the sample scripts at the [examples](examples) section.
 
@@ -212,17 +214,19 @@ python3 -m unittest
 
 ### Contributing
 
-You can see notes for developers at the [contributing](CONTRIBUTING.md) page.
+You can see notes for developers in the [Contribution Guide](CONTRIBUTING.md)
+page.
 
-### Known problems
+### Known Problems
 
-If within use you discover a following error:
+If within use you discover the following error:
 
 ```sh
-TypeError: Couldn't build proto file into descriptor pool!
+TypeError: Could not build proto file into descriptor pool!
 ```
 
-It's because of the issue with protobuf binary wheels. The only work around it to install the pure python implementation.
+It is due to the issue with Protobuf binary wheels. The only work around is to
+install the pure Python implementation.
 
 ```sh
 pip uninstall protobuf

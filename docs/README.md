@@ -1,8 +1,10 @@
-# Exonum Python light client documentation
+# Exonum Python Light Client Documentation
 
-Documentation for this library is generated via [sphinx](https://www.sphinx-doc.org/).
+Documentation for this library is generated via
+[Sphinx](https://www.sphinx-doc.org/).
 
-To install sphinx (from here it is assumed that you work inside venv and `python` defaults to `python3` and `pip` defaults to `pip3`), run:
+To install Sphinx (from here it is assumed that you work inside venv and
+`python` defaults to `python3` and `pip` defaults to `pip3`), run:
 
 ```sh
 pip install sphinx
@@ -14,8 +16,8 @@ To build docs locally:
 make html
 ```
 
-To change the settings for sphinx, edit [conf.py](conf.py).
+To change the settings for Sphinx, edit [conf.py](conf.py).
 
 To change the docs, edit appropriate `*.rst` file.
 
-The entry point of the docs is the `index.rst`.
+The entry point of the docs is `index.rst`.

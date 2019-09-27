@@ -1,7 +1,7 @@
 exonum.proofs package
 =====================
 
-Module contents
+Module Contents
 ---------------
 
 .. automodule:: exonum.proofs
@@ -23,4 +23,3 @@ exonum.proofs.encoder module
 
 .. automodule:: exonum.proofs.encoder
    :members:
-
