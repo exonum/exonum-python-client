@@ -1,5 +1,5 @@
 Welcome to the documentation of the Exonum Python Light Client!
-======================================================
+===============================================================
 
 ========
 Overview
@@ -110,9 +110,9 @@ The following example shows how to create a transaction message:
 After invoking the sign method we get a signed transaction.
 This transaction is ready for sending to an Exonum node.
 
------------------------------------
+--------------------------------------
 Getting Data on the Available Services
------------------------------------
+--------------------------------------
 
 The code below will show a list of the artifacts available for the start and a
 list of working services:

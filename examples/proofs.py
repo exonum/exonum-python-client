@@ -46,7 +46,7 @@ def run() -> None:
         ensure_status_code(wallet_info_response)
         wallet_info = wallet_info_response.json()
 
-        # A map proof to the whole Exonum state hash:
+        # `MapProof` to the whole Exonum state hash:
         proof_to_table = wallet_info["wallet_proof"]["to_table"]
         # Expected hash of the proof to the table is a state hash of the block:
         expected_to_table_hash_raw = wallet_info["block_proof"]["block"]["state_hash"]
@@ -55,7 +55,7 @@ def run() -> None:
         # Verify the proof to the table:
         verify_proof_to_table(proof_to_table, expected_to_table_hash)
 
-        # A map proof to the wallet as a part of the Cryptocurrency schema:
+        # `MapProof` to the wallet as a part of the Cryptocurrency schema:
         proof_to_wallet = wallet_info["wallet_proof"]["to_wallet"]
         # Expected hash of the proof to the wallet is the value stored in the
         # proof to the table:
@@ -65,7 +65,7 @@ def run() -> None:
         # Verify the proof to the wallet:
         verify_proof_to_wallet(proof_to_wallet, expected_to_wallet_hash)
 
-        # Map the proof for the transactions associtated with the wallet:
+        # `ListProof` for the transactions associtated with the wallet:
         proof_wallet_history = wallet_info["wallet_history"]["proof"]
         # Expected hash for the wallet history is the hash stored in the proof
         # to the wallet:

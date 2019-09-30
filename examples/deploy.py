@@ -34,7 +34,8 @@ def run() -> None:
 
             instance_id = start_service(client, service_name, instance_name)
 
-            # If no exception occurs during the previous calls, the code is valid:
+            # If no exception has occured during the previous calls, the service
+            # has started successfully:
             print(f"Service instance '{instance_name}' (artifact '{service_name}') started with ID {instance_id}.")
         except RuntimeError as err:
             print(f"Service instance '{instance_name}' (artifact '{service_name}') deployment failed with error {err}")
@@ -63,7 +64,7 @@ def deploy_service(client: ExonumClient, service_name: str) -> None:
     if service_name not in map(lambda x: x["name"], available_services["artifacts"]):
         raise RuntimeError(f"{service_name} is not listed in available services after deployment")
 
-    # Service is deployed:
+    # Service is deployed.
 
 
 def start_service(client: ExonumClient, service_name: str, instance_name: str) -> int:
@@ -88,7 +89,7 @@ def start_service(client: ExonumClient, service_name: str, instance_name: str) -
     if instance_name not in map(lambda x: x["name"], available_services["services"]):
         raise RuntimeError(f"{instance_name} is not listed in running instances after starting")
 
-    # Service starts.
+    # Service has started.
     # Return the running instance ID:
     for instance in available_services["services"]:
         if instance["name"] == instance_name:
