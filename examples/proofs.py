@@ -55,7 +55,7 @@ def run() -> None:
         # Verify the proof to the table:
         verify_proof_to_table(proof_to_table, expected_to_table_hash)
 
-        # Map the proof to the wallet as a part of the Cryptocurrency schema:
+        # A map proof to the wallet as a part of the Cryptocurrency schema:
         proof_to_wallet = wallet_info["wallet_proof"]["to_wallet"]
         # Expected hash of the proof to the wallet is the value stored in the
         # proof to the table:
