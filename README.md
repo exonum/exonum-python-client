@@ -222,7 +222,7 @@ page.
 If within use you discover the following error:
 
 ```sh
-TypeError: Could not build proto file into descriptor pool!
+TypeError: Couldn't build proto file into descriptor pool!
 ```
 
 It is due to the issue with Protobuf binary wheels. The only work around is to
