@@ -1,12 +1,12 @@
-"""Example of basic API interaction via Exonum Python light client."""
+"""Example of a Basic API Interaction via Exonum Python Light Client."""
 from exonum import ExonumClient
 
 
 def run() -> None:
-    """Example of simple API interaction."""
+    """Example of a simple API interaction."""
     client = ExonumClient(hostname="127.0.0.1", public_api_port=8080, private_api_port=8081)
 
-    # Get available services.
+    # Get the available services:
     print("Available services:")
     available_services_response = client.available_services()
     if available_services_response.status_code == 200:
@@ -21,7 +21,7 @@ def run() -> None:
         print("Available services request failed")
     print("")
 
-    # Get health info.
+    # Get the health info:
     print("Health info:")
     health_info_response = client.health_info()
     if health_info_response.status_code == 200:
@@ -32,7 +32,7 @@ def run() -> None:
         print("Health info request failed.")
     print("")
 
-    # Get exonum stats.
+    # Get the Exonum stats:
     print("Exonum stats:")
     stats_response = client.stats()
     if stats_response.status_code == 200:
@@ -44,7 +44,7 @@ def run() -> None:
         print("Stats request failed.")
     print("")
 
-    # Get user agent.
+    # Get the user agent:
     print("Exonum user agent:")
     user_agent_response = client.user_agent()
     if user_agent_response.status_code == 200:
