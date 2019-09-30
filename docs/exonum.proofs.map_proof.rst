@@ -1,7 +1,7 @@
 exonum.proofs.map\_proof package
 ================================
 
-Module contents
+Module Contents
 ---------------
 
 .. automodule:: exonum.proofs.map_proof

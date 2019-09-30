@@ -36,9 +36,9 @@ jobs:
       script:
         - pip install -e .
         - cd docs
-        # At first try to build docs to see that it don't fail.
+        # Build docs to see that the code does not fail:
         - make html
-        # Then check that there is no warnings at the build.
+        # Then check that there are no warnings at the build:
         - WARNINGS_COUNT=`make clean > /dev/null && make html | grep warning | wc -l`
         - if [ $WARNINGS_COUNT != 0 ]; then exit 1; fi
     - name: tests

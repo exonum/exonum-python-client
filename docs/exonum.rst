@@ -1,7 +1,7 @@
 exonum package
 ==============
 
-Module contents
+Module Contents
 ---------------
 
 .. automodule:: exonum

@@ -1,6 +1,6 @@
-"""Example of transactions sending.
-Before running this script ensure that exonum-cryptocurrency-advanced service is deployed and
-started (e.g. via `deploy.py` example script).
+"""Example of sending transactions.
+Before running this script ensure that `exonum-cryptocurrency-advanced` service
+is deployed and started (e.g. via `deploy.py` example script).
 The name of the instance is expected to be `XNM` by default,
 otherwise edit the CRYPTOCURRENCY_INSTANCE_NAME constant."""
 
@@ -15,11 +15,12 @@ CRYPTOCURRENCY_INSTANCE_NAME = "XNM"
 
 
 def run() -> None:
-    """Creates two wallets (for Alice and Bob) and performs several transactions between those wallets."""
+    """This example creates two wallets (for Alice and Bob) and performs several
+    transactions between these wallets."""
     client = ExonumClient(hostname="127.0.0.1", public_api_port=8080, private_api_port=8081)
 
     with client.protobuf_loader() as loader:
-        # Load and compile proto files.
+        # Load and compile proto files:
         loader.load_main_proto_files()
         loader.load_service_proto_files(RUST_RUNTIME_ID, CRYPTOCURRENCY_ARTIFACT_NAME)
 
@@ -32,7 +33,7 @@ def run() -> None:
 
         alice_balance = get_balance(client, alice_keypair.public_key)
         bob_balance = get_balance(client, bob_keypair.public_key)
-        print("Created Alice and Bob wallets. Balance:")
+        print("Created the wallets for Alice and Bob. Balance:")
         print(f" Alice => {alice_balance}")
         print(f" Bob => {bob_balance}")
 
@@ -41,7 +42,7 @@ def run() -> None:
             client, cryptocurrency_message_generator, alice_keypair, bob_keypair.public_key, amount
         )
 
-        print(f"Transfered {amount} tokens from Alice wallet to Bob")
+        print(f"Transferred {amount} tokens from Alice's wallet to Bob's one")
         print(f" Alice => {alice_balance}")
         print(f" Bob => {bob_balance}")
 
@@ -50,20 +51,21 @@ def run() -> None:
             client, cryptocurrency_message_generator, bob_keypair, alice_keypair.public_key, amount
         )
 
-        print(f"Transfered {amount} tokens from Bob wallet to Alice")
+        print(f"Transferred {amount} tokens from Bob's wallet to Alice's one")
         print(f" Alice => {alice_balance}")
         print(f" Bob => {bob_balance}")
 
 
 def get_cryptocurrency_instance_id(client: ExonumClient) -> int:
-    """Ensures that service is added to the running instances list and gets id of the instance."""
+    """Ensures that the service is added to the running instances list and gets
+    the ID of the instance."""
     instance_name = CRYPTOCURRENCY_INSTANCE_NAME
     available_services = client.available_services().json()
     if instance_name not in map(lambda x: x["name"], available_services["services"]):
-        raise RuntimeError(f"{instance_name} is not listed in running instances after starting")
+        raise RuntimeError(f"{instance_name} is not listed in the running instances after the start")
 
-    # Everything is OK, service is started.
-    # Return the running instance ID.
+    # Service starts.
+    # Return the running instance ID:
     for instance in available_services["services"]:
         if instance["name"] == instance_name:
             return instance["id"]
@@ -72,26 +74,26 @@ def get_cryptocurrency_instance_id(client: ExonumClient) -> int:
 
 
 def create_wallet(client: ExonumClient, message_generator: MessageGenerator, name: str) -> KeyPair:
-    """Creates a wallet with a given name and returns a KeyPair for it."""
+    """Creates a wallet with the given name and returns a KeyPair for it."""
     key_pair = KeyPair.generate()
 
-    # Load the "service.proto" from cryptocurrency service.
+    # Load the "service.proto" from the Cryptocurrency service:
     cryptocurrency_module = ModuleManager.import_service_module(CRYPTOCURRENCY_ARTIFACT_NAME, "service")
 
-    # Create Protobuf message.
+    # Create a Protobuf message:
     create_wallet_message = cryptocurrency_module.CreateWallet()
     create_wallet_message.name = name
 
-    # Convert Protobuf message to the Exonum message and sign it.
+    # Convert the Protobuf message to an Exonum message and sign it:
     create_wallet_tx = message_generator.create_message(create_wallet_message)
     create_wallet_tx.sign(key_pair)
 
-    # Send the transaction to the Exonum.
+    # Send the transaction to Exonum:
     response = client.send_transaction(create_wallet_tx)
     ensure_status_code(response)
     tx_hash = response.json()["tx_hash"]
 
-    # Wait for new blocks
+    # Wait for new blocks:
     with client.create_subscriber() as subscriber:
         subscriber.wait_for_new_block()
         subscriber.wait_for_new_block()
@@ -106,11 +108,12 @@ def create_wallet(client: ExonumClient, message_generator: MessageGenerator, nam
 def transfer(
     client: ExonumClient, message_generator: MessageGenerator, from_keypair: KeyPair, to_key: PublicKey, amount: int
 ) -> Tuple[int, int]:
-    """Transfers tokens from one wallet to other one and returns the balances of those wallets"""
+    """This example transfers tokens from one wallet to the other one and
+    returns the balances of these wallets."""
 
     cryptocurrency_module = ModuleManager.import_service_module(CRYPTOCURRENCY_ARTIFACT_NAME, "service")
-    # Note that since we're using cryptocurrency module,
-    # we need to load helpers from the cryptocurrency (not from main).
+    # Note that since we are using the Cryptocurrency module,
+    # we need to load helpers from this module and not from the main module:
     helpers_module = ModuleManager.import_service_module(CRYPTOCURRENCY_ARTIFACT_NAME, "helpers")
 
     transfer_message = cryptocurrency_module.Transfer()
@@ -125,7 +128,7 @@ def transfer(
     ensure_status_code(response)
     tx_hash = response.json()["tx_hash"]
 
-    # Wait for new blocks
+    # Wait for new blocks:
 
     with client.create_subscriber() as subscriber:
         subscriber.wait_for_new_block()
@@ -140,9 +143,9 @@ def transfer(
 
 
 def get_balance(client: ExonumClient, key: PublicKey) -> int:
-    """Returns balance of the wallet."""
+    """The example returns the balance of the wallet."""
 
-    # Call the /wallets/info endpoint to retrieve balance.
+    # Call the /wallets/info endpoint to retrieve the balance:
     wallet_info = client.get_service(CRYPTOCURRENCY_INSTANCE_NAME, "v1/wallets/info?pub_key={}".format(key.hex()))
     ensure_status_code(wallet_info)
     balance = wallet_info.json()["wallet_proof"]["to_wallet"]["entries"][0]["value"]["balance"]
@@ -151,19 +154,19 @@ def get_balance(client: ExonumClient, key: PublicKey) -> int:
 
 
 def ensure_status_code(response: requests.Response) -> None:
-    """Raises an error if status code is not 200."""
+    """Raises an error if the status code is not 200."""
     if response.status_code != 200:
         raise RuntimeError(f"Received non-ok response: {response.content}")
 
 
 def ensure_transaction_success(client: ExonumClient, tx_hash: str) -> None:
-    """Checks that transaction is committed and status is success."""
+    """Checks that the transaction is committed and the status is success."""
     tx_info_response = client.get_tx_info(tx_hash)
     ensure_status_code(tx_info_response)
 
     tx_info = tx_info_response.json()
     if not (tx_info["type"] == "committed" and tx_info["status"]["type"] == "success"):
-        raise RuntimeError(f"Error occured during tx execution: {tx_info}")
+        raise RuntimeError(f"Error occured during transaction execution: {tx_info}")
 
 
 class Seed:
