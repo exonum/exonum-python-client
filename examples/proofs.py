@@ -46,7 +46,7 @@ def run() -> None:
         ensure_status_code(wallet_info_response)
         wallet_info = wallet_info_response.json()
 
-        # Map the proof to the whole Exonum state hash:
+        # A map proof to the whole Exonum state hash:
         proof_to_table = wallet_info["wallet_proof"]["to_table"]
         # Expected hash of the proof to the table is a state hash of the block:
         expected_to_table_hash_raw = wallet_info["block_proof"]["block"]["state_hash"]
