@@ -13,7 +13,7 @@ from .module_user import PrecompiledModuleUserTestCase
 
 class TestProofPath(unittest.TestCase):
     def test_basic_methods(self):
-        # By default path is leaf.
+        # By default the path is a leaf:
         data_bytes = bytearray([0] * KEY_SIZE)
         data_bytes[0] = 0b0011_0011
         path = ProofPath.from_bytes(data_bytes)
@@ -22,14 +22,14 @@ class TestProofPath(unittest.TestCase):
         self.assertEqual(path.start(), 0)
         self.assertEqual(path.end(), 256)
 
-        # Make it branch.
+        # Make it a branch:
         path.set_end(8)
 
         self.assertFalse(path.is_leaf())
         self.assertEqual(path.start(), 0)
         self.assertEqual(path.end(), 8)
 
-        # Make it leaf back.
+        # Make it a leaf again.
         path.set_end(None)
 
         self.assertTrue(path.is_leaf())
@@ -73,7 +73,7 @@ class TestProofPath(unittest.TestCase):
 
         path_b.set_end(8)
 
-        # Support methods for 'starts_with'.
+        # Support methods for 'starts_with':
         self.assertEqual(path_a.match_len(path_b, 0), 8)
         self.assertEqual(path_a.common_prefix_len(path_b), 8)
 
@@ -145,16 +145,16 @@ class TestProofPath(unittest.TestCase):
 
     def test_parse_path(self):
         path_strs = [
-            # 1 byte
+            # 1 byte:
             "11001100",
-            # 1.5 bytes
+            # 1.5 bytes:
             "111111001100",
-            # 255 symbols
+            # 255 symbols:
             "101100110110010001000110101010000111001010110110011011100100110101001"
             "101100111010111010000001110000000110101001111000011001100111010111100"
             "101100100111111110110101110010101011010001110100011001100110000011011"
             "100001010000010011100000100001011010100000000101",
-            # 256 symbols (full path).
+            # 256 symbols (full path):
             "101100110110010001000110101010000111001010110110011011100100110101001"
             "101100111010111010000001110000000110101001111000011001100111010111100"
             "101100100111111110110101110010101011010001110100011001100110000011011"
@@ -162,10 +162,10 @@ class TestProofPath(unittest.TestCase):
         ]
 
         for path_str in path_strs:
-            # Parse proof path.
+            # Parse the proof path:
             path = ProofPath.parse(path_str)
 
-            # Convert string to path manually.
+            # Convert the string to a path manually:
             byte_strs = [path_str[i : i + 8] for i in range(0, len(path_str), 8)]
             path_bytes = [int(byte_str[::-1], 2) for byte_str in byte_strs]
 
@@ -174,7 +174,7 @@ class TestProofPath(unittest.TestCase):
 
             expected_path = ProofPath.from_bytes(data_bytes)
 
-            # If path is not full, create prefix.
+            # If the path is not full, create a prefix:
             if len(path_str) < 256:
                 expected_path = expected_path.prefix(len(path_str))
 

@@ -1,4 +1,4 @@
-"""Module with bindings to the protoc."""
+"""Module with the Bindings to Protoc."""
 from typing import List, Optional
 import os
 import shutil
@@ -19,20 +19,20 @@ def _find_proto_files(path: str) -> List[str]:
 
 
 class Protoc:
-    """Class that provides an interface to the protoc.
-    It's not intended to be used in the user code, see ProtobufLoader instead."""
+    """Class that provides an interface to protoc.
+    It is not intended to be used in user code, see ProtobufLoader instead."""
 
     def __init__(self) -> None:
         protoc_path = _find_protoc()
         if protoc_path is None:
             print("Protobuf compiler not found")
-            raise RuntimeError("protoc was not found, make sure that it's installed")
+            raise RuntimeError("protoc was not found, make sure that it is installed")
 
         self._protoc_path = protoc_path
 
     @staticmethod
     def _modify_file(path: str, modules: List[str]) -> None:
-        # This method modifies imports in the generated files to be relative.
+        # This method modifies imports in the generated files to be relative:
         with open(path, "rt") as file_in:
             file_content = file_in.readlines()
 
@@ -43,7 +43,7 @@ class Protoc:
                 file_out.write(line)
 
     def compile(self, path_in: str, path_out: str, include: str = None) -> None:
-        """Compiles .proto files from `path_in` to the `path_out` folder.
+        """Compiles .proto files from the `path_in` to `path_out` folder.
 
         Parameters
         ----------

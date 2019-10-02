@@ -1,8 +1,8 @@
-"""Module with hashing utils for proofs."""
+"""Module with Hashing Utils for Proofs."""
 from enum import IntEnum
 import struct
 
-# from pysodium import crypto_hash_sha256, crypto_hash_sha256_BYTES
+# From pysodium import crypto_hash_sha256, crypto_hash_sha256_BYTES
 from exonum.crypto import HASH_BYTES_LEN, Hash
 
 # Default hash value for empty ProofMapIndex.
@@ -32,7 +32,7 @@ class Hasher:
 
     @staticmethod
     def hash_node(left: Hash, right: Hash) -> Hash:
-        """ Convenience method to obtain hashed value of the merkle tree node. """
+        """ Convenience method to obtain a hashed value of the merkle tree node. """
 
         data = struct.pack("<B", Hasher.HashTag.LIST_BRANCH_NODE) + left.value + right.value
 

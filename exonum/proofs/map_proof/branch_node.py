@@ -1,4 +1,4 @@
-""" Module with MapProof's representation of the branch node. """
+""" Module with a MapProof Representation of the Branch Node. """
 from exonum.crypto import Hash
 from .constants import PROOF_PATH_SIZE
 from .proof_path import ProofPath
@@ -6,9 +6,9 @@ from ..hasher import Hasher
 
 
 class BranchNode:
-    """ MapProof's representation of the branch node. """
+    """ MapProof representation of the branch node. """
 
-    # Branch node contains 2 proof paths and 2 hashes.
+    # Branch node contains 2 proof paths and 2 hashes:
     BRANCH_NODE_SIZE = 2 * (Hasher.HASH_SIZE + PROOF_PATH_SIZE)
 
     def __init__(self) -> None:
@@ -32,28 +32,28 @@ class BranchNode:
         return slice(start, start + PROOF_PATH_SIZE)
 
     def child_hash(self, kind: str) -> Hash:
-        """Returns the stored child hash for specified kind ("left" or "right")."""
+        """Returns a stored child hash for the specified kind ("left" or "right")."""
         return Hash(bytes(self.raw[self._hash_slice(kind)]))
 
     def child_path(self, kind: str) -> ProofPath:
-        """Returns the stored child path for specified kind ("left" or "right")."""
+        """Returns a stored child path for the specified kind ("left" or "right")."""
         return ProofPath(self.raw[self._path_slice(kind)], 0)
 
     def set_child_path(self, kind: str, prefix: ProofPath) -> None:
-        """Sets the child path for specified kind ("left" or "right")."""
+        """Sets a child path for the specified kind ("left" or "right")."""
         self.raw[self._path_slice(kind)] = prefix.as_bytes()
 
     def set_child_hash(self, kind: str, child_hash: Hash) -> None:
-        """Sets the child hash for specified kind ("left" or "right")."""
+        """Sets a child hash for the specified kind ("left" or "right")."""
         self.raw[self._hash_slice(kind)] = child_hash.value
 
     def set_child(self, kind: str, prefix: ProofPath, child_hash: Hash) -> None:
-        """Sets the child (both path and hash) for specified kind ("left" or "right")."""
+        """Sets a child (both path and hash) for specified kind ("left" or "right")."""
         self.set_child_path(kind, prefix)
         self.set_child_hash(kind, child_hash)
 
     def object_hash(self) -> Hash:
-        """Returns the hash of the branch node."""
+        """Returns a hash of the branch node."""
         data = bytearray()
 
         data += self.raw[self._hash_slice("left")]

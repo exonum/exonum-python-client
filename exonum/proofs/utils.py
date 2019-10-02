@@ -1,4 +1,4 @@
-"""Common utils for proofs modules."""
+"""Common Utils for Proofs Modules."""
 from typing import Any, Dict, Callable, Optional
 import re
 
@@ -50,9 +50,10 @@ def calculate_height(number: int) -> int:
     if number == 0:
         return 1
 
-    # Amount of trailing zeroes for the next power of two
-    # This works because we can calculate the next power of two as 1 << (number - 1).bit_length()
-    # So, (number - 1).bit_length() is the shift => there will be that amount of trailing zeroes in number.
+    # Height of the tree is the amount of bits in the number that represents
+    # the next power of two for the given number.
+    # The next power of two is calculated as 1 << (number - 1).bit_length().
+    # Thus, (number - 1).bit_length() + 1 is the required amount of bits.
     trailing_zeroes_amount = (number - 1).bit_length()
 
     return trailing_zeroes_amount + 1
@@ -76,7 +77,7 @@ def leb128_encode_unsigned(value: int) -> bytes:
 
     result = []
     while True:
-        # Lower 7 bits of value.
+        # Lower 7 bits of value:
         byte = value & 0x7F
         value >>= 7
 

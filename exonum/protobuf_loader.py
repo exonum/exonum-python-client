@@ -1,4 +1,6 @@
-"""Module containing the ProtobufLoader class, which is capable of downloading protobuf sources from the Exonum."""
+"""Module Containing the ProtobufLoader Class.
+
+ProtobufLoader is capable of downloading Protobuf sources from Exonum."""
 from typing import List, Optional, Any, NamedTuple
 import shutil
 import sys
@@ -29,19 +31,20 @@ class ProtobufProviderInterface:
 
 
 class ProtobufLoader:
-    """ProtobufLoader is a class capable of loading and compiling protobuf sources from the Exonum.
+    """ProtobufLoader is a class capable of loading and compiling Protobuf sources from Exonum.
 
-    This class is a Singleton, meaning that there will be created only one entity of that class at the time.
+    This class is a Singleton, meaning that only one entity of that class is created at a time.
 
     Example workflow:
     >>> with client.protobuf_loader() as loader:
     >>>    loader.load_main_proto_files()
     >>>    loader.load_service_proto_files(0, "exonum-supervisor:0.12.0")
 
-    Code above will initialize loader, download core Exonum proto files and proto files for the Supervisor service,
-    and compile them into python modules. After that you will be able to load those modules via ModuleManager.
+    Code above will initialize loader, download core Exonum proto files and proto files for the Supervisor service.
+    The code will compile the files into the Python modules. After that you will be able to load those modules
+    via ModuleManager.
 
-    Please note that it's recommended to create ProtobufLoader object via context manager.
+    Please note that it is recommended to create a ProtobufLoader object via the context manager.
     Otherwise you will have to call `initialize` and `deinitialize` methods manually:
 
     >>> loader = client.protobuf_loader()
@@ -49,16 +52,16 @@ class ProtobufLoader:
     >>> ... # Some code
     >>> loader.deinitialize()
 
-    If you'll forget to call `deinitialize` (or if code will enter early, i.e. because of unhandled exception),
-    recourses created in the temp folder (which may differ depending on your OS) will not be removed.
+    If you forget to call `deinitialize` (or if the code enters early, for example because of unhandled exception),
+    the recourses created in the temp folder (which may differ depending on your OS) will not be removed.
 
-    Creating more than one entity at the same time will result in retrieving the same object:
+    Creating more than one entity at a time will result in retrieving the same object:
 
     >>> with client.protobuf_loader() as loader_1:
     >>>     with client.protobuf_loader() as loader_2:
     >>>         assert loader_1 == loader_2
 
-    This may be useful if you have several modules that should work with protobuf loader:
+    This may be useful if you have several modules that should work with ProtobufLoader:
     >>> # main.py
     >>> loader = ProtobufLoader(client)
     >>> loader.initialize()
@@ -67,29 +70,30 @@ class ProtobufLoader:
     >>> loader.deinitialize()
 
     >>> # module_a.py
-    >>> loader = ProtobufLoader() # Since loader is already initialized with a client, you don't have to provide it.
+    >>> loader = ProtobufLoader() # Since loader is already initialized with the client, you do not have to provide it.
     >>> loader.load_service_proto_files(runtime_a, service_a)
 
     >>> # module_b.py
     >>> loader = ProtobufLoader()
     >>> loader.load_service_proto_files(runtime_b, service_b)
 
-    However, if you will try to create a second loader from client other than first, an ValueError will be raised.
+    However, if you try to create the second loader, different from the first one, from the client,
+    ValueError will be raised.
     """
 
     _entity = None
     _reference_count = 0
 
     def __new__(cls, *_args: Any) -> "ProtobufLoader":
-        # Check if entity is already created (and thus no new object should be created).
+        # Check if the entity is already created (and thus no new object should be created):
         if ProtobufLoader._entity is not None:
             return ProtobufLoader._entity
 
-        # Create a new object.
+        # Create a new object:
         return super().__new__(cls)
 
     def __init__(self, client: Optional[ProtobufProviderInterface] = None):
-        # Check that client is the same as expected.
+        # Check that the client is the same as expected:
         if ProtobufLoader._entity is not None:
             if client is not None and client != ProtobufLoader._entity.client:
                 raise ValueError("Attempt to create ProtobufLoader entity with a different client")
@@ -114,24 +118,24 @@ class ProtobufLoader:
     def initialize(self) -> None:
         """Performs an initialization process."""
 
-        # Update the reference counter.
+        # Update the reference counter:
         ProtobufLoader._reference_count += 1
         if ProtobufLoader._reference_count > 1:
-            # If this is a second (third, etc) entity, everything is initialized already.
+            # If this is a second (third, etc) entity, everything is already initialized:
             return
 
-        # Create directory for temporary files.
+        # Create a directory for temporary files:
         self._proto_dir = tempfile.mkdtemp(prefix="exonum_client_")
 
-        # Create folder for python files output.
+        # Create a folder for Python files output:
         python_modules_path = os.path.join(self._proto_dir, "exonum_modules")
         os.makedirs(python_modules_path)
 
-        # Create __init__ file in the exonum_modules directory.
+        # Create __init__ file in the exonum_modules directory:
         init_file_path = os.path.join(python_modules_path, "__init__.py")
         open(init_file_path, "a").close()
 
-        # Add directory with exonum_modules into python path.
+        # Add a directory with exonum_modules into the Python path:
         sys.path.append(self._proto_dir)
 
     def deinitialize(self) -> None:
@@ -139,17 +143,17 @@ class ProtobufLoader:
         if self._proto_dir is None:
             raise RuntimeError("Attempt to deinitialize unititialized ProtobufLoader")
 
-        # Decrement the reference counter.
+        # Decrement the reference counter:
         ProtobufLoader._reference_count -= 1
 
-        # If there is more than one reference yet, nothing should be done.
+        # If there is still more than one reference, nothing should be done:
         if ProtobufLoader._reference_count > 0:
             return
 
-        # Mark entity as removed.
+        # Mark entity as removed:
         ProtobufLoader._entity = None
 
-        # Remove generated temporary directory.
+        # Remove the generated temporary directory:
         sys.path.remove(self._proto_dir)
         shutil.rmtree(self._proto_dir)
 
@@ -165,19 +169,19 @@ class ProtobufLoader:
             self._save_proto_file(file_path, proto_file.content)
 
     def load_main_proto_files(self) -> None:
-        """Loads and compiles main Exonum proto files."""
+        """Loads and compiles the main Exonum proto files."""
         if self._proto_dir is None:
             raise RuntimeError("Attempt to use unititialized ProtobufLoader")
 
-        # This method is not intended to be used by the end users, but it's OK to call it here.
+        # This method is not intended to be used by end users, but it is OK to call it here.
         # pylint: disable=protected-access
         proto_contents = self.client.get_main_proto_sources()
 
-        # Save proto_sources in proto/main directory.
+        # Save proto_sources in the proto/main directory:
         main_dir = os.path.join(self._proto_dir, "proto", "main")
         self._save_files(main_dir, proto_contents)
 
-        # Call protoc to compile proto sources.
+        # Call protoc to compile proto sources:
         proto_dir = os.path.join(self._proto_dir, "exonum_modules", "main")
         self.protoc.compile(main_dir, proto_dir)
 
@@ -186,16 +190,16 @@ class ProtobufLoader:
         if self._proto_dir is None:
             raise RuntimeError("Attempt to use unititialized ProtobufLoader")
 
-        # This method is not intended to be used by the end users, but it's OK to call it here.
+        # This method is not intended to be used by end users, but it is OK to call it here.
         # pylint: disable=protected-access
         proto_contents = self.client.get_proto_sources_for_artifact(runtime_id, service_name)
 
-        # Save proto_sources in proto/service_name directory.
+        # Save proto_sources in proto/service_name directory:
         service_module_name = re.sub(r"[-. :/]", "_", service_name)
         service_dir = os.path.join(self._proto_dir, "proto", service_module_name)
         self._save_files(service_dir, proto_contents)
 
-        # Call protoc to compile proto sources.
+        # Call protoc to compile proto sources:
         main_dir = os.path.join(self._proto_dir, "proto", "main")
         proto_dir = os.path.join(self._proto_dir, "exonum_modules", service_module_name)
         self.protoc.compile(service_dir, proto_dir, include=main_dir)
