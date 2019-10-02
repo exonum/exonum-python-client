@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Setup script for the Exonum python light client."""
+"""Setup Script for the Exonum Python Light Client."""
 from distutils.core import setup
 
 INSTALL_REQUIRES = ["protobuf", "google", "pysodium", "requests", "websocket-client-py3"]

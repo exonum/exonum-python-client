@@ -1,4 +1,4 @@
-"""ProofPath module."""
+"""ProofPath Module."""
 from typing import Optional
 from functools import total_ordering
 from enum import IntEnum
@@ -11,7 +11,7 @@ from .errors import MalformedMapProofError
 
 @total_ordering
 class ProofPath:
-    """ProofPath is a representation of the key in the MapProof."""
+    """ProofPath is a representation of the key in MapProof."""
 
     class _KeyPrefix(IntEnum):
         BRANCH = 0
@@ -26,22 +26,22 @@ class ProofPath:
     @staticmethod
     def parse(bits: str) -> "ProofPath":
         """
-        This method parses a ProofPath from string.
+        This method parses a ProofPath from a string.
 
         Parameters
         -----------
         bits: str
-            Sequence of '0' and '1' as string.
+            Sequence of '0' and '1' as a string.
 
         Returns
         -------
         ProofPath
-            Parsed ProofPath object
+            Parsed ProofPath object.
 
         Raises
         ------
         MalformedProofError
-            If the input string was incorrect (too long, empty or contain unexpected symbols).
+            If an input string is incorrect (too long, empty or contains unexpected symbols).
         """
 
         length = len(bits)
@@ -70,7 +70,7 @@ class ProofPath:
     @staticmethod
     def from_bytes(data_bytes: bytes) -> "ProofPath":
         """
-        Builds a ProofPath from bytes sequence.
+        Builds ProofPath from a byte sequence.
 
         Parameters
         -----------
@@ -80,12 +80,12 @@ class ProofPath:
         Returns
         -------
         ProofPath
-            Parsed ProofPath object
+            Parsed ProofPath object.
 
         Raises
         ------
         ValueError
-            If the length of provided array is not equal to KEY_SIZE constant.
+            Length of provided array is not equal to KEY_SIZE constant.
         """
         if len(data_bytes) != KEY_SIZE:
             raise ValueError("Incorrect data size")
@@ -99,17 +99,17 @@ class ProofPath:
         return ProofPath(inner, 0)
 
     def __init__(self, data_bytes: bytearray, start: int):
-        """ Constructor of the ProofPath. Expects arguments to be cleaned already and doesn't check anything. """
+        """ Constructor of ProofPath. Expects arguments to be cleaned already and does not check anything. """
         self.data_bytes = data_bytes
         self._start = start
 
     def __repr__(self) -> str:
-        """ Conversion to string. """
+        """ Conversion to a string. """
         bits_str = ""
 
         raw_key = self.raw_key()
         for byte_idx, chunk in enumerate(raw_key):
-            # Range from 7 to 0 inclusively.
+            # Range from 7 to 0 inclusively:
             for bit in range(7, -1, -1):
                 i = byte_idx * 8 + bit
                 if i < self.start() or i >= self.end():
@@ -127,7 +127,7 @@ class ProofPath:
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, ProofPath):
-            raise ValueError("Attempt to compare ProofPath with an object of other type")
+            raise ValueError("Attempt to compare ProofPath with an object of a different type")
         return len(self) == len(other) and self.starts_with(other)
 
     def bit(self, idx: int) -> int:
@@ -139,14 +139,14 @@ class ProofPath:
 
     def __lt__(self, other: object) -> bool:
         if not isinstance(other, ProofPath):
-            raise ValueError("Attempt to compare ProofPath with an object of other type")
+            raise ValueError("Attempt to compare ProofPath with an object of a different type")
 
         if self.start() != other.start():
             return NotImplemented
 
         if self.start() != 0:
-            # the code below does not work if `self.start() % 8 != 0` without additional modifications.
-            raise ValueError("Attempt to compare path with start != 0")
+            # The code below does not work if `self.start() % 8 != 0` without additional modifications:
+            raise ValueError("Comparison is allowed only for paths with start =0")
 
         this_len = len(self)
         other_len = len(other)
@@ -161,7 +161,7 @@ class ProofPath:
         return self.bit(pos) < other.bit(pos)
 
     def is_leaf(self) -> bool:
-        """ Returns True if ProofPath is leaf and False otherwise """
+        """ Returns True if ProofPath is a leaf. Otherwise returns False """
         return self.data_bytes[0] == ProofPath._KeyPrefix.LEAF
 
     def start(self) -> int:
@@ -176,11 +176,11 @@ class ProofPath:
         return self.data_bytes[ProofPath._Positions.LEN_POS]
 
     def raw_key(self) -> bytes:
-        """ Returns the stored key as raw bytes """
+        """ Returns the stored key as raw bytes. """
         return bytes(self.data_bytes[ProofPath._Positions.KEY_POS : ProofPath._Positions.KEY_POS + KEY_SIZE])
 
     def set_end(self, end: Optional[int]) -> None:
-        """ Sets tha right border of the proof path. """
+        """ Sets the right border of the proof path. """
         if end is not None:
             self.data_bytes[0] = self._KeyPrefix.BRANCH
             self.data_bytes[self._Positions.LEN_POS] = end
@@ -195,7 +195,7 @@ class ProofPath:
         key_len = KEY_SIZE * 8
 
         if end >= key_len:
-            raise ValueError("Length of prefix ({}) should not be greater than KEY_SIZE * 8".format(end))
+            raise ValueError("Length of the prefix ({}) should not be greater than KEY_SIZE * 8".format(end))
 
         key = ProofPath(bytearray(self.data_bytes), self._start)
         key.set_end(end)
@@ -225,16 +225,16 @@ class ProofPath:
         return 0
 
     def starts_with(self, other: "ProofPath") -> bool:
-        """ Returns True if other is a prefix of self and False otherwise. """
+        """ Returns True if `other` is a prefix of `self`. Otherwise returns False. """
         return self.common_prefix_len(other) == len(other)
 
     def as_bytes(self) -> bytes:
-        """ Represents path as bytes according to the Merkledb implementation. """
+        """ Represents a path as bytes according to the Merkledb implementation. """
 
         return bytes(self.data_bytes)
 
     def as_bytes_compressed(self) -> bytes:
-        """ Represents path as compressed bytes using les128 algorigthm. """
+        """ Represents a path as compressed bytes using les128 algorigthm. """
         bits_len = self.end()
         whole_bytes_len = div_ceil(bits_len, 8)
 
@@ -244,7 +244,7 @@ class ProofPath:
         result += leb128_encode_unsigned(bits_len)
         result += key
 
-        # Trim insignificant bits in the last byte.
+        # Trim insignificant bits in the last byte:
         bits_in_last_byte = bits_len % 8
         if whole_bytes_len > 0 and bits_in_last_byte != 0:
             tail = self.end() % 8

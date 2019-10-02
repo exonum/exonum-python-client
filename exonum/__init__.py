@@ -1,17 +1,18 @@
 """
-Exonum Python light client.
+Exonum Python Light Client.
 
 This library is designed to provide useful interfaces for Exonum blockchain.
 
-Main modules you can be interested in:
+The main modules you can be interested in:
   - client:
-    Module with ExonumClient, main entity to interact with Exonum. It will provide you methods
-    to work with API, send transactions, etc.
+    Module with ExonumClient, the main entity to interact with Exonum. It will
+    provide you with the methods to work with API, send transactions, etc.
   - message:
     Module with classes to generate transactions.
   - module_manager:
-    This module contains ModuleManager entity to work with generated protobuf classes (see documentation
-    if you're not familiar with Exonum protobuf workflow).
+    This module contains ModuleManager entity to work with generated Protobuf classes
+    (see [documentation](https://exonum.com/doc/version/latest/architecture/transactions/#serialization)
+    if you are not familiar with the Exonum Protobuf workflow).
   - proofs:
     Module with ListProof and MapProof classes which can be used to verify proofs obtained from Exonum.
 """

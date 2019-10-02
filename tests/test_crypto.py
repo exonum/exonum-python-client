@@ -1,4 +1,4 @@
-"""Tests for the Crypto module."""
+"""Tests for the Crypto Module."""
 import unittest
 
 from pysodium import (
@@ -32,11 +32,11 @@ class TestFixedByteArray(unittest.TestCase):
         length = 10
         data = bytes([i for i in range(length)])
 
-        # Check that with correct data object is created as expected.
+        # Check that the object is created as expected based on the correct data:
         array = _FixedByteArray(data, length)
         self.assertEqual(array.value, data)
 
-        # Check that attempt to create object with incorrect data raises an error.
+        # Check that an attempt to create an object with incorrect data raises an error:
         with self.assertRaises(ValueError):
             _FixedByteArray(data, length - 1)
 
@@ -109,18 +109,18 @@ class TestCrypto(unittest.TestCase):
         public_key = PublicKey(bytes([i for i in range(PUBLIC_KEY_BYTES_LEN)]))
         secret_key = SecretKey(bytes([i for i in range(SECRET_KEY_BYTES_LEN)]))
 
-        # Check that creation with unmatched keys raises.
+        # Check that creation with unmatched keys raises an error:
         with self.assertRaises(ValueError):
             KeyPair(public_key, secret_key)
 
-        # Check that generation of the keypair works.
+        # Check that generation of the keypair works:
         keypair = KeyPair.generate()
         self.assertTrue(isinstance(keypair.public_key, PublicKey))
         self.assertTrue(isinstance(keypair.secret_key, SecretKey))
         self.assertNotEqual(keypair.public_key, keypair.secret_key)
         self.assertEqual(keypair.secret_key.value[PUBLIC_KEY_BYTES_LEN:], keypair.public_key.value)
 
-        # Check that creating a keypair from matched keys works.
+        # Check that creating a keypair from the matched keys works:
         _new_keypair = KeyPair(keypair.public_key, keypair.secret_key)
 
     def test_signature(self) -> None:

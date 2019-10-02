@@ -1,16 +1,16 @@
-"""Module with OptionalEntry of the MapProof."""
+"""Module with OptionalEntry of MapProof."""
 from typing import Optional, Any, Dict
 
 from .errors import MalformedMapProofError
 
 
 class OptionalEntry:
-    """Optional entry is an entry of the MapProof which can either be missing key or key/value pair."""
+    """Optional entry is an entry of MapProof which can either miss a key or a key/value pair."""
 
     def __init__(self, key: Any, value: Optional[Any]):
         self.key = key
         self.value = value
-        self.is_missing = not value  # False if value is set.
+        self.is_missing = not value  # False if the value is set.
 
     def __repr__(self) -> str:
         if self.is_missing:
