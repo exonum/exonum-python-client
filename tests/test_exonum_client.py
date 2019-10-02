@@ -55,12 +55,12 @@ def mock_requests_get(url, params=None):
     user_agent_endpoint = exonum_public_base + SYSTEM_ENDPOINT_POSTFIX.format("user_agent")
 
     responses = {
-        # Proto sources endpoints
-        # Proto sources without params (main sources)
+        # Proto sources endpoints.
+        # Proto sources without params (main sources):
         (proto_sources_endpoint, "None"): proto_sources_response("main"),
-        # Proto sources for supervisor service
+        # Proto sources for the supervisor service:
         (proto_sources_endpoint, "{'artifact': '0:exonum-supervisor:0.11.0'}"): proto_sources_response("supervisor"),
-        # Sustem endpoints
+        # System endpoints:
         (healthcheck_endpoint, "None"): ok_response(),
         (stats_endpoint, "None"): ok_response(),
         (user_agent_endpoint, "None"): ok_response(),
@@ -71,7 +71,7 @@ def mock_requests_get(url, params=None):
 
 class TestProtobufLoader(ModuleUserTestCase):
     def test_protobuf_loader_creates_temp_folder(self):
-        # Test that proto directory is created and added to sys.path
+        # Test that the proto directory is created and added to sys.path:
         proto_dir = None
 
         client = ExonumClient(
@@ -84,13 +84,13 @@ class TestProtobufLoader(ModuleUserTestCase):
             self.assertTrue(os.path.exists(proto_dir))
             self.assertTrue(proto_dir in sys.path)
 
-        # Test that everything is cleaned up after use
+        # Test that everything is cleaned up after use:
         self.assertFalse(os.path.isdir(proto_dir))
         self.assertFalse(os.path.exists(proto_dir))
         self.assertFalse(proto_dir in sys.path)
 
     def test_protobuf_loader_creates_temp_folder_manual_init(self):
-        # Test that proto directory is created and added to sys.path
+        # Test that the proto directory is created and added to sys.path:
 
         exonum_client = ExonumClient(
             hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
@@ -106,21 +106,21 @@ class TestProtobufLoader(ModuleUserTestCase):
 
         loader.deinitialize()
 
-        # Test that everything is cleaned up after use
+        # Test that everything is cleaned up after use:
         self.assertFalse(os.path.isdir(proto_dir))
         self.assertFalse(os.path.exists(proto_dir))
         self.assertFalse(proto_dir in sys.path)
 
     def test_protobuf_loader_no_client(self):
-        # Test that if we will try to create ProtobufLoader without client
-        # an exception will be raised.
+        # Test that if we try to create ProtobufLoader without client,
+        # an exception is raised:
 
         with self.assertRaises(ValueError):
             ProtobufLoader()
 
     def test_protobuf_loader_created_twice(self):
-        # Test that if we will try to create more than one ProtobufLoader entity
-        # in fact only one entity will be created.
+        # Test that if we try to create more than one ProtobufLoader entity,
+        # in fact only one entity is created:
 
         client = ExonumClient(
             hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
@@ -131,8 +131,8 @@ class TestProtobufLoader(ModuleUserTestCase):
                 self.assertEqual(loader_1, loader_2)
 
     def test_protobuf_loader_created_twice_different_client(self):
-        # Test that if we will try to create more than one ProtobufLoader entity
-        # with different clients an exception is raised.
+        # Test that if we try to create more than one ProtobufLoader entity
+        # with different clients, an exception is raised:
 
         client = ExonumClient(
             hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
@@ -169,8 +169,8 @@ class TestProtobufLoader(ModuleUserTestCase):
 
 
 class TestExonumClient(unittest.TestCase):
-    # This test case replaces get function from exonum client with the mock one.
-    # Thus testing of HTTP interacting could be done without actual exonum client.
+    # This test case replaces the get function from the Exonum client with the mock one.
+    # Thus testing of HTTP interacting could be done without actual Exonum client:
 
     @patch("exonum.client._get", new=mock_requests_get)
     def test_helthcheck(self):
@@ -206,14 +206,14 @@ class TestExonumClient(unittest.TestCase):
         service = "service"
         endpoint = "endpoint"
 
-        # Test public endpoint generation
+        # Test a public endpoint generation:
         got_endpoint = client.service_endpoint(service, endpoint)
 
         expected_public_endpoint = exonum_public_base + SERVICE_ENDPOINT_POSTFIX.format(service, endpoint)
 
         self.assertEqual(got_endpoint, expected_public_endpoint)
 
-        # Test private endpoint generation
+        # Test a private endpoint generation:
         got_endpoint = client.service_endpoint(service, endpoint, private=True)
 
         expected_private_endpoint = exonum_private_base + SERVICE_ENDPOINT_POSTFIX.format(service, endpoint)

@@ -100,7 +100,7 @@ class TestListProof(unittest.TestCase):
         self.assertEqual(result, [(0, stored_val)])
 
     def test_incorrect_proof_raises(self):
-        # Test that incorrect proof verification will raise an error.
+        # Test that an incorrect proof verification will raise an error:
 
         stored_val = "6b70d869aeed2fe090e708485d9f4b4676ae6984206cf05efc136d663610e5c9"
         incorrect_proof_json = {
@@ -119,7 +119,7 @@ class TestListProof(unittest.TestCase):
         with self.assertRaises(ListProofVerificationError):
             result = proof.validate(_parse_hash(expected_hash))
 
-        # Test that verification of proof against incorrect hash will raise an error.
+        # Test that verification of a proof against an incorrect hash will raise an error:
 
         stored_val = "6b70d869aeed2fe090e708485d9f4b4676ae6984206cf05efc136d663610e5c9"
         proof_json = {

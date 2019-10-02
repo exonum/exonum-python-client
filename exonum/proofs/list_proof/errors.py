@@ -7,19 +7,19 @@ from enum import Enum, auto as enum_auto
 
 class MalformedListProofError(Exception):
     """
-    Error raised if proof is malformed.
+    Error is raised if the proof is malformed.
     Every object of this class contains field `error_kind` which is a value of type ErrorKind.
-    This value described the kind of occured error.
-    See enum ErrorKind for the details.
+    This value describes the kind of the occured error.
+    See enum ErrorKind for details.
     """
 
     class ErrorKind(Enum):
         """
         Kind of the error. Possible variants:
-          - UNEXPECTED_LEAF: Proof contains a hash in a place where a value was expected.
+          - UNEXPECTED_LEAF: Proof contains a hash in the place where a value was expected.
           - UNEXPECTED_BRANCH: Proof contains a hash in the position which is impossible according to the list length.
           - REDUNDANT_HASH: There are redundant hashes in the proof: the hash of the underlying list can be calculated
-            without some of them.
+            without some present hashes.
           - MISSING_HASH: Proof does not contain necessary information to compute the hash of the underlying list.
           - NON_EMPTY_PROOF: Non-empty proof for an empty list.
           - DUPLICATE_KEY: Same key is used more than once in the proof.
@@ -89,7 +89,7 @@ class MalformedListProofError(Exception):
 
 
 class ListProofVerificationError(Exception):
-    """ Error raised when provided root hash doesn't match calculated one. """
+    """ Error raised when the provided root hash does not match the calculated one. """
 
     def __init__(self, provided_hash: bytes, calculated_hash: bytes) -> None:
         def _short_hash(hash_bytes: bytes) -> str:

@@ -1,4 +1,4 @@
-"""Proof verification module for a `ProofListIndex` es from Exonum."""
+"""Proof Verification Module for Exonum `ProofListIndex`."""
 
 from typing import Dict, List, Tuple, Any, Callable
 import itertools
@@ -11,7 +11,7 @@ from .errors import MalformedListProofError, ListProofVerificationError
 
 
 class HashedEntry:
-    """ Element of a proof with a key and hash. """
+    """ Element of a proof with a key and a hash. """
 
     def __init__(self, key: ProofListKey, entry_hash: Hash):
         self.key = key
@@ -19,7 +19,7 @@ class HashedEntry:
 
     @classmethod
     def parse(cls, data: Dict[Any, Any]) -> "HashedEntry":
-        """ Creates a HashedEntry object from provided dict. """
+        """ Creates a HashedEntry object from the provided dict. """
         if not isinstance(data, dict) or not is_field_hash(data, "hash"):
             raise MalformedListProofError.parse_error(str(data))
 
@@ -28,12 +28,12 @@ class HashedEntry:
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, HashedEntry):
-            raise ValueError("Attempt to compare HashedEntry with an object of different type")
+            raise ValueError("Attempt to compare HashedEntry with an object of a different type")
         return self.key == other.key and self.entry_hash == other.entry_hash
 
 
 def _hash_layer(layer: List[HashedEntry], last_index: int) -> List[HashedEntry]:
-    """ Takes a layer as a list of hashed entries and last index as int and returns new layer. """
+    """ Takes a layer as a list of hashed entries and the last index as an int and returns a new layer. """
     new_len = (len(layer) + 1) // 2
     new_layer: List[HashedEntry] = []
 
@@ -41,9 +41,9 @@ def _hash_layer(layer: List[HashedEntry], last_index: int) -> List[HashedEntry]:
         left_idx = 2 * i
         right_idx = 2 * i + 1
 
-        # Check if there is both right and left indices in the layer.
+        # Check if there are both right and left indices in the layer:
         if len(layer) > right_idx:
-            # Verify that entries in the correct order.
+            # Verify that entries are in the correct order:
             if not layer[left_idx].key.is_left() or layer[right_idx].key.index != layer[left_idx].key.index + 1:
                 raise MalformedListProofError.missing_hash()
 
@@ -51,7 +51,7 @@ def _hash_layer(layer: List[HashedEntry], last_index: int) -> List[HashedEntry]:
             right_hash = layer[right_idx].entry_hash
             new_entry = HashedEntry(layer[left_idx].key.parent(), Hasher.hash_node(left_hash, right_hash))
         else:
-            # If there is an odd number of entries, the index of last one should be equal to provided last_index.
+            # If there is an odd number of entries, the index of the last one should be equal to provided last_index:
             full_layer_length = last_index + 1
             if full_layer_length % 2 == 0 or layer[left_idx].key.index != last_index:
                 raise MalformedListProofError.missing_hash()
@@ -91,7 +91,7 @@ class ListProof:
     ):
         """
         Constructor of the ListProof.
-        It's not intended to be used directly, use ListProof.Parse instead.
+        It is not intended to be used directly, use ListProof.Parse instead.
 
         Parameters
         ----------
@@ -112,7 +112,7 @@ class ListProof:
     @classmethod
     def parse(cls, proof_dict: Dict[str, Any], value_to_bytes: Callable[[Any], bytes] = bytes.fromhex) -> "ListProof":
         """
-        Method to parse a ListProof from a dict.
+        Method to parse ListProof from the dict.
 
         Expected dict format:
 
@@ -128,14 +128,14 @@ class ListProof:
         }
 
         If no errors occured during parsing, a ListProof object will be returned.
-        However, successfull parsing doesn't mean that proof isn't malformed (it only means that provided dict structure
-        matches the expected one).
+        However, successfull parsing does not mean that the proof is not malformed (it only means that the provided
+        dict structure matches the expected one).
         Actual checks for the proof contents correctness will be performed in the `validate` method.
 
-        To convert value to bytes ListProof attemts to use bytes.fromhex by default.
-        If your type should be converted to bytes using protobuf, you can generate the converter function with use of
-        `build_encoder_function` from encoder.py
-        Otherwise, you have to implement converter function by yourself.
+        To convert value to bytes, ListProof attemts to use bytes.fromhex by default.
+        If your type should be converted to bytes using Protobuf, you can generate a converter function with the use of
+        `build_encoder_function` from encoder.py.
+        Otherwise, you have to implement the converter function by yourself.
 
         Parameters
         ----------
@@ -148,7 +148,7 @@ class ListProof:
         Raises
         ------
         MalformedListProofError
-            If structure of the provided dict doesn't match expected one,
+            If the structure of the provided dict does not match the expected one,
             an exception `MalformedListProofError` is raised.
         """
         if (
@@ -181,9 +181,9 @@ class ListProof:
         Raises
         ------
         ListProofVerificationError
-            If verification failed, an exception `ListProofVerificationError` is raised.
+            If verification fails, an exception `ListProofVerificationError` is raised.
         MalformedListProofError
-            If proof is malformed, an exception `MalformedListProofError` is raised.
+            If the proof is malformed, an exception `MalformedListProofError` is raised.
         """
         if not isinstance(expected_hash, Hash):
             raise ValueError("expected_hash should be Hash")
@@ -217,7 +217,7 @@ class ListProof:
 
     def _collect(self) -> Hash:
         def _hash_entry(entry: Tuple[int, Any]) -> HashedEntry:
-            """ Creates a hash entry from value. """
+            """ Creates a hash entry from the value. """
             key = ProofListKey(1, entry[0])
             entry_hash = Hasher.hash_leaf(self._value_to_bytes(entry[1]))
             return HashedEntry(key, entry_hash)
@@ -225,7 +225,7 @@ class ListProof:
         def _split_hashes_by_height(
             hashes: List[HashedEntry], height: int
         ) -> Tuple[List[HashedEntry], List[HashedEntry]]:
-            """ Splits list of hashed entries into two lists by the given height. """
+            """ Splits a list of the hashed entries into two lists by the given height. """
             current = list(itertools.takewhile(lambda x: x.key.height == height, hashes))
             remaining = hashes[len(current) :]
 
@@ -233,11 +233,11 @@ class ListProof:
 
         tree_height = self._tree_height_by_length(self._length)
 
-        # Check an edge case when the list contains no elements.
+        # Check an edge case when the list contains no elements:
         if tree_height == 0 and (not self._proof or not self._entries):
             raise MalformedListProofError.non_empty_proof()
 
-        # If there are no entries, the proof should contain only a single root hash.
+        # If there are no entries, the proof should contain only a single root hash:
         if not self._entries:
             if len(self._proof) != 1:
                 if self._proof:
@@ -249,44 +249,44 @@ class ListProof:
 
             raise MalformedListProofError.unexpected_branch()
 
-        # Sort entries and proof.
+        # Sort the entries and the proof:
         self._entries.sort(key=lambda el: el[0])
         self._proof.sort(key=lambda el: el.key)
 
-        # Check that there is no duplicates.
+        # Check that there are no duplicates:
         self._check_duplicates(self._entries)
         self._check_duplicates(self._proof)
 
-        # Check that hashes on each height have indices in the allowed range.
+        # Check that the hashes at each height have indices in the allowed range:
         for entry in self._proof:
             height = entry.key.height
             if height == 0:
                 raise MalformedListProofError.unexpected_leaf()
 
             # self._length -1 is the index of the last element at `height = 1`.
-            # This index is divided by 2 with each new height.
+            # This index is divided by 2 with each new height:
             if height >= tree_height or entry.key.index > (self._length - 1) >> (height - 1):
                 raise MalformedListProofError.unexpected_branch()
 
-        # Create the first layer.
+        # Create the first layer:
         layer = list(map(_hash_entry, self._entries))
         hashes = [hash_entry for hash_entry in self._proof]
         last_index = self._length - 1
 
         for height in range(1, tree_height):
-            # Filter hashes of current height and the rest ones (to be processed later).
+            # Filter the hashes of the current height and the rest heights (to be processed later):
             hashes, remaining_hashes = _split_hashes_by_height(hashes, height)
 
-            # Merge current layer with hashes that belong to this layer.
+            # Merge the current layer with the hashes that belong to this layer:
             layer = sorted(layer + hashes, key=lambda x: x.key)
 
-            # Calculate new layer
+            # Calculate a new layer:
             layer = _hash_layer(layer, last_index)
 
-            # Size of the next layer is two times smaller.
+            # Size of the next layer is two times smaller:
             last_index //= 2
 
-            # Make remaining_hashes hashes to be processed.
+            # Make remaining_hashes hashes to be processed:
             hashes = remaining_hashes
 
         assert len(layer) == 1, "Result layer length is not 1"

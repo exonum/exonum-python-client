@@ -1,4 +1,4 @@
-"""Common errors for MapProof module."""
+"""Common Errors for the MapProof Module."""
 from typing import Dict, Any
 from enum import Enum, auto as enum_auto
 
@@ -7,7 +7,7 @@ from enum import Enum, auto as enum_auto
 
 
 class MalformedMapProofError(Exception):
-    """Error to be raised if provided proof was malformed."""
+    """Error to be raised if the provided proof is malformed."""
 
     class ErrorKind(Enum):
         """Kind of the error."""

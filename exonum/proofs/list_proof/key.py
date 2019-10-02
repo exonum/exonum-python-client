@@ -1,4 +1,4 @@
-""" ProofListKey module. """
+""" ProofListKey Module. """
 from typing import Dict, Any
 from functools import total_ordering
 
@@ -32,12 +32,12 @@ class ProofListKey:
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, ProofListKey):
-            raise ValueError("Attempt to compare ProofListKey with an object of different type")
+            raise ValueError("Attempt to compare ProofListKey with an object of a different type")
         return self.index == other.index and self.height == other.height
 
     def __lt__(self, other: object) -> bool:
         if not isinstance(other, ProofListKey):
-            raise ValueError("Attempt to compare ProofListKey with an object of different type")
+            raise ValueError("Attempt to compare ProofListKey with an object of a different type")
 
         # Try to compare by height, otherwise compare by index.
         if self.height != other.height:

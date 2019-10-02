@@ -1,9 +1,9 @@
 """
-Exonum Client module.
+Exonum Client Module.
 
-This module provides you two handy classes:
-  - ExonumClient: Main entity to interact with Exonum blockchain.
-  - Subscriber: Entity that can be used to receive signals on new block creation.
+This module provides you with two handy classes:
+  - ExonumClient: The main entity to interact with the Exonum blockchain.
+  - Subscriber: An entity that can be used to receive signals on creation of a new block.
 """
 from typing import Optional, Any, Callable, Union, Iterable, List, Dict
 
@@ -14,7 +14,7 @@ import requests
 from .protobuf_loader import ProtobufLoader, ProtobufProviderInterface, ProtoFile
 from .message import ExonumMessage
 
-# Example of formatted prefix: "https://127.0.0.1:8000"
+# Example of a formatted prefix: "https://127.0.0.1:8000"
 _ENDPOINT_PREFIX = "{}://{}:{}"
 
 _TX_URL = _ENDPOINT_PREFIX + "/api/explorer/v1/transactions"
@@ -28,9 +28,9 @@ _WEBSOCKET_URI = "ws://{}:{}/api/explorer/v1/blocks/subscribe"
 class Subscriber:
     """ Subscriber objects are used to subscribe to Exonum blocks via websockets. """
 
-    # Type of received data (it can be either bytes or string).
+    # Type of the received data (it can be either bytes or a string).
     ReceiveType = Union[bytes, str]
-    # Type of callback (callable that takes ReceiveType as argument and produces nothing).
+    # Type of the `Callback` (`Callable` that takes `ReceiveType` as an argument and produces nothing).
     CallbackType = Callable[[ReceiveType], None]
 
     def __init__(self, address: str, port: int):
@@ -83,14 +83,14 @@ class Subscriber:
                 self._handler(data)
 
     def wait_for_new_block(self) -> None:
-        """ Waits until new block is ready. Please note that this method is blocking. """
+        """ Waits until a new block is ready. Please note that this method is a blocking one. """
         if self._is_running:
             print("Subscriber is already running...")
         else:
             self._ws_client.recv()
 
     def stop(self) -> None:
-        """Closes connection with the websocket and if thread is running, joins it. """
+        """Closes connection with the websocket and, if the thread is running, joins it. """
         if self._connected:
             self._ws_client.close()
             self._connected = False
@@ -105,11 +105,11 @@ class ExonumClient(ProtobufProviderInterface):
     """ExonumClient class is capable of interaction with ExonumBlockchain.
 
     All the methods that perform requests to the Exonum REST API return a requests.Response object.
-    So user should manually verify that status code of the request is correct and get the contents
+    So a user should manually verify that the status code of the request is correct and get the contents
     of the request via `response.json()`.
 
     Since ExonumClient uses `requests` library for the communication, user should expect that every
-    method that performs an API call can raise `requests` exception (e.g. `requests.exceptions.ConnectionError`).
+    method that performs an API call can raise a `requests` exception (e.g. `requests.exceptions.ConnectionError`).
 
     Example usage:
 
@@ -122,18 +122,18 @@ class ExonumClient(ProtobufProviderInterface):
 
     def __init__(self, hostname: str, public_api_port: int = 80, private_api_port: int = 81, ssl: bool = False):
         """
-        Constructor of the ExonumClient.
+        Constructor of ExonumClient.
 
         Parameters
         ----------
         hostname: str
             Examples: '127.0.0.1', 'www.some_node.com'.
         public_api_port: int
-            Public API port of the Exonum node.
+            Public API port of an Exonum node.
         private_api_port: int
-            Private API port of the Exonum node.
+            Private API port of an Exonum node.
         ssl: bool
-            If True, https protocol will be used for communication, otherwise http.
+            If True, HTTPS protocol is used for communication, otherwise HTTP is used.
         """
         self.schema = "https" if ssl else "http"
         self.hostname = hostname
@@ -181,16 +181,16 @@ class ExonumClient(ProtobufProviderInterface):
         Parameters
         ----------
         service_name: str
-            Name of the service instance.
+            Name of a service instance.
         sub_uri: str
-            Additional part of the URL to be added to the endpoint, e.g. "some/sub/uri?parameter=value"
+            Additional part of a URL to be added to the endpoint, e.g. "some/sub/uri?parameter=value"
         private: bool
-            Denotes if the private port should be used. Defaults to False.
+            Denotes if a private port should be used. Defaults to False.
 
         Returns
         -------
         url: str
-            Returns a service REST API url based on provided parameters.
+            Returns a service REST API URL based on the provided parameters.
         """
         port = self.public_api_port if not private else self.private_api_port
 
@@ -198,8 +198,8 @@ class ExonumClient(ProtobufProviderInterface):
 
         return service_url + sub_uri
 
-    # API section
-    # Methods below perform REST API calls to the Exonum node.
+    # API section.
+    # Methods below perform REST API calls to an Exonum node:
 
     def available_services(self) -> requests.Response:
         """
@@ -232,7 +232,7 @@ class ExonumClient(ProtobufProviderInterface):
 
     def send_transaction(self, message: ExonumMessage) -> requests.Response:
         """
-        Sends a transaction into Exonum node via REST API.
+        Sends a transaction into an Exonum node via REST API.
 
         Example:
 
@@ -243,20 +243,20 @@ class ExonumClient(ProtobufProviderInterface):
         Parameters
         ----------
         msg: ExonumMessage
-            Prepared and signed Exonum message.
+            Prepared and signed an Exonum message.
 
         Returns
         -------
         result: requests.Response
             Result of the POST request.
-            If the transaction was correct and it was accepted, it will contain a json with hash of the transaction.
+            If a transaction is correct and it is accepted, it will contain a JSON with a hash of the transaction.
         """
         response = _post(self.tx_url, data=message.pack_into_json(), headers={"content-type": "application/json"})
         return response
 
     def send_transactions(self, messages: Iterable[ExonumMessage]) -> List[requests.Response]:
         """
-        Same as send_transaction, but for any iterable over ExonumMessage.
+        Same as send_transaction, but for any iterable object over ExonumMessage.
 
         Parameters
         ----------
@@ -272,7 +272,7 @@ class ExonumClient(ProtobufProviderInterface):
 
     def get_block(self, height: int) -> requests.Response:
         """
-        Gets the block at the provided height.
+        Gets a block at the provided height.
 
         Example:
 
@@ -295,13 +295,13 @@ class ExonumClient(ProtobufProviderInterface):
         Parameters
         ----------
         height: int
-            A height of the needed block.
+            A height of the required block.
 
         Returns
         -------
         block_response: requests.Response
-            Result of the API call.
-            If it was successfull, a json representation of the block will be in responce.
+            Result of an API call.
+            If it is successfull, a JSON representation of the block will be in the responce.
         """
         return _get(_BLOCK_URL.format(self.schema, self.hostname, self.public_api_port), params={"height": height})
 
@@ -311,8 +311,8 @@ class ExonumClient(ProtobufProviderInterface):
         """
         Gets a range of blocks.
 
-        Blocks will be returned in a reversed order starting from the latest to the `latest - count + `.
-        See `latest` parameter description for details.
+        Blocks will be returned in a reversed order starting from the latest to the `latest - count + 1`.
+        See the `latest` parameter description for details.
 
         Parameters
         ----------
@@ -322,16 +322,16 @@ class ExonumClient(ProtobufProviderInterface):
             If not provided, it is considered to be the height of the latest block in the blockchain.
             Otherwise, a provided value will be used.
         skip_empty_blocks: bool
-            If True, only non-empty blocks will be returned. By default it's False.
+            If True, only non-empty blocks will be returned. By default it is False.
         add_blocks_time: bool
-            If True, then the returned BlockRange's `times` field will contain a median time from the
+            If True, then the returned `times` field of BlockRange will contain a median time from the
             corresponding blocks precommits.
 
         Returns
         -------
         blocks_range_response: requests.Response
-            Result of the API call.
-            If it was successfull, a json representation of the block range will be in responce.
+            Result of an API call.
+            If it is successfull, a JSON representation of the block range will be in the responce.
         """
         blocks_url = _BLOCKS_URL.format(self.schema, self.hostname, self.public_api_port)
         params: Dict[str, Union[int, str]] = dict()
@@ -348,7 +348,7 @@ class ExonumClient(ProtobufProviderInterface):
 
     def get_tx_info(self, tx_hash: str) -> requests.Response:
         """
-        Gets the information about the transaction with the provided hash.
+        Gets information about the transaction with the provided hash.
 
         Example:
 
@@ -388,8 +388,8 @@ class ExonumClient(ProtobufProviderInterface):
         Returns
         -------
         block_response: requests.Response
-            Result of the API call.
-            If it was successfull, a json representation of the transaction info will be in responce.
+            Result of an API call.
+            If it is successfull, a JSON representation of the transaction info will be in the responce.
         """
         return _get(_TX_URL.format(self.schema, self.hostname, self.public_api_port), params={"hash": tx_hash})
 
@@ -402,7 +402,7 @@ class ExonumClient(ProtobufProviderInterface):
         Returns
         -------
         response: requests.Response
-            Result of the API call.
+            Result of an API call.
         """
         return _get(self.service_endpoint(service_name, sub_uri, private))
 
@@ -416,7 +416,7 @@ class ExonumClient(ProtobufProviderInterface):
         Returns
         -------
         response: requests.Response
-            Result of the API call.
+            Result of an API call.
         """
         json_headers = {"content-type": "application/json"}
         return _post(self.service_endpoint(service_name, sub_uri, private), data=data, headers=json_headers)
@@ -433,11 +433,11 @@ class ExonumClient(ProtobufProviderInterface):
         """ Performs a GET request to the user_agent Exonum endpoint. """
         return _get(self._system_endpoint("user_agent"))
 
-    # Implementation of the ProtobufProviderInterface.
+    # Implementation of ProtobufProviderInterface:
     def _get_proto_sources(self, params: Optional[Dict[str, str]] = None) -> List[ProtoFile]:
         response = _get(self._system_endpoint("proto-sources"), params=params)
         if response.status_code != 200 or "application/json" not in response.headers["content-type"]:
-            raise RuntimeError("Unsuccessfully attempted to retrieve protobuf sources: {}".format(response.content))
+            raise RuntimeError("Unsuccessfully attempted to retrieve Protobuf sources: {}".format(response.content))
 
         proto_files = [
             ProtoFile(name=proto_file["name"], content=proto_file["content"]) for proto_file in response.json()
@@ -446,11 +446,11 @@ class ExonumClient(ProtobufProviderInterface):
         return proto_files
 
     def get_main_proto_sources(self) -> List[ProtoFile]:
-        # Performs a GET request to the `proto-sources` Exonum endpoint.
+        # Performs a GET request to the `proto-sources` Exonum endpoint:
         return self._get_proto_sources()
 
     def get_proto_sources_for_artifact(self, runtime_id: int, artifact_name: str) -> List[ProtoFile]:
-        # Performs a GET request to the `proto-sources` Exonum endpoint with a provided runtime ID and artifact name.
+        # Performs a GET request to the `proto-sources` Exonum endpoint with a provided runtime ID and an artifact name:
         params = {"artifact": "{}:{}".format(runtime_id, artifact_name)}
 
         return self._get_proto_sources(params=params)
@@ -460,10 +460,10 @@ class ExonumClient(ProtobufProviderInterface):
 
 
 def _get(url: str, params: Optional[Dict[Any, Any]] = None) -> requests.Response:
-    # Internal wrapper over requests.get
+    # Internal wrapper over requests.get:
     return requests.get(url, params=params)
 
 
 def _post(url: str, data: str, headers: Dict[str, str]) -> requests.Response:
-    # Internal wrapper over requests.post
+    # Internal wrapper over requests.post:
     return requests.post(url, data=data, headers=headers)
