@@ -118,8 +118,6 @@ system.
 After invoking the sign method, we get a signed transaction.
 This transaction is ready for sending to the Exonum node.
 
-To see more examples and find out how to work with proofs go [here][proof].
-
 ### Getting Data on the Available Services
 
 ```python
@@ -204,7 +202,9 @@ errors when you try to use Exonum API.
 
 ### More Examples
 
-You can find the sample scripts at the [examples](examples) section.
+To see more examples and find out how to work with proofs go [here][proof].
+
+Also you can find the sample scripts at the [examples](examples) section.
 
 ### Testing
 
