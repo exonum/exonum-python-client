@@ -416,9 +416,9 @@ class ExonumClient:
         """ Performs a GET request to the healthcheck Exonum endpoint. """
         return _get(self._system_endpoint("healthcheck"))
 
-    def mempool(self) -> requests.Response:
-        """ Performs a GET request to the mempool Exonum endpoint. """
-        return _get(self._system_endpoint("mempool"))
+    def stats(self) -> requests.Response:
+        """ Performs a GET request to the stats Exonum endpoint. """
+        return _get(self._system_endpoint("stats"))
 
     def user_agent(self) -> requests.Response:
         """ Performs a GET request to the user_agent Exonum endpoint. """

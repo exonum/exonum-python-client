@@ -68,9 +68,11 @@ def run() -> None:
         # to the wallet:
         expected_history_hash_raw = wallet_info["wallet_proof"]["to_wallet"]["entries"][0]["value"]["history_hash"]
         expected_history_hash = Hash(bytes(expected_history_hash_raw["data"]))
+        # To validate the proof we also need the amount of transactions in the history:
+        history_tx_amount = len(wallet_info["wallet_history"]["transactions"])
 
         # Verify the proof for the wallet history:
-        verify_wallet_history_proof(proof_wallet_history, expected_history_hash)
+        verify_wallet_history_proof(proof_wallet_history, history_tx_amount, expected_history_hash)
 
 
 def verify_proof_to_table(proof: Dict[Any, Any], expected_hash: Hash) -> None:
@@ -124,14 +126,14 @@ def verify_proof_to_wallet(proof: Dict[Any, Any], expected_hash: Hash) -> None:
         print("Received malformed proof to the wallet")
 
 
-def verify_wallet_history_proof(proof: Dict[Any, Any], expected_hash: Hash) -> None:
+def verify_wallet_history_proof(proof: Dict[Any, Any], history_tx_amount: int, expected_hash: Hash) -> None:
     """Verifies ListProof for the wallet history."""
 
     # To convert a value to bytes we can use `bytes.fromhex` since values are
     # hexadecimal strings:
     try:
         parsed_proof = ListProof.parse(proof, value_to_bytes=bytes.fromhex)
-        parsed_proof.validate(expected_hash)
+        parsed_proof.validate(history_tx_amount, expected_hash)
 
         print("ListProof for the wallet history verified successfully")
     except ListProofVerificationError:

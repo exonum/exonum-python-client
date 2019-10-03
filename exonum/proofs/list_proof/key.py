@@ -14,6 +14,19 @@ class ProofListKey:
         self.height = height
         self.index = index
 
+    @staticmethod
+    def leaf(index: int) -> "ProofListKey":
+        """Returns a Leaf key for a given index."""
+        return ProofListKey(0, index)
+
+    def left(self) -> "ProofListKey":
+        """Returns a left child key of the current key."""
+        return ProofListKey(self.height - 1, self.index << 1)
+
+    def right(self) -> "ProofListKey":
+        """Returns a right child key of the current key."""
+        return ProofListKey(self.height - 1, (self.index << 1) + 1)
+
     @classmethod
     def parse(cls, data: Dict[Any, Any]) -> "ProofListKey":
         """ Parses ProofListKey from dict. """
