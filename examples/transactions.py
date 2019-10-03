@@ -1,32 +1,32 @@
 """Example of sending transactions.
-Before running this script ensure that `exonum-cryptocurrency-advanced` service
-is deployed and started (e.g. via `deploy.py` example script).
-The name of the instance is expected to be `XNM` by default,
-otherwise edit the CRYPTOCURRENCY_INSTANCE_NAME constant."""
+Before running this script ensure that `cryptocurrency-advanced` service is enabled.
+"""
 
 from typing import Tuple
+import time
 import requests
 from exonum import ExonumClient, ModuleManager, MessageGenerator
 from exonum.crypto import KeyPair, PublicKey
 
-RUST_RUNTIME_ID = 0
-CRYPTOCURRENCY_ARTIFACT_NAME = "exonum-cryptocurrency-advanced:0.12.0"
-CRYPTOCURRENCY_INSTANCE_NAME = "XNM"
+from examples.protobuf import cryptocurrency_advanced_protobuf_provider
 
 
 def run() -> None:
     """This example creates two wallets (for Alice and Bob) and performs several
     transactions between these wallets."""
+    protobuf_provider = cryptocurrency_advanced_protobuf_provider()
+
     client = ExonumClient(hostname="127.0.0.1", public_api_port=8080, private_api_port=8081)
+    client.set_protobuf_provider(protobuf_provider)
 
     with client.protobuf_loader() as loader:
         # Load and compile proto files:
         loader.load_main_proto_files()
-        loader.load_service_proto_files(RUST_RUNTIME_ID, CRYPTOCURRENCY_ARTIFACT_NAME)
+        loader.load_service_proto_files(0, "cryptocurrency-advanced")
 
         instance_id = get_cryptocurrency_instance_id(client)
 
-        cryptocurrency_message_generator = MessageGenerator(instance_id, CRYPTOCURRENCY_ARTIFACT_NAME)
+        cryptocurrency_message_generator = MessageGenerator(instance_id, "cryptocurrency-advanced", "cryptocurrency")
 
         alice_keypair = create_wallet(client, cryptocurrency_message_generator, "Alice")
         bob_keypair = create_wallet(client, cryptocurrency_message_generator, "Bob")
@@ -56,21 +56,10 @@ def run() -> None:
         print(f" Bob => {bob_balance}")
 
 
-def get_cryptocurrency_instance_id(client: ExonumClient) -> int:
-    """Ensures that the service is added to the running instances list and gets
-    the ID of the instance."""
-    instance_name = CRYPTOCURRENCY_INSTANCE_NAME
-    available_services = client.available_services().json()
-    if instance_name not in map(lambda x: x["name"], available_services["services"]):
-        raise RuntimeError(f"{instance_name} is not listed in the running instances after the start")
-
-    # Service starts.
-    # Return the running instance ID:
-    for instance in available_services["services"]:
-        if instance["name"] == instance_name:
-            return instance["id"]
-
-    raise RuntimeError("Instance ID was not found")
+def get_cryptocurrency_instance_id(_client: ExonumClient) -> int:
+    """Returns cryptocurrency service id."""
+    # For 0.12 it's a constant.
+    return 128
 
 
 def create_wallet(client: ExonumClient, message_generator: MessageGenerator, name: str) -> KeyPair:
@@ -78,7 +67,7 @@ def create_wallet(client: ExonumClient, message_generator: MessageGenerator, nam
     key_pair = KeyPair.generate()
 
     # Load the "service.proto" from the Cryptocurrency service:
-    cryptocurrency_module = ModuleManager.import_service_module(CRYPTOCURRENCY_ARTIFACT_NAME, "service")
+    cryptocurrency_module = ModuleManager.import_service_module("cryptocurrency-advanced", "cryptocurrency")
 
     # Create a Protobuf message:
     create_wallet_message = cryptocurrency_module.CreateWallet()
@@ -94,9 +83,10 @@ def create_wallet(client: ExonumClient, message_generator: MessageGenerator, nam
     tx_hash = response.json()["tx_hash"]
 
     # Wait for new blocks:
-    with client.create_subscriber() as subscriber:
-        subscriber.wait_for_new_block()
-        subscriber.wait_for_new_block()
+    # with client.create_subscriber() as subscriber:
+    # subscriber.wait_for_new_block()
+    # subscriber.wait_for_new_block()
+    time.sleep(1)
 
     ensure_transaction_success(client, tx_hash)
 
@@ -111,10 +101,10 @@ def transfer(
     """This example transfers tokens from one wallet to the other one and
     returns the balances of these wallets."""
 
-    cryptocurrency_module = ModuleManager.import_service_module(CRYPTOCURRENCY_ARTIFACT_NAME, "service")
+    cryptocurrency_module = ModuleManager.import_service_module("cryptocurrency-advanced", "cryptocurrency")
     # Note that since we are using the Cryptocurrency module,
     # we need to load helpers from this module and not from the main module:
-    helpers_module = ModuleManager.import_service_module(CRYPTOCURRENCY_ARTIFACT_NAME, "helpers")
+    helpers_module = ModuleManager.import_service_module("cryptocurrency-advanced", "helpers")
 
     transfer_message = cryptocurrency_module.Transfer()
     transfer_message.to.CopyFrom(helpers_module.PublicKey(data=to_key.value))
@@ -130,9 +120,10 @@ def transfer(
 
     # Wait for new blocks:
 
-    with client.create_subscriber() as subscriber:
-        subscriber.wait_for_new_block()
-        subscriber.wait_for_new_block()
+    # with client.create_subscriber() as subscriber:
+    # subscriber.wait_for_new_block()
+    # subscriber.wait_for_new_block()
+    time.sleep(1)
 
     ensure_transaction_success(client, tx_hash)
 
@@ -146,7 +137,7 @@ def get_balance(client: ExonumClient, key: PublicKey) -> int:
     """The example returns the balance of the wallet."""
 
     # Call the /wallets/info endpoint to retrieve the balance:
-    wallet_info = client.get_service(CRYPTOCURRENCY_INSTANCE_NAME, "v1/wallets/info?pub_key={}".format(key.hex()))
+    wallet_info = client.get_service("cryptocurrency", "v1/wallets/info?pub_key={}".format(key.hex()))
     ensure_status_code(wallet_info)
     balance = wallet_info.json()["wallet_proof"]["to_wallet"]["entries"][0]["value"]["balance"]
 

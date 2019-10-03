@@ -1,3 +1,4 @@
+from typing import List
 import unittest
 from unittest.mock import patch
 import sys
@@ -5,7 +6,7 @@ import os
 
 from exonum.client import ExonumClient
 from exonum.module_manager import ModuleManager
-from exonum.protobuf_loader import ProtobufLoader
+from exonum.protobuf_loader import ProtobufLoader, ProtobufProviderInterface, ProtoFile
 
 from .module_user import ModuleUserTestCase
 
@@ -17,21 +18,6 @@ EXONUM_URL_BASE = "{}://{}:{}/"
 
 SYSTEM_ENDPOINT_POSTFIX = "api/system/v1/{}"
 SERVICE_ENDPOINT_POSTFIX = "api/services/{}/{}"
-
-
-def proto_sources_response(service):
-    from requests.models import Response
-
-    with open("tests/api_responses/proto_sources_{}.json".format(service)) as file:
-        content = file.read()
-
-        response = Response()
-        response.code = "OK"
-        response.status_code = 200
-        response.headers = {"content-type": "application/json; charset=utf8"}
-        response._content = bytes(content, "utf-8")
-
-        return response
 
 
 def ok_response():
@@ -46,20 +32,12 @@ def ok_response():
 
 def mock_requests_get(url, params=None):
     exonum_public_base = EXONUM_URL_BASE.format(EXONUM_PROTO, EXONUM_IP, EXONUM_PUBLIC_PORT)
-    exonum_private_base = EXONUM_URL_BASE.format(EXONUM_PROTO, EXONUM_IP, EXONUM_PRIVATE_PORT)
-
-    proto_sources_endpoint = exonum_public_base + SYSTEM_ENDPOINT_POSTFIX.format("proto-sources")
 
     healthcheck_endpoint = exonum_public_base + SYSTEM_ENDPOINT_POSTFIX.format("healthcheck")
     stats_endpoint = exonum_public_base + SYSTEM_ENDPOINT_POSTFIX.format("stats")
     user_agent_endpoint = exonum_public_base + SYSTEM_ENDPOINT_POSTFIX.format("user_agent")
 
     responses = {
-        # Proto sources endpoints.
-        # Proto sources without params (main sources):
-        (proto_sources_endpoint, "None"): proto_sources_response("main"),
-        # Proto sources for the supervisor service:
-        (proto_sources_endpoint, "{'artifact': '0:exonum-supervisor:0.11.0'}"): proto_sources_response("supervisor"),
         # System endpoints:
         (healthcheck_endpoint, "None"): ok_response(),
         (stats_endpoint, "None"): ok_response(),
@@ -67,6 +45,31 @@ def mock_requests_get(url, params=None):
     }
 
     return responses[(url, str(params))]
+
+
+class MockProtobufProvider(ProtobufProviderInterface):
+    def get_main_proto_sources(self) -> List[ProtoFile]:
+        base_path = "tests/proto_dir/proto/main"
+
+        return self._get(base_path)
+
+    def get_proto_sources_for_artifact(self, _id: int, _name: str) -> List[ProtoFile]:
+        base_path = "tests/proto_dir/proto/exonum_cryptocurrency_advanced_0_11_0"
+
+        return self._get(base_path)
+
+    @staticmethod
+    def _get(base_path: str) -> List[ProtoFile]:
+        results = []
+
+        for file_name in os.listdir(base_path):
+            file_path = os.path.join(base_path, file_name)
+            with open(file_path, "r") as source_file:
+                file_content = source_file.read()
+
+            results.append(ProtoFile(name=file_name, content=file_content))
+
+        return results
 
 
 class TestProtobufLoader(ModuleUserTestCase):
@@ -77,6 +80,7 @@ class TestProtobufLoader(ModuleUserTestCase):
         client = ExonumClient(
             hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
         )
+        client.set_protobuf_provider(MockProtobufProvider())
 
         with client.protobuf_loader() as loader:
             proto_dir = loader._proto_dir
@@ -95,6 +99,7 @@ class TestProtobufLoader(ModuleUserTestCase):
         exonum_client = ExonumClient(
             hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
         )
+        exonum_client.set_protobuf_provider(MockProtobufProvider())
         loader = exonum_client.protobuf_loader()
         loader.initialize()
 
@@ -125,6 +130,7 @@ class TestProtobufLoader(ModuleUserTestCase):
         client = ExonumClient(
             hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
         )
+        client.set_protobuf_provider(MockProtobufProvider())
 
         with client.protobuf_loader() as loader_1:
             with client.protobuf_loader() as loader_2:
@@ -137,35 +143,37 @@ class TestProtobufLoader(ModuleUserTestCase):
         client = ExonumClient(
             hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
         )
+        client.set_protobuf_provider(MockProtobufProvider())
 
         client_2 = ExonumClient(
             hostname="127.0.0.2", public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
         )
+        client_2.set_protobuf_provider(MockProtobufProvider())
 
         with client.protobuf_loader() as _loader:
             with self.assertRaises(ValueError):
                 client_2.protobuf_loader()
 
-    @patch("exonum.client._get", new=mock_requests_get)
     def test_main_sources_download(self):
         client = ExonumClient(
             hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
         )
+        client.set_protobuf_provider(MockProtobufProvider())
         with client.protobuf_loader() as loader:
             loader.load_main_proto_files()
 
-            runtime_mod = ModuleManager.import_main_module("runtime")
+            _helpers_mod = ModuleManager.import_main_module("helpers")
 
-    @patch("exonum.client._get", new=mock_requests_get)
     def test_service_sources_download(self):
         client = ExonumClient(
             hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
         )
+        client.set_protobuf_provider(MockProtobufProvider())
         with client.protobuf_loader() as loader:
             loader.load_main_proto_files()
-            loader.load_service_proto_files(0, "exonum-supervisor:0.11.0")
+            loader.load_service_proto_files(0, "cryptocurrency-advanced")
 
-            service_module = ModuleManager.import_service_module("exonum-supervisor:0.11.0", "service")
+            _service_module = ModuleManager.import_service_module("cryptocurrency-advanced", "service")
 
 
 class TestExonumClient(unittest.TestCase):

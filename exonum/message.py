@@ -1,7 +1,8 @@
 """This module is capable of creating and signing Exonum transactions."""
 
-from typing import Dict, Optional, Tuple, Any
+from typing import Dict, Optional
 import json
+import struct
 
 from google.protobuf.message import Message as ProtobufMessage, DecodeError as ProtobufDecodeError
 
@@ -28,7 +29,7 @@ class MessageGenerator:
     >>> client.send_transaction(create_wallet_alice_tx)
     """
 
-    def __init__(self, instance_id: int, artifact_name: str):
+    def __init__(self, instance_id: int, artifact_name: str, module_name: str):
         """MessageGenerator constructor.
 
         Parameters
@@ -36,15 +37,16 @@ class MessageGenerator:
         instance_id: int
             ID of the desired Exonum service instance.
         artifact_name: str
-            The name of the service artifact you want to communicate with.
-            The name should be in the format provided by Exonum, like 'exonum-cryptocurrency-advanced:0.12.0'.
+            The name of the service artifact you want to communicate with (e.g. 'cryptocurrency-advanced').
+        module_name: str
+            The name of the .proto file (e.g. "cryptocurrency") to load messages from.
         """
         self._instance_id = instance_id
 
         self._artifact_name = artifact_name
         self._message_ids: Dict[str, int] = dict()
 
-        service_module = ModuleManager.import_service_module(artifact_name, "service")
+        service_module = ModuleManager.import_service_module(artifact_name, module_name)
         for i, message in enumerate(service_module.DESCRIPTOR.message_types_by_name):
             self._message_ids[message] = i
 
@@ -104,6 +106,14 @@ class ExonumMessage:
     >>> tx_json = message.pack_into_json() # Create a JSON with the transaction in the format expected by Exonum.
     """
 
+    _MINIMUM_TX_BODY_LENGTH = 102  # It calculated as first 38 metadata bytes plus signature with 64 bytes length
+    _PUBLIC_KEY_LENGTH = 32
+    _SIGNATURE_LENGTH = 64
+    _SERVICE_ID_START_POSITION = 34
+    _MESSAGE_ID_START_POSITION = 36
+    _PROTO_MESSAGE_START_POSITION = 38
+    _U16_LENGTH = 2
+
     def __init__(self, instance_id: int, message_id: int, msg: ProtobufMessage, prebuilt: Optional[bytes] = None):
         """Exonum message constructor. It is not intended to be used directly, see `MessageGenerator.create_message`
         and `ExonumMessage.from_hex` instead."""
@@ -123,21 +133,24 @@ class ExonumMessage:
 
         # If we parse the received message, we do not have to build anything.
         if prebuilt is None:
-            self._any_tx_raw = self._build_message()
+            self._unsigned_tx_raw = self._build_message()
         else:
-            self._any_tx_raw = prebuilt
+            self._unsigned_tx_raw = prebuilt
 
     @classmethod
-    def from_hex(cls, message_hex: str, artifact_name: str, tx_name: str) -> Optional["ExonumMessage"]:
-        """Attempts to parse an Exonum message from a serialized hexadecimal string.
+    def from_hex(
+        cls, message_hex: str, artifact_name: str, module_name: str, tx_name: str
+    ) -> Optional["ExonumMessage"]:
+        """Attempts to parse Exonum Message from serialized hexadecimal string.
 
         Parameters
         ----------
         message_hex: str
             Serialized message as a hexadecimal string.
         artifact_name: str
-            The name of the service artifact you want to communicate with.
-            The name should be in the format provided by Exonum, like 'exonum-cryptocurrency-advanced:0.12.0'.
+            The name of the service artifact you want to communicate with (e.g. 'cryptocurrency-advanced').
+        module_name: str
+            The name of the .proto file (e.g. "cryptocurrency") to load messages from.
         tx_name: str
             The name of the transaction to be parsed, e.g. 'CreateWallet'.
 
@@ -147,19 +160,38 @@ class ExonumMessage:
             If parsing is successfull, an ExonumMessage object is returned.
             Otherwise the returned value is None.
         """
+        # Load modules and prepare expected message class for parsing.
+        service_mod = ModuleManager.import_service_module(artifact_name, module_name)
+        transaction_class = getattr(service_mod, tx_name)
+
+        # Convert message from hex to bytes.
+        tx_raw = bytes.fromhex(message_hex)
+
+        # Parse data.
+        if len(tx_raw) < cls._MINIMUM_TX_BODY_LENGTH:
+            return None
         try:
-            signed_msg, exonum_msg, decoded_msg = cls._deserialize_message(message_hex, artifact_name, tx_name)
+            author = tx_raw[: cls._PUBLIC_KEY_LENGTH]
+            service_id = struct.unpack(
+                "<H", tx_raw[cls._SERVICE_ID_START_POSITION : cls._SERVICE_ID_START_POSITION + cls._U16_LENGTH]
+            )[0]
+            message_id = struct.unpack(
+                "<H", tx_raw[cls._MESSAGE_ID_START_POSITION : cls._MESSAGE_ID_START_POSITION + cls._U16_LENGTH]
+            )[0]
+            signature = tx_raw[-cls._SIGNATURE_LENGTH :]
 
-            service_id = exonum_msg.any_tx.call_info.instance_id
-            message_id = exonum_msg.any_tx.call_info.method_id
-            signature = signed_msg.signature.data[:]
-            author = signed_msg.author.data[:]
+            decoded_msg = transaction_class()
+            decoded_msg.ParseFromString(tx_raw[cls._PROTO_MESSAGE_START_POSITION : -cls._SIGNATURE_LENGTH])
+        except (ValueError, IndexError, ProtobufDecodeError):
+            return None
 
-            exonum_message = cls(service_id, message_id, decoded_msg, prebuilt=exonum_msg.any_tx.SerializeToString())
+        # Create the message.
+        try:
+            exonum_message = cls(service_id, message_id, decoded_msg)
+            cls._set_signature_data(exonum_message, author, signature, tx_raw)
 
-            cls._set_signature_data(exonum_message, author, signature, bytes.fromhex(message_hex))
             return exonum_message
-        except ProtobufDecodeError:
+        except ValueError:
             return None
 
     def sign(self, keys: KeyPair) -> None:
@@ -176,20 +208,22 @@ class ExonumMessage:
         public_key, secret_key = keys.public_key, keys.secret_key
         self._author = public_key
 
-        consensus_mod = ModuleManager.import_main_module("consensus")
-        helpers_mod = ModuleManager.import_main_module("helpers")
+        signed_raw = bytearray()
 
-        signed_message = consensus_mod.SignedMessage()
-        signed_message.payload = self._any_tx_raw
-        signed_message.author.CopyFrom(helpers_mod.PublicKey(data=public_key.value))
+        signed_raw.extend(public_key.value)
+        signed_raw.extend(struct.pack("<B", 0))  # 0 and 0 it's tag and class of TX message
+        signed_raw.extend(struct.pack("<B", 0))
+        signed_raw.extend(struct.pack("<H", self._instance_id))
+        signed_raw.extend(struct.pack("<H", self._message_id))
+        signed_raw.extend(self._unsigned_tx_raw)
 
-        signature = Signature.sign(signed_message.payload, secret_key)
+        signature = Signature.sign(bytes(signed_raw), secret_key)
 
-        signed_message.signature.CopyFrom(helpers_mod.Signature(data=signature.value))
+        signed_raw.extend(signature.value)
 
         self._signature = signature
 
-        self._signed_tx_raw = bytes(signed_message.SerializeToString())
+        self._signed_tx_raw = bytes(signed_raw)
 
     def validate(self) -> bool:
         """
@@ -197,17 +231,12 @@ class ExonumMessage:
         Checks if the transaction signature is correct.
         :return: bool
         """
-        if self._signature is None or self._author is None:
+        if self._signature is None or self._author is None or self._signed_tx_raw is None:
             return False
 
         try:
-            consensus_mod = ModuleManager.import_main_module("consensus")
-
-            signed_msg = consensus_mod.SignedMessage()
-            signed_msg.ParseFromString(self._signed_tx_raw)
-
-            return self._signature.verify(signed_msg.payload, self._author)
-        except (ProtobufDecodeError, ValueError):
+            return self._signature.verify(self._signed_tx_raw[: -self._SIGNATURE_LENGTH], self._author)
+        except (ProtobufDecodeError, ValueError, IndexError):
             return False
 
     def pack_into_json(self) -> str:
@@ -243,9 +272,9 @@ class ExonumMessage:
         """Returns a signature. If the message is not signed, returns None."""
         return self._signature
 
-    def any_tx_raw(self) -> bytes:
-        """Returns a serialized AnyTx message as bytes."""
-        return self._any_tx_raw
+    def unsigned_raw(self) -> bytes:
+        """Returns a serialized unsigned message as bytes."""
+        return self._unsigned_tx_raw
 
     def signed_raw(self) -> Optional[bytes]:
         """Returns a serialized SignedMessage as bytes. If the message is not signed, returns None."""
@@ -257,48 +286,5 @@ class ExonumMessage:
         self._signed_tx_raw = raw
 
     def _build_message(self) -> bytes:
-        """Builds a raw AnyTx message."""
-        runtime_mod = ModuleManager.import_main_module("runtime")
-        consensus_mod = ModuleManager.import_main_module("consensus")
-
-        serialized_msg = self._msg.SerializeToString()
-
-        call_info = runtime_mod.CallInfo()
-        call_info.instance_id = self._instance_id
-        call_info.method_id = self._message_id
-
-        any_tx = runtime_mod.AnyTx()
-        any_tx.call_info.CopyFrom(call_info)
-        any_tx.arguments = serialized_msg
-
-        exonum_message = consensus_mod.ExonumMessage()
-        exonum_message.any_tx.CopyFrom(any_tx)
-
-        return exonum_message.SerializeToString()
-
-    @staticmethod
-    def _deserialize_message(message_hex: str, artifact_name: str, tx_name: str) -> Tuple[Any, Any, Any]:
-        """Takes a serialized message as an argument and returns a tuple
-        [SignedMessage, ExonumMessage,DecodedMessage]."""
-
-        # Load modules and prepare an expected message class for parsing.
-        consensus_mod = ModuleManager.import_main_module("consensus")
-        service_mod = ModuleManager.import_service_module(artifact_name, "service")
-        transaction_class = getattr(service_mod, tx_name)
-
-        # Convert a message from hex to bytes.
-        tx_raw = bytes.fromhex(message_hex)
-
-        # Parse SignedMessage.
-        signed_msg = consensus_mod.SignedMessage()
-        signed_msg.ParseFromString(tx_raw)
-
-        # Parse ExonumMessage from the SignedMessage's payload.
-        exonum_msg = consensus_mod.ExonumMessage()
-        exonum_msg.ParseFromString(signed_msg.payload)
-
-        # Parse an expected message from ExonumMessage's AnyTx arguments.
-        decoded_msg = transaction_class()
-        decoded_msg.ParseFromString(exonum_msg.any_tx.arguments)
-
-        return signed_msg, exonum_msg, decoded_msg
+        """Builds a raw (unsigned) message."""
+        return self._msg.SerializeToString()

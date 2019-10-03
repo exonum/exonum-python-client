@@ -30,6 +30,7 @@ The following table shows versions compatibility:
 |--------------|-------------------------|
 | 0.1          | 0.9.*                   |
 | 0.2          | 0.10.*                  |
+| 0.3          | 0.12.1+                 |
 | master       | dynamic_services branch |
 
 ## System Dependencies
@@ -63,7 +64,29 @@ client = ExonumClient(hostname="localhost", public_api_port=8080, private_api_po
 
 ### Compiling Proto Files
 
-To compile proto files into the Python analogues we need a protobuf loader.
+To compile proto files into the Python analogues we need a protobuf provider and protobuf loader.
+
+Protobuf provider objects accept either file system paths or github public pages.
+
+```python
+from exonum.protobuf_provider import ProtobufProvider
+
+main_sources_url = "https://github.com/exonum/exonum/tree/v0.12/exonum/src/proto/schema/exonum"
+cryptocurrency_sources_url = (
+    "https://github.com/exonum/exonum/tree/v0.12/examples/cryptocurrency-advanced/backend/src/proto"
+)
+protobuf_provider = ProtobufProvider()
+protobuf_provider.add_source(main_sources_url)
+protobuf_provider.add_source(cryptocurrency_sources_url, "cryptocurrency-advanced")
+```
+
+After creating a protobuf provider, you need to set it for the client.
+
+```python
+client.set_protobuf_provider(protobuf_provider)
+```
+
+Now you're ready to use protobuf loader:
 
 ```python
 with client.protobuf_loader() as loader:
@@ -84,10 +107,10 @@ Then we need to run the following code:
 
 ```python
 loader.load_main_proto_files()  # Load and compile main proto files, such as `runtime.proto`, `consensus.proto`, etc.
-loader.load_service_proto_files(runtime_id=0, service_name='exonum-supervisor:0.12.0')  # Same for specific service.
+loader.load_service_proto_files(0, service_name="cryptocurrency-advanced")  # Same for specific service.
 ```
 
-- runtime_id=0 here means, that service works in Rust runtime.
+- first argument for `load_service_proto_files` should always be 0.
 
 ### Creating Transaction Messages
 
@@ -96,71 +119,27 @@ The following example shows how to create a transaction message.
 ```python
 alice_keys = gen_keypair()
 
-cryptocurrency_service_name = 'exonum-cryptocurrency-advanced:0.11.0'
-loader.load_service_proto_files(runtime_id=0, cryptocurrency_service_name)
+cryptocurrency_service_name = "cryptocurrency-advanced"
+loader.load_service_proto_files(0, cryptocurrency_service_name)
 
-cryptocurrency_module = ModuleManager.import_service_module(cryptocurrency_service_name, 'service')
+cryptocurrency_module = ModuleManager.import_service_module(cryptocurrency_service_name, "cryptocurrency")
 
-cryptocurrency_message_generator = MessageGenerator(service_id=1024, service_name=cryptocurrency_service_name)
+cryptocurrency_message_generator = MessageGenerator(128, cryptocurrency_service_name, "cryptocurrency")
 
 create_wallet_alice = cryptocurrency_module.CreateWallet()
 create_wallet_alice.name = 'Alice'
 
-create_wallet_alice_tx = cryptocurrency_message_generator.create_message('CreateWallet', create_wallet_alice)
+create_wallet_alice_tx = cryptocurrency_message_generator.create_message(create_wallet_alice)
 create_wallet_alice_tx.sign(alice_keys)
 ```
 
-- 1024 - service instance ID.
-- "CreateWallet" - name of the message.
+- 128 - service ID.
 - key_pair - public and private keys of the ed25519 public-key signature
 system.
+- "cryptocurrency" means "cryptocurrency.proto" file.
 
 After invoking the sign method, we get a signed transaction.
 This transaction is ready for sending to the Exonum node.
-
-### Getting Data on the Available Services
-
-```python
-client.available_services().json()
-```
-
-The code will show a list of the artifacts available for the start and a list of
-working services.
-
-Format of the output:
-
-```python
-{
-  'artifacts': [
-    {
-      'runtime_id': 0,
-      'name': 'exonum-cryptocurrency-advanced:0.11.0'
-    },
-    {
-      'runtime_id': 0,
-      'name': 'exonum-supervisor:0.11.0'
-    }
-  ],
-  'services': [
-    {
-      'id': 1024,
-      'name': 'XNM',
-      'artifact': {
-        'runtime_id': 0,
-        'name': 'exonum-cryptocurrency-advanced:0.11.0'
-      }
-    },
-    {
-      'id': 0,
-      'name': 'supervisor',
-      'artifact': {
-        'runtime_id': 0,
-        'name': 'exonum-supervisor:0.11.0'
-      }
-    }
-  ]
-}
-```
 
 ### Sending Transaction to the Exonum Node
 
@@ -234,6 +213,12 @@ install the pure Python implementation.
 pip uninstall protobuf
 pip install --no-binary=protobuf protobuf
 ```
+
+- Websocket cannot be open with the node running through `run-dev`.
+
+For nodes running in `run-dev` mode CORS configuration doesn't allow websocket connect, so attempt to use `Subscriber` will fail.
+
+This behavior is fixed in versions above 12.1.
 
 ## License
 

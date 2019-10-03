@@ -23,6 +23,24 @@ By using the client you are able to perform the following operations:
 - Receive information on the node system
 - Receive information on the node status
 
+=============
+Compatibility
+=============
+
+The following table shows versions compatibility:  
+
++--------------+-------------------------+
+| Light Client | Exonum                  |
++==============+=========================+
+| 0.1          | 0.9.*                   |
++--------------+-------------------------+
+| 0.2          | 0.10.*                  |
++--------------+-------------------------+
+| 0.3          | 0.12.1+                 |
++--------------+-------------------------+
+| master       | dynamic_services branch |
++--------------+-------------------------+
+
 ===================
 System Dependencies
 ===================
@@ -62,7 +80,24 @@ Exonum Client Initialization
 Compiling Proto Files
 ---------------------
 
-To compile proto files into the Python analogues we need a Protobuf loader:
+To compile proto files into the Python analogues we need a Protobuf Provider and a Protobuf Loader.
+
+Protobuf provider objects accept either file system paths or github public pages.
+
+>>> from exonum.protobuf_provider import ProtobufProvider
+>>> main_sources_url = "https://github.com/exonum/exonum/tree/v0.12/exonum/src/proto/schema/exonum"
+>>> cryptocurrency_sources_url = (
+>>>     "https://github.com/exonum/exonum/tree/v0.12/examples/cryptocurrency-advanced/backend/src/proto"
+>>> )
+>>> protobuf_provider = ProtobufProvider()
+>>> protobuf_provider.add_source(main_sources_url)
+>>> protobuf_provider.add_source(cryptocurrency_sources_url, "cryptocurrency-advanced")
+
+After creating a protobuf provider, you need to set it for the client.
+
+>>> client.set_protobuf_provider(protobuf_provider)
+
+Now you're ready to use protobuf loader:
 
 >>> with client.protobuf_loader() as loader:
 >>>     #  Your code goes here.
@@ -79,9 +114,9 @@ Otherwise you should initialize and deinitialize the client manually:
 Then we need to run the following code:
 
 >>> loader.load_main_proto_files()  # Loads and compiles main proto files, such as `runtime.proto`, `consensus.proto`, etc.
->>> loader.load_service_proto_files(runtime_id=0, service_name='exonum-supervisor:0.12.0')  # Same for a specific service.
+>>> loader.load_service_proto_files(0, service_name='cryptocurrency-advanced')  # Same for specific service.
 
-- runtime_id=0 here means, that service works in Rust runtime.
+- first argument for `load_service_proto_files` should always be 0.
 
 -----------------------------
 Creating Transaction Messages
@@ -92,62 +127,23 @@ The following example shows how to create a transaction message:
 >>> from exonum.crypto import KeyPair
 >>> keys = KeyPair.generate()
 >>>
->>> cryptocurrency_service_name = 'exonum-cryptocurrency-advanced:0.11.0'
+>>> cryptocurrency_service_name = "cryptocurrency-advanced"
 >>> loader.load_service_proto_files(runtime_id=0, cryptocurrency_service_name)
 >>>
->>> cryptocurrency_module = ModuleManager.import_service_module(cryptocurrency_service_name, 'service')
->>> cryptocurrency_message_generator = MessageGenerator(service_id=1024, service_name=cryptocurrency_service_name)
+>>> cryptocurrency_module = ModuleManager.import_service_module(cryptocurrency_service_name, "cryptocurrency")
+>>> cryptocurrency_message_generator = MessageGenerator(128, cryptocurrency_service_name, "cryptocurrency")
 >>>
 >>> create_wallet_alice = cryptocurrency_module.CreateWallet()
 >>> create_wallet_alice.name = 'Alice'
->>> create_wallet_alice_tx = cryptocurrency_message_generator.create_message('CreateWallet', create_wallet_alice)
+>>> create_wallet_alice_tx = cryptocurrency_message_generator.create_message(create_wallet_alice)
 >>> create_wallet_alice_tx.sign(keys)
 
-- 1024 - service instance ID.
-- "CreateWallet" - name of the message.
+- 128 - service ID.
 - key_pair - public and private keys of the ed25519 public-key signature system.
+- "cryptocurrency" means "cryptocurrency.proto" file.
 
 After invoking the sign method we get a signed transaction.
 This transaction is ready for sending to an Exonum node.
-
---------------------------------------
-Getting Data on the Available Services
---------------------------------------
-
-The code below will show a list of the artifacts available for the start and a
-list of working services:
-
->>> client.available_services().json()
-{
-  'artifacts': [
-    {
-      'runtime_id': 0,
-      'name': 'exonum-cryptocurrency-advanced:0.11.0'
-    },
-    {
-      'runtime_id': 0,
-      'name': 'exonum-supervisor:0.11.0'
-    }
-  ],
-  'services': [
-    {
-      'id': 1024,
-      'name': 'XNM',
-      'artifact': {
-        'runtime_id': 0,
-        'name': 'exonum-cryptocurrency-advanced:0.11.0'
-      }
-    },
-    {
-      'id': 0,
-      'name': 'supervisor',
-      'artifact': {
-        'runtime_id': 0,
-        'name': 'exonum-supervisor:0.11.0'
-      }
-    }
-  ]
-}
 
 -------------
 More Examples

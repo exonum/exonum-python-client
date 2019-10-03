@@ -38,7 +38,7 @@ class ProtobufLoader:
     Example workflow:
     >>> with client.protobuf_loader() as loader:
     >>>    loader.load_main_proto_files()
-    >>>    loader.load_service_proto_files(0, "exonum-supervisor:0.12.0")
+    >>>    loader.load_service_proto_files(0, "service_name")
 
     Code above will initialize loader, download core Exonum proto files and proto files for the Supervisor service.
     The code will compile the files into the Python modules. After that you will be able to load those modules
@@ -186,7 +186,9 @@ class ProtobufLoader:
         self.protoc.compile(main_dir, proto_dir)
 
     def load_service_proto_files(self, runtime_id: int, service_name: str) -> None:
-        """Loads and compiles proto files for a service."""
+        """Loads and compiles proto files for a service.
+
+        `runtime_id` for exonum 0.12 and below should always be 0."""
         if self._proto_dir is None:
             raise RuntimeError("Attempt to use unititialized ProtobufLoader")
 

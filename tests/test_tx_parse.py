@@ -29,7 +29,7 @@ class TestTxParse(unittest.TestCase):
 
         cryptocurrency_module = ModuleManager.import_service_module(cryptocurrency_service_name, "service")
 
-        cryptocurrency_message_generator = MessageGenerator(1024, cryptocurrency_service_name)
+        cryptocurrency_message_generator = MessageGenerator(1024, cryptocurrency_service_name, "service")
 
         create_wallet_alice = cryptocurrency_module.CreateWallet()
         create_wallet_alice.name = "Alice"
@@ -52,7 +52,9 @@ class TestTxParse(unittest.TestCase):
         service_name = self.cryptocurrency_service_name
 
         # Parse the message:
-        parsed_message = ExonumMessage.from_hex(exonum_message.signed_raw().hex(), service_name, "CreateWallet")
+        parsed_message = ExonumMessage.from_hex(
+            exonum_message.signed_raw().hex(), service_name, "service", "CreateWallet"
+        )
 
         self.assertEqual(parsed_message.author(), TestTxParse.keys.public_key)
         self.assertEqual(parsed_message._instance_id, exonum_message._instance_id)
@@ -65,7 +67,7 @@ class TestTxParse(unittest.TestCase):
 
         # Parse the message:
         corrupted_message = "1a" + exonum_message.signed_raw().hex()
-        parsed_message = ExonumMessage.from_hex(corrupted_message, service_name, "CreateWallet")
+        parsed_message = ExonumMessage.from_hex(corrupted_message, service_name, "service", "CreateWallet")
 
         self.assertIsNone(parsed_message)
 
