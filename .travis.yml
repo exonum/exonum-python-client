@@ -9,19 +9,38 @@ matrix:
 sudo: false
 dist: bionic
 
+addons:
+  apt:
+    sources:
+      - sourceline: 'ppa:maarten-fonville/protobuf'
+    packages:
+      - libsodium-dev
+      - libprotobuf-dev
+      - protobuf-compiler
+
 jobs:
   include:
     - name: lints
-      install: pip install pycodestyle
-      script: pycodestyle . --max-line-length=120 --exclude="*_pb2.py"
+      install:
+        - pip install black
+        - pip install pylint
+        - pip install mypy
+        - pip install --no-binary=protobuf protobuf pysodium requests websocket-client-py3
+      script:
+        - black --check -l 120 . --exclude=".*_pb2.py"
+        - mypy --ignore-missing-imports --disallow-untyped-defs ./exonum ./examples
+        - pylint exonum --max-line-length=120 --disable=fixme,bad-continuation,too-few-public-methods; exit $(($? & 3))
+    - name: docs
+      install:
+        - pip install sphinx
+      script:
+        - pip install -e .
+        - cd docs
+        # Build docs to see that the code does not fail:
+        - make html
+        # Then check that there are no warnings at the build:
+        - WARNINGS_COUNT=`make clean > /dev/null && make html | grep warning | wc -l`
+        - if [ $WARNINGS_COUNT != 0 ]; then exit 1; fi
     - name: tests
-      addons:
-        apt:
-          sources:
-            - sourceline: 'ppa:maarten-fonville/protobuf'
-          packages:
-            - libsodium-dev
-            - libprotobuf-dev
-            - protobuf-compiler
-      install: pip install --no-binary=protobuf protobuf pysodium requests websocket
+      install: pip install --no-binary=protobuf protobuf pysodium requests websocket-client-py3
       script: python -m unittest

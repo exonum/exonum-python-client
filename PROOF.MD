@@ -1,5 +1,9 @@
+# Examples
 
-# Issue Funds
+All the examples in this file are assuming that `Exonum` node runs with the
+`cryptocurrency-advanced` service deployed and started.
+
+## Issue Funds
 Create an **Issue** object:
 
     issue_alice = cryptocurrency_module.Issue()  
@@ -48,7 +52,7 @@ Create a **Transfer** object:
     transfer_tx.sign(alice_keys)  
     client.send_transaction(transfer_tx)
 
-# Verifying MapProof to a Table
+## Verifying MapProof to a Table
 
 You have to obtain a '**to_table**' JSON structure to verify it further:
 
@@ -107,7 +111,7 @@ Get a root hash and a block state hash:
     self.assertEqual(root_hash, state_hash)
 
 
-# Verifying MapProof to a Wallet
+## Verifying MapProof to a Wallet
 
 You have to obtain a **'to_wallet'** JSON structure to verify it further:
 
@@ -155,7 +159,7 @@ Get a root hash and a wallet hash:
     self.assertEqual(root_hash, wallet_hash)
 
 
-# Verifying ListProof to wallet_history
+## Verifying ListProof to wallet_history
 
 You have to obtain a JSON structure of the 'wallet_history' proofs to verify it further:
 

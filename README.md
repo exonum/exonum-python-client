@@ -2,26 +2,28 @@
 
 [![Travis Build Status](https://travis-ci.com/exonum/python-client.svg?token=DyxSqsiCaQvPg4SYLXqu&branch=master)](https://travis-ci.com/exonum/python-client)
 
-Python client for [Exonum Framework][exonum].
+Python client for the [Exonum Framework][exonum].
 
 ## Overview
 
-Exonum light client is a Python library for working with Exonum blockchain 
-from the client side. It can be easily integrated to an existing 
-application. Also, Exonum light client provides access to common utils 
+Exonum Light Client is a Python library for working with Exonum blockchain
+from the client side. It can be easily integrated to an existing
+application. Also, Exonum Light Client provides access to common utils
 toolkit which contains some helpful functions for hashing, cryptography,
 serialization, etc.
 
 ## Capabilities
+
 By using the client you are able to perform the following operations:
 
 - Submit transactions to the node
 - Receive information on transactions
 - Receive information on blockchain blocks
 - Receive information on the node system
-- Receive information on the node status 
+- Receive information on the node status
 
 ## Compatibility
+
 The following table shows versions compatibility:  
 
 | Light Client | Exonum                  |
@@ -33,13 +35,13 @@ The following table shows versions compatibility:
 ## System Dependencies
 
 - Python 3.5 or above.
-- Package installer for Python3 (pip3) 
+- Package installer for Python3 (pip3)
 
 ## Examples
 
 The following example shows how to create an instance of the Exonum client
-which will be able to work with Exonum node with
-cryptocurrency-advanced service, at http://localhost:8080
+which will be able to work with an Exonum node with the
+Cryptocurrency Advanced service mounted on it, at `http://localhost:8080`
 address:
 
 ### Installing Python Light Client
@@ -52,6 +54,7 @@ pip3 install -e python-client
 ```
 
 ### Exonum Client Initialization
+
 ```python
 from exonum import ExonumClient, MessageGenerator, ModuleManager, gen_keypair
 
@@ -77,7 +80,6 @@ loader.initialize()
 loader.deinitialize()
 ```
 
-
 Then we need to run the following code:
 
 ```python
@@ -88,6 +90,7 @@ loader.load_service_proto_files(runtime_id=0, service_name='exonum-supervisor:0.
 - runtime_id=0 here means, that service works in Rust runtime.
 
 ### Creating Transaction Messages
+
 The following example shows how to create a transaction message.
 
 ```python
@@ -109,13 +112,11 @@ create_wallet_alice_tx.sign(alice_keys)
 
 - 1024 - service instance ID.
 - "CreateWallet" - name of the message.
-- key_pair - public and private keys of the ed25519 public-key signature 
+- key_pair - public and private keys of the ed25519 public-key signature
 system.
 
-After invoking sign method we get a signed transaction. 
+After invoking the sign method, we get a signed transaction.
 This transaction is ready for sending to the Exonum node.
-
-To see more examples and find out how to work with proofs go [here][proof].
 
 ### Getting Data on the Available Services
 
@@ -123,8 +124,11 @@ To see more examples and find out how to work with proofs go [here][proof].
 client.available_services().json()
 ```
 
-It will show list of artifacts available to start, and list of working services.
+The code will show a list of the artifacts available for the start and a list of
+working services.
+
 Format of the output:
+
 ```python
 {
   'artifacts': [
@@ -193,23 +197,38 @@ subscriber.connect()
 subscriber.stop()
 ```
 
-Keep in mind that if you'll forget to stop subscriber, you may discover HTTP errors when you'll try to use Exonum API.
+Keep in mind that if you forget to stop the subscriber, you may discover HTTP
+errors when you try to use Exonum API.
+
+### More Examples
+
+To see more examples and find out how to work with proofs go [here][proof].
+
+Also you can find the sample scripts at the [examples](examples) section.
 
 ### Testing
 
 To run tests, use the following command:
+
 ```sh
 python3 -m unittest
 ```
 
-### Known problems
+### Contributing
 
-If within use you discover a following error:
+You can see notes for developers in the [Contribution Guide](CONTRIBUTING.md)
+page.
+
+### Known Problems
+
+If within use you discover the following error:
+
 ```sh
 TypeError: Couldn't build proto file into descriptor pool!
 ```
 
-It's because of the issue with protobuf binary wheels. The only work around it to install the pure python implementation.
+It is due to the issue with Protobuf binary wheels. The only work around is to
+install the pure Python implementation.
 
 ```sh
 pip uninstall protobuf
@@ -217,6 +236,7 @@ pip install --no-binary=protobuf protobuf
 ```
 
 ## License
+
 Apache 2.0 - see [LICENSE](LICENSE) for more information.
 
 [exonum]: https://github.com/exonum/exonum

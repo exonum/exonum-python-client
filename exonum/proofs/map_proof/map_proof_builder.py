@@ -1,4 +1,5 @@
-from typing import Optional, Callable, Dict, Any
+"""MapProofBuilder module."""
+from typing import Optional, Dict, Any
 
 from exonum.module_manager import ModuleManager
 from .map_proof import MapProof
@@ -8,42 +9,39 @@ from ..encoder import build_encoder_function
 
 class MapProofBuilder:
     """
-    Builder for a MapProof.
+    Builder for MapProof.
 
-    This class is capable of creating a MapProof from the Dict[Any, Any].
+    This class is capable of creating MapProof from Dict[Any, Any].
     Since MapProof converts both keys and values to bytes for hashing, this
-    class generates a converter functions from the relevant protobuf structures.
+    class generates converter functions from the relevant Protobuf structures.
 
     Designed workflow example:
 
-    ```python
-    proof_builder = MapProofBuilder()
-    proof_builder.set_key_encoder('BitVec', main_module='helpers')
-    proof_builder.set_value_encoder('Wallet', service_name='cryptocurrency', service_module='service')
-    proof = proof_builder.build_proof(map_proof)
-    ```
+    >>> proof_builder = MapProofBuilder()
+    >>> proof_builder.set_key_encoder('BitVec', main_module='helpers')
+    >>> proof_builder.set_value_encoder('Wallet', service_name='cryptocurrency', service_module='service')
+    >>> proof = proof_builder.build_proof(map_proof)
 
-    If your key/value type should not be converted to bytes through protobuf, use `MapProof.parse`
+    If your key/value type does not require convertion to bytes through Protobuf, use `MapProof.parse`
     instead and provide your converter functions by yourself.
 
-    If one of the types should be converted manually, but the other one should use protobuf, you can
-    use `build_encoder_function` function from encoder.py which takes a protobuf message class as an argument and
+    If one of the types requires manual convertion, but the other one should use Protobuf, you can
+    use `build_encoder_function` function from encoder.py which takes a Protobuf message class as an argument and
     returns a converter function.
     """
 
-    def __init__(self):
-        """ Constructor of the MapProofBuilder. """
-        self._map_proof = None
-        self._key_encoder = None
-        self._value_encoder = None
+    def __init__(self) -> None:
+        """ Constructor of MapProofBuilder. """
+        self._key_encoder: Optional[type] = None
+        self._value_encoder: Optional[type] = None
 
+    @staticmethod
     def _get_encoder(
-        self,
         structure_name: str,
         main_module: Optional[str] = None,
         service_name: Optional[str] = None,
-        service_module: Optional[str] = None
-    ):
+        service_module: Optional[str] = None,
+    ) -> type:
         try:
             if main_module:
                 module = ModuleManager.import_main_module(main_module)
@@ -54,11 +52,7 @@ class MapProofBuilder:
 
             return getattr(module, structure_name)
         except (ModuleNotFoundError, ImportError):
-            error_data = {
-                "main_module": main_module,
-                "service_name": service_name,
-                "service_module": service_module
-            }
+            error_data = {"main_module": main_module, "service_name": service_name, "service_module": service_module}
 
             raise MapProofBuilderError("Incorrect module data", error_data)
         except AttributeError:
@@ -70,21 +64,21 @@ class MapProofBuilder:
         structure_name: str,
         main_module: Optional[str] = None,
         service_name: Optional[str] = None,
-        service_module: Optional[str] = None
-    ) -> 'MapProofBuilder':
+        service_module: Optional[str] = None,
+    ) -> "MapProofBuilder":
         """
         Method to set the key encoder.
 
-        If the protobuf structure for the key lies in the main module, you should
-        provide `main_module` argument.
-        Otherwise, you should provide both `service_name` and `service_module`.
+        If the Protobuf structure for the key lies in the main module,
+        provide the `main_module` argument.
+        Otherwise, provide both `service_name` and `service_module`.
 
         Parameters
         ----------
         structure_name: str
-            Name of the protobuf structure to be used in converted function.
+            Name of the Protobuf structure to be used in the converted function.
         main_module: Optional[str]
-            Name of the main module
+            Name of the main module.
         service_name: Optional[str]
             Name of the service.
         service_module: Optional[str]
@@ -93,7 +87,7 @@ class MapProofBuilder:
         Raises
         ------
         MapProofBuilderError
-            If provided data was incorrect, this exception will be rised.
+            If the provided data is incorrect, this exception rises.
         """
         self._key_encoder = self._get_encoder(structure_name, main_module, service_name, service_module)
         return self
@@ -103,21 +97,21 @@ class MapProofBuilder:
         structure_name: str,
         main_module: Optional[str] = None,
         service_name: Optional[str] = None,
-        service_module: Optional[str] = None
-    ) -> 'MapProofBuilder':
+        service_module: Optional[str] = None,
+    ) -> "MapProofBuilder":
         """
         Method to set the value encoder.
 
-        If the protobuf structure for the value lies in the main module, you should
-        provide `main_module` argument.
-        Otherwise, you should provide both `service_name` and `service_module`.
+        If the Protobuf structure for the value lies in the main module,
+        provide the `main_module` argument.
+        Otherwise, provide both `service_name` and `service_module`.
 
         Parameters
         ----------
         structure_name: str
-            Name of the protobuf structure to be used in converted function.
+            Name of the Protobuf structure to be used in the converted function.
         main_module: Optional[str]
-            Name of the main module
+            Name of the main module.
         service_name: Optional[str]
             Name of the service.
         service_module: Optional[str]
@@ -126,7 +120,7 @@ class MapProofBuilder:
         Raises
         ------
         MapProofBuilderError
-            If provided data was incorrect, this exception will be rised.
+            If the provided data is incorrect, this exception rises.
         """
         self._value_encoder = self._get_encoder(structure_name, main_module, service_name, service_module)
 
@@ -134,9 +128,9 @@ class MapProofBuilder:
 
     def build_proof(self, proof: Dict[Any, Any]) -> MapProof:
         """
-        Method to build the MapProof from the Dict[Any, Any].
+        Method to build MapProof from Dict[Any, Any].
 
-        This method should be called only after `set_key_encoder` and `set_value_encoder`.
+        Call this method only after `set_key_encoder` and `set_value_encoder`.
 
         Parameters
         ----------
@@ -146,15 +140,15 @@ class MapProofBuilder:
         Raises
         ------
         MapProofBuilderError
-            If method is called without prior `set_key_encoder` and `set_value_encoder` calls,
-            this exception will be rised.
+            If the method is called without prior `set_key_encoder` and `set_value_encoder` calls,
+            this exception will rises.
 
         MalformedMapProofError
-            If the provided raw MapProof was malformed and parsing failed, this exception will
-            be rised.
+            If provided raw MapProof is malformed and parsing fails, this exception
+            rises.
         """
         if not self._key_encoder or not self._value_encoder:
-            raise MapProofBuilderError("Encoders aren't set")
+            raise MapProofBuilderError("Encoders are not set")
 
         key_encoder_func = build_encoder_function(self._key_encoder)
         value_encoder_func = build_encoder_function(self._value_encoder)
