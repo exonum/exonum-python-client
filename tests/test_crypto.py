@@ -10,7 +10,7 @@ from pysodium import (
     crypto_sign_BYTES,
 )
 
-from exonum.crypto import (
+from exonum_client.crypto import (
     _FixedByteArray,
     Hash,
     Signature,

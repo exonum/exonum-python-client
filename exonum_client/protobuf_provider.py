@@ -5,7 +5,7 @@ import re
 import os
 import requests
 
-from exonum.protobuf_loader import ProtobufProviderInterface, ProtoFile
+from exonum_client.protobuf_loader import ProtobufProviderInterface, ProtoFile
 
 
 class _GithubProtobufProvider(ProtobufProviderInterface):

@@ -10,15 +10,15 @@ with open("README.md", "r") as readme:
     LONG_DESCRIPTION = readme.read()
 
 setuptools.setup(
-    name="python-exonum",
+    name="exonum-python-client",
     version="0.3.0",
     author="The Exonum team",
     author_email="popzxc@yandex.com",
     description="Exonum Python Light Client",
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
-    url="https://github.com/exonum/python-client",
-    packages=["exonum"],
+    url="https://github.com/exonum/exonum-python-client",
+    packages=["exonum_client"],
     install_requires=INSTALL_REQUIRES,
     python_requires=PYTHON_REQUIRES,
     classifiers=[

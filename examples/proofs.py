@@ -1,9 +1,9 @@
 """Example of Obtaining and Verifying Proofs."""
 
 from typing import Dict, Any
-from exonum import ExonumClient, MessageGenerator, ModuleManager
-from exonum.crypto import Hash
-from exonum.proofs import (
+from exonum_client import ExonumClient, MessageGenerator, ModuleManager
+from exonum_client.crypto import Hash
+from exonum_client.proofs import (
     ListProof,
     MapProof,
     MalformedMapProofError,

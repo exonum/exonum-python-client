@@ -3,7 +3,7 @@ import os
 import tempfile
 import shutil
 
-from exonum.protoc import Protoc
+from exonum_client.protoc import Protoc
 
 
 class TestProtoc(unittest.TestCase):

@@ -1,10 +1,10 @@
 import unittest
 
-from exonum.crypto import Hash
-from exonum.proofs.list_proof import ListProof
-from exonum.proofs.list_proof.proof_parser import ProofParser
-from exonum.proofs.list_proof.list_proof_element import ListProofElement
-from exonum.proofs.list_proof.errors import MalformedListProofError, ListProofVerificationError
+from exonum_client.crypto import Hash
+from exonum_client.proofs.list_proof import ListProof
+from exonum_client.proofs.list_proof.proof_parser import ProofParser
+from exonum_client.proofs.list_proof.list_proof_element import ListProofElement
+from exonum_client.proofs.list_proof.errors import MalformedListProofError, ListProofVerificationError
 
 Left = ListProofElement.Left
 Right = ListProofElement.Right

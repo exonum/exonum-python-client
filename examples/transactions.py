@@ -5,8 +5,8 @@ Before running this script ensure that `cryptocurrency-advanced` service is enab
 from typing import Tuple
 import time
 import requests
-from exonum import ExonumClient, ModuleManager, MessageGenerator
-from exonum.crypto import KeyPair, PublicKey
+from exonum_client import ExonumClient, ModuleManager, MessageGenerator
+from exonum_client.crypto import KeyPair, PublicKey
 
 from examples.protobuf import cryptocurrency_advanced_protobuf_provider
 

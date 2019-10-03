@@ -2,7 +2,7 @@ import unittest
 import sys
 import os
 
-from exonum.module_manager import ModuleManager
+from exonum_client.module_manager import ModuleManager
 
 from .module_user import PrecompiledModuleUserTestCase
 

@@ -2,7 +2,7 @@
 
 from typing import List, Tuple, Any, Dict, Callable
 
-from exonum.crypto import Hash
+from exonum_client.crypto import Hash
 from .key import ProofListKey
 from .list_proof_element import ListProofElement, ListProofElementType
 from .proof_parser import ProofParser

@@ -1,7 +1,7 @@
 """MapProofBuilder module."""
 from typing import Optional, Dict, Any
 
-from exonum.module_manager import ModuleManager
+from exonum_client.module_manager import ModuleManager
 from .map_proof import MapProof
 from .errors import MapProofBuilderError
 from ..encoder import build_encoder_function

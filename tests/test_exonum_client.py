@@ -4,9 +4,9 @@ from unittest.mock import patch
 import sys
 import os
 
-from exonum.client import ExonumClient
-from exonum.module_manager import ModuleManager
-from exonum.protobuf_loader import ProtobufLoader, ProtobufProviderInterface, ProtoFile
+from exonum_client.client import ExonumClient
+from exonum_client.module_manager import ModuleManager
+from exonum_client.protobuf_loader import ProtobufLoader, ProtobufProviderInterface, ProtoFile
 
 from .module_user import ModuleUserTestCase
 
@@ -180,7 +180,7 @@ class TestExonumClient(unittest.TestCase):
     # This test case replaces the get function from the Exonum client with the mock one.
     # Thus testing of HTTP interacting could be done without actual Exonum client:
 
-    @patch("exonum.client._get", new=mock_requests_get)
+    @patch("exonum_client.client._get", new=mock_requests_get)
     def test_helthcheck(self):
         client = ExonumClient(
             hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
@@ -188,7 +188,7 @@ class TestExonumClient(unittest.TestCase):
         resp = client.health_info()
         self.assertEqual(resp.status_code, 200)
 
-    @patch("exonum.client._get", new=mock_requests_get)
+    @patch("exonum_client.client._get", new=mock_requests_get)
     def test_stats(self):
         client = ExonumClient(
             hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
@@ -196,7 +196,7 @@ class TestExonumClient(unittest.TestCase):
         resp = client.stats()
         self.assertEqual(resp.status_code, 200)
 
-    @patch("exonum.client._get", new=mock_requests_get)
+    @patch("exonum_client.client._get", new=mock_requests_get)
     def test_user_agent(self):
         client = ExonumClient(
             hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
