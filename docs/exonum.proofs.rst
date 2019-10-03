@@ -1,10 +1,10 @@
-exonum.proofs package
-=====================
+exonum_client.proofs package
+============================
 
 Module Contents
 ---------------
 
-.. automodule:: exonum.proofs
+.. automodule:: exonum_client.proofs
    :members:
 
 Subpackages
@@ -18,8 +18,8 @@ Subpackages
 Submodules
 ----------
 
-exonum.proofs.encoder module
-----------------------------
+exonum_client.proofs.encoder module
+-----------------------------------
 
-.. automodule:: exonum.proofs.encoder
+.. automodule:: exonum_client.proofs.encoder
    :members:
