@@ -181,9 +181,8 @@ errors when you try to use Exonum API.
 
 ### More Examples
 
-To see more examples and find out how to work with proofs go [here][proof].
-
-Also you can find the sample scripts at the [examples](examples) section.
+To see more examples and find out how to work with proofs see the scripts
+at the [examples](examples) section.
 
 ### Testing
 
@@ -226,4 +225,3 @@ Apache 2.0 - see [LICENSE](LICENSE) for more information.
 
 [exonum]: https://github.com/exonum/exonum
 [protoc]: https://developers.google.com/protocol-buffers/docs/reference/python-generated
-[proof]: PROOF.MD
