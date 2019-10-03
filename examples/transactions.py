@@ -86,6 +86,10 @@ def create_wallet(client: ExonumClient, message_generator: MessageGenerator, nam
     # with client.create_subscriber() as subscriber:
     # subscriber.wait_for_new_block()
     # subscriber.wait_for_new_block()
+
+    # If node is launched via `dry-run`, subscriber will not work because of the
+    # CORS configuration. This issue is fixed on the `dynamic_services` branch
+    # already.
     time.sleep(1)
 
     ensure_transaction_success(client, tx_hash)
@@ -123,6 +127,10 @@ def transfer(
     # with client.create_subscriber() as subscriber:
     # subscriber.wait_for_new_block()
     # subscriber.wait_for_new_block()
+
+    # If node is launched via `dry-run`, subscriber will not work because of the
+    # CORS configuration. This issue is fixed on the `dynamic_services` branch
+    # already.
     time.sleep(1)
 
     ensure_transaction_success(client, tx_hash)
