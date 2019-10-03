@@ -18,7 +18,12 @@ setuptools.setup(
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
     url="https://github.com/exonum/exonum-python-client",
-    packages=["exonum_client"],
+    packages=[
+        "exonum_client",
+        "exonum_client.proofs",
+        "exonum_client.proofs.map_proof",
+        "exonum_client.proofs.list_proof",
+    ],
     install_requires=INSTALL_REQUIRES,
     python_requires=PYTHON_REQUIRES,
     classifiers=[
