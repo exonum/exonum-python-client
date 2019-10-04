@@ -3,7 +3,7 @@
 from typing import Dict, List, Tuple, Any, Callable
 import itertools
 
-from exonum.crypto import Hash
+from exonum_client.crypto import Hash
 from ..utils import is_field_hash, is_field_int, calculate_height
 from ..hasher import Hasher
 from .key import ProofListKey

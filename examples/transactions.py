@@ -6,8 +6,8 @@ otherwise edit the CRYPTOCURRENCY_INSTANCE_NAME constant."""
 
 from typing import Tuple
 import requests
-from exonum import ExonumClient, ModuleManager, MessageGenerator
-from exonum.crypto import KeyPair, PublicKey
+from exonum_client import ExonumClient, ModuleManager, MessageGenerator
+from exonum_client.crypto import KeyPair, PublicKey
 
 RUST_RUNTIME_ID = 0
 CRYPTOCURRENCY_ARTIFACT_NAME = "exonum-cryptocurrency-advanced:0.12.0"

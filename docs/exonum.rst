@@ -4,7 +4,7 @@ exonum package
 Module Contents
 ---------------
 
-.. automodule:: exonum
+.. automodule:: exonum_client
    :members:
 
 Subpackages
@@ -18,32 +18,32 @@ Subpackages
 Submodules
 ----------
 
-exonum.client module
---------------------
+exonum_client.client module
+---------------------------
 
-.. automodule:: exonum.client
+.. automodule:: exonum_client.client
    :members:
 
-exonum.crypto module
---------------------
+exonum_client.crypto module
+---------------------------
 
-.. automodule:: exonum.crypto
+.. automodule:: exonum_client.crypto
    :members:
 
-exonum.message module
----------------------
+exonum_client.message module
+----------------------------
 
-.. automodule:: exonum.message
+.. automodule:: exonum_client.message
    :members:
 
-exonum.module\_manager module
------------------------------
+exonum_client.module\_manager module
+------------------------------------
 
-.. automodule:: exonum.module_manager
+.. automodule:: exonum_client.module_manager
    :members:
 
-exonum.protobuf\_loader module
-------------------------------
+exonum_client.protobuf\_loader module
+-------------------------------------
 
-.. automodule:: exonum.protobuf_loader
+.. automodule:: exonum_client.protobuf_loader
    :members:

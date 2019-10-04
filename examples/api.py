@@ -1,5 +1,5 @@
 """Example of a Basic API Interaction via Exonum Python Light Client."""
-from exonum import ExonumClient
+from exonum_client import ExonumClient
 
 
 def run() -> None:

@@ -1,5 +1,5 @@
 """Protobuf Example"""
-from exonum import ExonumClient, ModuleManager
+from exonum_client import ExonumClient, ModuleManager
 
 RUST_RUNTIME_ID = 0
 

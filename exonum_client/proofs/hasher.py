@@ -3,7 +3,7 @@ from enum import IntEnum
 import struct
 
 # From pysodium import crypto_hash_sha256, crypto_hash_sha256_BYTES
-from exonum.crypto import HASH_BYTES_LEN, Hash
+from exonum_client.crypto import HASH_BYTES_LEN, Hash
 
 # Default hash value for empty ProofMapIndex.
 EMPTY_MAP_HASH = bytes.fromhex("7324b5c72b51bb5d4c180f1109cfd347b60473882145841c39f3e584576296f9")

@@ -1,5 +1,5 @@
 """ Module with a MapProof Representation of the Branch Node. """
-from exonum.crypto import Hash
+from exonum_client.crypto import Hash
 from .constants import PROOF_PATH_SIZE
 from .proof_path import ProofPath
 from ..hasher import Hasher
