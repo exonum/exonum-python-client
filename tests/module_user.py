@@ -1,3 +1,6 @@
+# pylint: disable=missing-docstring, protected-access
+# type: ignore
+
 import unittest
 import sys
 import os
@@ -19,6 +22,6 @@ class PrecompiledModuleUserTestCase(ModuleUserTestCase):
         sys.path.append(os.path.abspath("tests/proto_dir"))
 
     @classmethod
-    def tearDownClass(self):
+    def tearDownClass(cls):
         # Remove the Protobuf directory from the path:
         sys.path.remove(os.path.abspath("tests/proto_dir"))

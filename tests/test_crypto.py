@@ -1,4 +1,7 @@
 """Tests for the Crypto Module."""
+# pylint: disable=missing-docstring, protected-access
+# type: ignore
+
 import unittest
 
 from pysodium import (
@@ -10,7 +13,7 @@ from pysodium import (
     crypto_sign_BYTES,
 )
 
-from exonum.crypto import (
+from exonum_client.crypto import (
     _FixedByteArray,
     Hash,
     Signature,

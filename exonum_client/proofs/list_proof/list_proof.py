@@ -3,7 +3,7 @@
 from typing import Dict, List, Tuple, Any, Callable
 import itertools
 
-from exonum.crypto import Hash
+from exonum_client.crypto import Hash
 from ..utils import is_field_hash, is_field_int, calculate_height
 from ..hasher import Hasher
 from .key import ProofListKey
@@ -270,7 +270,7 @@ class ListProof:
 
         # Create the first layer:
         layer = list(map(_hash_entry, self._entries))
-        hashes = [hash_entry for hash_entry in self._proof]
+        hashes = list(self._proof)
         last_index = self._length - 1
 
         for height in range(1, tree_height):

@@ -1,7 +1,7 @@
 """MapProof Module."""
 from typing import Optional, Dict, Any, List, Iterator, Callable
 
-from exonum.crypto import Hash
+from exonum_client.crypto import Hash
 from .proof_path import ProofPath
 from .errors import MalformedMapProofError
 from .optional_entry import OptionalEntry

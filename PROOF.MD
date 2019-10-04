@@ -4,62 +4,84 @@ All the examples in this file are assuming that `Exonum` node runs with the
 `cryptocurrency-advanced` service deployed and started.
 
 ## Issue Funds
+
 Create an **Issue** object:
 
-    issue_alice = cryptocurrency_module.Issue()  
-    issue_alice.amount = 50  
-    issue_alice.seed = random.getrandbits(64)
-    
+```python
+issue_alice = cryptocurrency_module.Issue()  
+issue_alice.amount = 50  
+issue_alice.seed = random.getrandbits(64)
+```
+
 Create an **Issue** message and sign it:
 
-    issue_alice_tx = cryptocurrency_message_generator.create_message('Issue', issue_alice)  
-    issue_alice_tx.sign(alice_keys)
- 
- - "Issue" - name of the message
+```python
+issue_alice_tx = cryptocurrency_message_generator.create_message('Issue', issue_alice)
+issue_alice_tx.sign(alice_keys)
+ ```
+
+- "Issue" - name of the message
 
 Send a transaction:
 
-    client.send_transaction(issue_alice_tx)
+```python
+client.send_transaction(issue_alice_tx)
+```
 
 Obtain the wallet and check if the balance has been increased:
 
-    alice_wallet = client.get_service(instance_name, "v1/wallets/info?pub_key=" + encode(alice_keys[0])).json()
- 
- # Transfer Funds
- First of all, we need to create another wallet:
+```python
+alice_wallet = client.get_service(instance_name, "v1/wallets/info?pub_key=" + encode(alice_keys[0])).json()
+```
 
-    bob_keys = gen_keypair()  
-    create_wallet_bob = cryptocurrency_module.CreateWallet()  
-    create_wallet_bob.name = 'Bob'  
-      
-    create_wallet_bob_tx = cryptocurrency_message_generator.create_message('CreateWallet', create_wallet_bob)  
-    create_wallet_bob_tx.sign(bob_keys)  
-    client.send_transaction(create_wallet_bob_tx)
- Import the **Helpers** module:
+## Transfer Funds
 
-     helpers_module = ModuleManager.import_service_module(cryptocurrency_service_name, 'helpers')
+First of all, we need to create another wallet:
+
+```python
+bob_keys = gen_keypair()  
+create_wallet_bob = cryptocurrency_module.CreateWallet()  
+create_wallet_bob.name = 'Bob'
+
+create_wallet_bob_tx = cryptocurrency_message_generator.create_message('CreateWallet', create_wallet_bob)  
+create_wallet_bob_tx.sign(bob_keys)  
+client.send_transaction(create_wallet_bob_tx)
+```
+
+Import the **Helpers** module:
+
+```python
+helpers_module = ModuleManager.import_service_module(cryptocurrency_service_name, 'helpers')
+```
 
 Create a **Transfer** object:
 
-    transfer = cryptocurrency_module.Transfer()  
-    transfer.amount = 100  
-    transfer.seed = random.getrandbits(64)  
-    transfer.to.CopyFrom(helpers_module.PublicKey(data=bob_keys[0]))
-  
-  Send a **Transfer** transaction. Use Alice's keys to sign the transaction:
+```python
+transfer = cryptocurrency_module.Transfer()  
+transfer.amount = 100  
+transfer.seed = random.getrandbits(64)  
+transfer.to.CopyFrom(helpers_module.PublicKey(data=bob_keys[0]))
+```
 
-    transfer_tx = cryptocurrency_message_generator.create_message('Transfer', transfer)  
-    transfer_tx.sign(alice_keys)  
-    client.send_transaction(transfer_tx)
+Send a **Transfer** transaction. Use Alice's keys to sign the transaction:
+
+```python
+transfer_tx = cryptocurrency_message_generator.create_message('Transfer', transfer)  
+transfer_tx.sign(alice_keys)  
+client.send_transaction(transfer_tx)
+```
 
 ## Verifying MapProof to a Table
 
 You have to obtain a '**to_table**' JSON structure to verify it further:
 
-    to_table = wallet_resp['wallet_proof']['to_table']
+```python
+to_table = wallet_resp['wallet_proof']['to_table']
+```
 
 Example of a **to_table** structure:
 
+```json
     {
         "entries": [{
             "key": {
@@ -83,42 +105,53 @@ Example of a **to_table** structure:
             "hash": "e425bcda782240a2f2545d2daf1a2f5229723b9188723a222748c32ea9e0dd08"
         }]
     }
+```
 
 Key and value encoders are required to parse "MapProof to table":
 
-    def key_encoder(data):
-        import struct
-        format_str = '>HIH'
-    
-        return struct.pack(format_str, data['tag'], data['group_id'], data['index_id'])
-    
-    
-    def value_encoder(data):
-        return bytes.fromhex(data)
+```python
+def key_encoder(data):
+    import struct
+    format_str = '>HIH'
+
+    return struct.pack(format_str, data['tag'], data['group_id'], data['index_id'])
+
+
+def value_encoder(data):
+    return bytes.fromhex(data)
+```
 
 Parse the proof and obtain a CheckedMapProof entity:
 
-    parsed_proof = MapProof.parse(to_table, key_encoder, value_encoder)
-    result = parsed_proof.check()
+```python
+parsed_proof = MapProof.parse(to_table, key_encoder, value_encoder)
+result = parsed_proof.check()
+```
 
 Get a root hash and a block state hash:
 
-    root_hash = result.root_hash().hex()
-    state_hash = wallet_resp['block_proof']['block']['state_hash']
+```python
+root_hash = result.root_hash().hex()
+state_hash = wallet_resp['block_proof']['block']['state_hash']
+```
 
 **Root hash** and **state hash** should be equal:
 
-    self.assertEqual(root_hash, state_hash)
-
+```python
+self.assertEqual(root_hash, state_hash)
+```
 
 ## Verifying MapProof to a Wallet
 
 You have to obtain a **'to_wallet'** JSON structure to verify it further:
 
-    to_wallet = wallet_resp['wallet_proof']['to_wallet']
+```python
+to_wallet = wallet_resp['wallet_proof']['to_wallet']
+```
 
 Example of a **to_wallet** structure:
 
+```json
     {
         "entries": [{
             "key": "f8b0150493cbfb42fee98b6ee83c5599a07366dc0a86c9c392668414ad8264bc",
@@ -139,48 +172,65 @@ Example of a **to_wallet** structure:
             "hash": "9538a91413645f8b15141b8cad77265cae3295ce2702e9407c5cd0f1ccd6de62"
         }]
     }
+```
 
 In this case you are able to use an autogenerated value encoder:
 
-    cryptocurrency_encoder = build_encoder_function(cryptocurrency_module.Wallet)
+```python
+cryptocurrency_encoder = build_encoder_function(cryptocurrency_module.Wallet)
+```
 
 Parse the proof and obtain a CheckedMapProof entity:
 
-    parsed_proof = MapProof.parse(to_wallet, lambda x: bytes.fromhex(x), cryptocurrency_encoder)
-    result = parsed_proof.check()
+```python
+parsed_proof = MapProof.parse(to_wallet, lambda x: bytes.fromhex(x), cryptocurrency_encoder)
+result = parsed_proof.check()
+```
 
 Get a root hash and a wallet hash:
 
-    root_hash = result.root_hash().hex()
-    wallet_hash = wallet_resp['wallet_proof']['to_table']['entries'][0]['value']
+```python
+root_hash = result.root_hash().hex()
+wallet_hash = wallet_resp['wallet_proof']['to_table']['entries'][0]['value']
+```
 
 **Root hash** and **wallet hash** should be equal:
 
-    self.assertEqual(root_hash, wallet_hash)
-
+```python
+self.assertEqual(root_hash, wallet_hash)
+```
 
 ## Verifying ListProof to wallet_history
 
 You have to obtain a JSON structure of the 'wallet_history' proofs to verify it further:
 
-    wallet_history = wallet_resp['wallet_history']['proof']
+```python
+wallet_history = wallet_resp['wallet_history']['proof']
+```
 
 Get a history hash:
 
-    history_hash = wallet_resp['wallet_proof']['to_wallet']['entries'][0]['value']['history_hash']['data']
-    history_hash_hex = bytes(history_hash).hex()
+```python
+history_hash = wallet_resp['wallet_proof']['to_wallet']['entries'][0]['value']['history_hash']['data']
+history_hash_hex = bytes(history_hash).hex()
+```
 
 Parse ListProof and validate it:
 
-    proof = ListProof.parse(wallet_history)
-    res = proof.validate(to_bytes(history_hash_hex))
+```python
+proof = ListProof.parse(wallet_history)
+res = proof.validate(to_bytes(history_hash_hex))
+```
 
 Example of **res**:
 
+```python
     [(0, '3a0565bdb05967faab6eed6bf994d682a29a1e811fba3481f373d0d4f7e90b22'), (1, '92b33ff4e2ddec0801541a9e20ab4e1132cd17a6b4e2d666368fa9bab0eb6542')]
+```
 
 Example of '**wallet_history**':
 
+```json
     {
         "proof": {
             "proof": [],
@@ -192,5 +242,6 @@ Example of '**wallet_history**':
         },
         "transactions": ["0a120a100a05088008100212070a05416c69636512220a20f8b0150493cbfb42fee98b6ee83c5599a07366dc0a86c9c392668414ad8264bc1a420a4031f65704d8e5d7ec40f41dfff7f36f7e0895163c69c462fc0ef1b66e043e308a772f0532fd4666722d5ed0712d83911dd49367b61642d089b0e8b806c5a0ef0e", "0a3a0a380a0308800812310a220a20be5cbc46803d37e3a728300541f1d8cd3b1cc4637776c7183b3e956fffe8c458106418a0fbf88cddf7f6b2880112220a20f8b0150493cbfb42fee98b6ee83c5599a07366dc0a86c9c392668414ad8264bc1a420a40a8d27095e75ad442300e16ca7caf78024a1bce7eabad8785fe2929afdf1b2b154947caa7424e9a95e954de5bf4fbbb165a1a24a637664dd94d289db43264ad0e"]
     }
+```
 
 The number of transactions in **res** should be equal to the number of transactions in **wallet_history**.
