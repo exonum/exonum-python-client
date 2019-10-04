@@ -4,7 +4,7 @@
 
 - The client has been adopted to work with Exonum dynamic_services branch.
 - Proto files are now downloaded via REST API from the Exonum node
-and compiled dynamically.
+  and compiled dynamically.
 - Tx generation is now protobuf-based.
 
 ## 0.3.1 - 2019-10-03
