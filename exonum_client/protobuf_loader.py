@@ -36,6 +36,7 @@ class ProtobufLoader:
     This class is a Singleton, meaning that only one entity of that class is created at a time.
 
     Example workflow:
+
     >>> with client.protobuf_loader() as loader:
     >>>    loader.load_main_proto_files()
     >>>    loader.load_service_proto_files(0, "exonum-supervisor:0.12.0")
@@ -62,6 +63,7 @@ class ProtobufLoader:
     >>>         assert loader_1 == loader_2
 
     This may be useful if you have several modules that should work with ProtobufLoader:
+
     >>> # main.py
     >>> loader = ProtobufLoader(client)
     >>> loader.initialize()
