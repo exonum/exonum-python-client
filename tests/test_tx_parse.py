@@ -1,12 +1,14 @@
+# pylint: disable=missing-docstring, protected-access
+# type: ignore
+
 import copy
 import unittest
-from pysodium import crypto_sign_keypair
 import sys
 import os
 
-from exonum.message import ExonumMessage, MessageGenerator
-from exonum.crypto import KeyPair
-from exonum.module_manager import ModuleManager
+from exonum_client.message import ExonumMessage, MessageGenerator
+from exonum_client.crypto import KeyPair
+from exonum_client.module_manager import ModuleManager
 
 
 class TestTxParse(unittest.TestCase):

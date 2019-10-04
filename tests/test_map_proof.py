@@ -1,12 +1,14 @@
+# pylint: disable=missing-docstring, protected-access
+# type: ignore
+
 import unittest
 import random
 
-from exonum.crypto import Hash
-from exonum.proofs.encoder import build_encoder_function
-from exonum.proofs.map_proof import MapProof
-from exonum.proofs.map_proof.proof_path import ProofPath
-from exonum.proofs.map_proof.constants import KEY_SIZE
-from exonum.module_manager import ModuleManager
+from exonum_client.proofs.encoder import build_encoder_function
+from exonum_client.proofs.map_proof import MapProof
+from exonum_client.proofs.map_proof.proof_path import ProofPath
+from exonum_client.proofs.map_proof.constants import KEY_SIZE
+from exonum_client.module_manager import ModuleManager
 
 from .module_user import PrecompiledModuleUserTestCase
 

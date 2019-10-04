@@ -1,8 +1,7 @@
-import unittest
-import sys
-import os
+# pylint: disable=missing-docstring, protected-access
+# type: ignore
 
-from exonum.module_manager import ModuleManager
+from exonum_client.module_manager import ModuleManager
 
 from .module_user import PrecompiledModuleUserTestCase
 
@@ -16,7 +15,7 @@ class TestModuleManager(PrecompiledModuleUserTestCase):
     def test_load_fail_main(self):
         # Check that an incorrect module import raises an exception:
         with self.assertRaises(ModuleNotFoundError):
-            main_module = ModuleManager.import_main_module("no_module")
+            _main_module = ModuleManager.import_main_module("no_module")
 
     def test_load_service(self):
         # Check that the Cryptocurrency service is loaded correctly:

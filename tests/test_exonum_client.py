@@ -1,11 +1,14 @@
+# pylint: disable=missing-docstring, protected-access
+# type: ignore
+
 import unittest
 from unittest.mock import patch
 import sys
 import os
 
-from exonum.client import ExonumClient
-from exonum.module_manager import ModuleManager
-from exonum.protobuf_loader import ProtobufLoader
+from exonum_client.client import ExonumClient
+from exonum_client.module_manager import ModuleManager
+from exonum_client.protobuf_loader import ProtobufLoader
 
 from .module_user import ModuleUserTestCase
 
@@ -46,7 +49,7 @@ def ok_response():
 
 def mock_requests_get(url, params=None):
     exonum_public_base = EXONUM_URL_BASE.format(EXONUM_PROTO, EXONUM_IP, EXONUM_PUBLIC_PORT)
-    exonum_private_base = EXONUM_URL_BASE.format(EXONUM_PROTO, EXONUM_IP, EXONUM_PRIVATE_PORT)
+    _exonum_private_base = EXONUM_URL_BASE.format(EXONUM_PROTO, EXONUM_IP, EXONUM_PRIVATE_PORT)
 
     proto_sources_endpoint = exonum_public_base + SYSTEM_ENDPOINT_POSTFIX.format("proto-sources")
 
@@ -146,7 +149,7 @@ class TestProtobufLoader(ModuleUserTestCase):
             with self.assertRaises(ValueError):
                 client_2.protobuf_loader()
 
-    @patch("exonum.client._get", new=mock_requests_get)
+    @patch("exonum_client.client._get", new=mock_requests_get)
     def test_main_sources_download(self):
         client = ExonumClient(
             hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
@@ -154,9 +157,9 @@ class TestProtobufLoader(ModuleUserTestCase):
         with client.protobuf_loader() as loader:
             loader.load_main_proto_files()
 
-            runtime_mod = ModuleManager.import_main_module("runtime")
+            _runtime_mod = ModuleManager.import_main_module("runtime")
 
-    @patch("exonum.client._get", new=mock_requests_get)
+    @patch("exonum_client.client._get", new=mock_requests_get)
     def test_service_sources_download(self):
         client = ExonumClient(
             hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
@@ -165,14 +168,14 @@ class TestProtobufLoader(ModuleUserTestCase):
             loader.load_main_proto_files()
             loader.load_service_proto_files(0, "exonum-supervisor:0.11.0")
 
-            service_module = ModuleManager.import_service_module("exonum-supervisor:0.11.0", "service")
+            _service_module = ModuleManager.import_service_module("exonum-supervisor:0.11.0", "service")
 
 
 class TestExonumClient(unittest.TestCase):
     # This test case replaces the get function from the Exonum client with the mock one.
     # Thus testing of HTTP interacting could be done without actual Exonum client:
 
-    @patch("exonum.client._get", new=mock_requests_get)
+    @patch("exonum_client.client._get", new=mock_requests_get)
     def test_helthcheck(self):
         client = ExonumClient(
             hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
@@ -180,7 +183,7 @@ class TestExonumClient(unittest.TestCase):
         resp = client.health_info()
         self.assertEqual(resp.status_code, 200)
 
-    @patch("exonum.client._get", new=mock_requests_get)
+    @patch("exonum_client.client._get", new=mock_requests_get)
     def test_stats(self):
         client = ExonumClient(
             hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
@@ -188,7 +191,7 @@ class TestExonumClient(unittest.TestCase):
         resp = client.stats()
         self.assertEqual(resp.status_code, 200)
 
-    @patch("exonum.client._get", new=mock_requests_get)
+    @patch("exonum_client.client._get", new=mock_requests_get)
     def test_user_agent(self):
         client = ExonumClient(
             hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT

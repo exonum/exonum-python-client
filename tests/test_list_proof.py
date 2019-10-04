@@ -1,10 +1,16 @@
+# pylint: disable=missing-docstring, protected-access
+# type: ignore
+
+# TODO remove it later
+# pylint: disable=invalid-name
+
 import unittest
 
-from exonum.crypto import Hash
-from exonum.proofs.list_proof import ListProof
-from exonum.proofs.list_proof.key import ProofListKey
-from exonum.proofs.list_proof.list_proof import HashedEntry
-from exonum.proofs.list_proof.errors import MalformedListProofError, ListProofVerificationError
+from exonum_client.crypto import Hash
+from exonum_client.proofs.list_proof import ListProof
+from exonum_client.proofs.list_proof.key import ProofListKey
+from exonum_client.proofs.list_proof.list_proof import HashedEntry
+from exonum_client.proofs.list_proof.errors import MalformedListProofError, ListProofVerificationError
 
 
 def _to_bytes(hex_data: str) -> bytes:
@@ -102,22 +108,21 @@ class TestListProof(unittest.TestCase):
     def test_incorrect_proof_raises(self):
         # Test that an incorrect proof verification will raise an error:
 
-        stored_val = "6b70d869aeed2fe090e708485d9f4b4676ae6984206cf05efc136d663610e5c9"
+        incorrect_stored_val = "DEADBEEFaeed2fe090e708485d9f4b4676ae6984206cf05efc136d663610e5c9"
         incorrect_proof_json = {
             "proof": [
                 {"index": 1, "height": 1, "hash": "eae60adeb5c681110eb5226a4ef95faa4f993c4a838d368b66f7c98501f2c8f9"}
             ],
-            "entries": [[0, "DEADBEEFaeed2fe090e708485d9f4b4676ae6984206cf05efc136d663610e5c9"]],
+            "entries": [[0, incorrect_stored_val]],
             "length": 2,
         }
 
-        tx_count = 2
         expected_hash = "07df67b1a853551eb05470a03c9245483e5a3731b4b558e634908ff356b69857"
 
         proof = ListProof.parse(incorrect_proof_json)
 
         with self.assertRaises(ListProofVerificationError):
-            result = proof.validate(_parse_hash(expected_hash))
+            _result = proof.validate(_parse_hash(expected_hash))
 
         # Test that verification of a proof against an incorrect hash will raise an error:
 
@@ -126,17 +131,16 @@ class TestListProof(unittest.TestCase):
             "proof": [
                 {"index": 1, "height": 1, "hash": "eae60adeb5c681110eb5226a4ef95faa4f993c4a838d368b66f7c98501f2c8f9"}
             ],
-            "entries": [[0, "6b70d869aeed2fe090e708485d9f4b4676ae6984206cf05efc136d663610e5c9"]],
+            "entries": [[0, stored_val]],
             "length": 2,
         }
 
-        tx_count = 2
         incorrect_expected_hash = "DEADBEEFa853551eb05470a03c9245483e5a3731b4b558e634908ff356b69857"
 
         proof = ListProof.parse(proof_json)
 
         with self.assertRaises(ListProofVerificationError):
-            result = proof.validate(_parse_hash(incorrect_expected_hash))
+            _result = proof.validate(_parse_hash(incorrect_expected_hash))
 
     def test_proof_range(self):
         proof_json = proof_json = {
@@ -152,7 +156,6 @@ class TestListProof(unittest.TestCase):
             "length": 6,
         }
 
-        tx_count = 6
         expected_hash = "3bb680f61d358cc208003e7b42f077402fdb05388dc0e7f3099551e4f86bb70a"
 
         proof = ListProof.parse(proof_json)
@@ -172,7 +175,6 @@ class TestListProof(unittest.TestCase):
         )
 
     def test_proof_of_absence(self):
-        tx_count = 2
         expected_hash = "07df67b1a853551eb05470a03c9245483e5a3731b4b558e634908ff356b69857"
 
         proof_json = {
