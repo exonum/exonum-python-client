@@ -10,6 +10,8 @@ import re
 
 from .protoc import Protoc
 
+PYTHON_RUNTIME = 2
+
 
 class ProtoFile(NamedTuple):
     """Structure that represents a proto file."""
@@ -204,4 +206,8 @@ class ProtobufLoader:
         # Call protoc to compile proto sources:
         main_dir = os.path.join(self._proto_dir, "proto", "main")
         proto_dir = os.path.join(self._proto_dir, "exonum_modules", service_module_name)
-        self.protoc.compile(service_dir, proto_dir, include=main_dir)
+        if runtime_id != PYTHON_RUNTIME:
+            self.protoc.compile(service_dir, proto_dir, include=main_dir)
+        else:
+            # Python services do not rely on the `includes` from the exonum core.
+            self.protoc.compile(service_dir, proto_dir)
