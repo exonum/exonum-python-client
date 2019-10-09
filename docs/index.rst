@@ -47,14 +47,15 @@ First of all, we need to install our client library:
 
 ::
 
-    git clone git@github.com:exonum/python-client.git
-    pip3 install -e python-client
+    git clone git@github.com:exonum/exonum-python-client.git
+    pip3 install -e exonum-python-client
 
 ----------------------------
 Exonum Client Initialization
 ----------------------------
 
->>> from exonum import ExonumClient, MessageGenerator, ModuleManager, gen_keypair
+>>> from exonum_client import ExonumClient, ModuleManager, MessageGenerator
+>>> from exonum_client.crypto import KeyPair
 >>> client = ExonumClient(hostname="localhost", public_api_port=8080, private_api_port=8081, ssl=False)
 
 
@@ -89,26 +90,57 @@ Creating Transaction Messages
 
 The following example shows how to create a transaction message:
 
->>> from exonum.crypto import KeyPair
->>> keys = KeyPair.generate()
+>>> alice_keys = KeyPair.generate()
 >>>
->>> cryptocurrency_service_name = 'exonum-cryptocurrency-advanced:0.11.0'
->>> loader.load_service_proto_files(runtime_id=0, cryptocurrency_service_name)
+>>> cryptocurrency_service_name = 'exonum-cryptocurrency-advanced:0.12.0'
+>>> loader.load_service_proto_files(runtime_id=0, service_name=cryptocurrency_service_name)
 >>>
 >>> cryptocurrency_module = ModuleManager.import_service_module(cryptocurrency_service_name, 'service')
 >>> cryptocurrency_message_generator = MessageGenerator(service_id=1024, service_name=cryptocurrency_service_name)
 >>>
 >>> create_wallet_alice = cryptocurrency_module.CreateWallet()
 >>> create_wallet_alice.name = 'Alice'
->>> create_wallet_alice_tx = cryptocurrency_message_generator.create_message('CreateWallet', create_wallet_alice)
->>> create_wallet_alice_tx.sign(keys)
+>>> create_wallet_alice_tx = cryptocurrency_message_generator.create_message(create_wallet_alice)
+>>> create_wallet_alice_tx.sign(alice_keys)
 
 - 1024 - service instance ID.
-- "CreateWallet" - name of the message.
-- key_pair - public and private keys of the ed25519 public-key signature system.
+- alice_keys - public and private keys of the ed25519 public-key signature system.
 
 After invoking the sign method we get a signed transaction.
 This transaction is ready for sending to an Exonum node.
+
+--------------------------------------
+Sending Transaction to the Exonum Node
+--------------------------------------
+
+After successfully sending the message, we'll get a response which will
+contain a hash of the transaction:
+
+>>> response = client.send_transaction(create_wallet_alice_tx)
+{
+    "tx_hash": "3541201bb7f367b802d089d8765cc7de3b7dfc253b12330b8974268572c54c01"
+}
+
+---------------------
+Subscribing to events
+---------------------
+
+If you want to subscribe to events, use the following code:
+
+>>> with client.create_subscriber() as subscriber:
+>>>     subscriber.wait_for_new_block()
+>>>     subscriber.wait_for_new_block()
+
+Context manager will automatically create a connection and will disconnect after use.
+Or you can manually do the same:
+
+>>> subscriber = client.create_subscriber()
+>>> subscriber.connect()
+>>> # ... Your code
+>>> subscriber.stop()
+
+Keep in mind that if you forget to stop the subscriber, you may discover HTTP
+errors when you try to use Exonum API.
 
 --------------------------------------
 Getting Data on the Available Services
@@ -122,11 +154,11 @@ list of working services:
   'artifacts': [
     {
       'runtime_id': 0,
-      'name': 'exonum-cryptocurrency-advanced:0.11.0'
+      'name': 'exonum-cryptocurrency-advanced:0.12.0'
     },
     {
       'runtime_id': 0,
-      'name': 'exonum-supervisor:0.11.0'
+      'name': 'exonum-supervisor:0.12.0'
     }
   ],
   'services': [
@@ -135,7 +167,7 @@ list of working services:
       'name': 'XNM',
       'artifact': {
         'runtime_id': 0,
-        'name': 'exonum-cryptocurrency-advanced:0.11.0'
+        'name': 'exonum-cryptocurrency-advanced:0.12.0'
       }
     },
     {
@@ -143,7 +175,7 @@ list of working services:
       'name': 'supervisor',
       'artifact': {
         'runtime_id': 0,
-        'name': 'exonum-supervisor:0.11.0'
+        'name': 'exonum-supervisor:0.12.0'
       }
     }
   ]

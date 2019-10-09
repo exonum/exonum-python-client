@@ -16,7 +16,7 @@ issue_alice.seed = random.getrandbits(64)
 Create an **Issue** message and sign it:
 
 ```python
-issue_alice_tx = cryptocurrency_message_generator.create_message('Issue', issue_alice)
+issue_alice_tx = cryptocurrency_message_generator.create_message(issue_alice)
 issue_alice_tx.sign(alice_keys)
  ```
 
@@ -31,7 +31,7 @@ client.send_transaction(issue_alice_tx)
 Obtain the wallet and check if the balance has been increased:
 
 ```python
-alice_wallet = client.get_service(instance_name, "v1/wallets/info?pub_key=" + encode(alice_keys[0])).json()
+alice_wallet = client.get_service(instance_name, "v1/wallets/info?pub_key=" + alice_keys.public_key.hex()).json()
 ```
 
 ## Transfer Funds
@@ -39,11 +39,11 @@ alice_wallet = client.get_service(instance_name, "v1/wallets/info?pub_key=" + en
 First of all, we need to create another wallet:
 
 ```python
-bob_keys = gen_keypair()  
+bob_keys = KeyPair.generate() 
 create_wallet_bob = cryptocurrency_module.CreateWallet()  
 create_wallet_bob.name = 'Bob'
 
-create_wallet_bob_tx = cryptocurrency_message_generator.create_message('CreateWallet', create_wallet_bob)  
+create_wallet_bob_tx = cryptocurrency_message_generator.create_message(create_wallet_bob)  
 create_wallet_bob_tx.sign(bob_keys)  
 client.send_transaction(create_wallet_bob_tx)
 ```
@@ -60,13 +60,13 @@ Create a **Transfer** object:
 transfer = cryptocurrency_module.Transfer()  
 transfer.amount = 100  
 transfer.seed = random.getrandbits(64)  
-transfer.to.CopyFrom(helpers_module.PublicKey(data=bob_keys[0]))
+transfer.to.CopyFrom(helpers_module.PublicKey(data=bob_keys.public_key.value))
 ```
 
 Send a **Transfer** transaction. Use Alice's keys to sign the transaction:
 
 ```python
-transfer_tx = cryptocurrency_message_generator.create_message('Transfer', transfer)  
+transfer_tx = cryptocurrency_message_generator.create_message(transfer)  
 transfer_tx.sign(alice_keys)  
 client.send_transaction(transfer_tx)
 ```
@@ -211,15 +211,15 @@ wallet_history = wallet_resp['wallet_history']['proof']
 Get a history hash:
 
 ```python
-history_hash = wallet_resp['wallet_proof']['to_wallet']['entries'][0]['value']['history_hash']['data']
-history_hash_hex = bytes(history_hash).hex()
+history_hash_raw = wallet_resp['wallet_proof']['to_wallet']['entries'][0]['value']['history_hash']['data']
+history_hash = Hash(bytes(history_hash_raw))
 ```
 
 Parse ListProof and validate it:
 
 ```python
 proof = ListProof.parse(wallet_history)
-res = proof.validate(to_bytes(history_hash_hex))
+res = proof.validate(history_hash)
 ```
 
 Example of **res**:
