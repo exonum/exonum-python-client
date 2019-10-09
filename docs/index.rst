@@ -96,7 +96,7 @@ The following example shows how to create a transaction message:
 >>> loader.load_service_proto_files(runtime_id=0, service_name=cryptocurrency_service_name)
 >>>
 >>> cryptocurrency_module = ModuleManager.import_service_module(cryptocurrency_service_name, 'service')
->>> cryptocurrency_message_generator = MessageGenerator(service_id=1024, service_name=cryptocurrency_service_name)
+>>> cryptocurrency_message_generator = MessageGenerator(service_id=1024, artifact_name=cryptocurrency_service_name)
 >>>
 >>> create_wallet_alice = cryptocurrency_module.CreateWallet()
 >>> create_wallet_alice.name = 'Alice'
