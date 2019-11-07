@@ -113,11 +113,11 @@ def transfer(
 
     cryptocurrency_module = ModuleManager.import_service_module(CRYPTOCURRENCY_ARTIFACT_NAME, "service")
     # Note that since we are using the Cryptocurrency module,
-    # we need to load helpers from this module and not from the main module:
-    helpers_module = ModuleManager.import_service_module(CRYPTOCURRENCY_ARTIFACT_NAME, "helpers")
+    # we need to load types from this module and not from the main module:
+    types_module = ModuleManager.import_service_module(CRYPTOCURRENCY_ARTIFACT_NAME, "types")
 
     transfer_message = cryptocurrency_module.Transfer()
-    transfer_message.to.CopyFrom(helpers_module.PublicKey(data=to_key.value))
+    transfer_message.to.CopyFrom(types_module.PublicKey(data=to_key.value))
     transfer_message.amount = amount
     transfer_message.seed = Seed.get_seed()
 

@@ -18,7 +18,7 @@ class MapProofBuilder:
     Designed workflow example:
 
     >>> proof_builder = MapProofBuilder()
-    >>> proof_builder.set_key_encoder('BitVec', main_module='helpers')
+    >>> proof_builder.set_key_encoder('BitVec', main_module='types')
     >>> proof_builder.set_value_encoder('Wallet', service_name='cryptocurrency', service_module='service')
     >>> proof = proof_builder.build_proof(map_proof)
 

@@ -13,7 +13,7 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
-from . import helpers_pb2 as helpers__pb2
+from . import types_pb2 as types__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
@@ -21,9 +21,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='exonum',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x10\x62lockchain.proto\x12\x06\x65xonum\x1a\rhelpers.proto\"\xa0\x01\n\x05\x42lock\x12\x13\n\x0bproposer_id\x18\x01 \x01(\r\x12\x0e\n\x06height\x18\x02 \x01(\x04\x12\x10\n\x08tx_count\x18\x03 \x01(\r\x12\x1f\n\tprev_hash\x18\x04 \x01(\x0b\x32\x0c.exonum.Hash\x12\x1d\n\x07tx_hash\x18\x05 \x01(\x0b\x32\x0c.exonum.Hash\x12 \n\nstate_hash\x18\x06 \x01(\x0b\x32\x0c.exonum.Hash\"F\n\x0f\x43onfigReference\x12\x13\n\x0b\x61\x63tual_from\x18\x01 \x01(\x04\x12\x1e\n\x08\x63\x66g_hash\x18\x02 \x01(\x0b\x32\x0c.exonum.Hash\"=\n\nTxLocation\x12\x14\n\x0c\x62lock_height\x18\x01 \x01(\x04\x12\x19\n\x11position_in_block\x18\x02 \x01(\x04\x62\x06proto3')
+  serialized_pb=_b('\n\x10\x62lockchain.proto\x12\x06\x65xonum\x1a\rtypes.proto\"\xa0\x01\n\x05\x42lock\x12\x13\n\x0bproposer_id\x18\x01 \x01(\r\x12\x0e\n\x06height\x18\x02 \x01(\x04\x12\x10\n\x08tx_count\x18\x03 \x01(\r\x12\x1f\n\tprev_hash\x18\x04 \x01(\x0b\x32\x0c.exonum.Hash\x12\x1d\n\x07tx_hash\x18\x05 \x01(\x0b\x32\x0c.exonum.Hash\x12 \n\nstate_hash\x18\x06 \x01(\x0b\x32\x0c.exonum.Hash\"F\n\x0f\x43onfigReference\x12\x13\n\x0b\x61\x63tual_from\x18\x01 \x01(\x04\x12\x1e\n\x08\x63\x66g_hash\x18\x02 \x01(\x0b\x32\x0c.exonum.Hash\"=\n\nTxLocation\x12\x14\n\x0c\x62lock_height\x18\x01 \x01(\x04\x12\x19\n\x11position_in_block\x18\x02 \x01(\x04\x62\x06proto3')
   ,
-  dependencies=[helpers__pb2.DESCRIPTOR,])
+  dependencies=[types__pb2.DESCRIPTOR,])
 
 
 
@@ -169,10 +169,10 @@ _TXLOCATION = _descriptor.Descriptor(
   serialized_end=339,
 )
 
-_BLOCK.fields_by_name['prev_hash'].message_type = helpers__pb2._HASH
-_BLOCK.fields_by_name['tx_hash'].message_type = helpers__pb2._HASH
-_BLOCK.fields_by_name['state_hash'].message_type = helpers__pb2._HASH
-_CONFIGREFERENCE.fields_by_name['cfg_hash'].message_type = helpers__pb2._HASH
+_BLOCK.fields_by_name['prev_hash'].message_type = types__pb2._HASH
+_BLOCK.fields_by_name['tx_hash'].message_type = types__pb2._HASH
+_BLOCK.fields_by_name['state_hash'].message_type = types__pb2._HASH
+_CONFIGREFERENCE.fields_by_name['cfg_hash'].message_type = types__pb2._HASH
 DESCRIPTOR.message_types_by_name['Block'] = _BLOCK
 DESCRIPTOR.message_types_by_name['ConfigReference'] = _CONFIGREFERENCE
 DESCRIPTOR.message_types_by_name['TxLocation'] = _TXLOCATION

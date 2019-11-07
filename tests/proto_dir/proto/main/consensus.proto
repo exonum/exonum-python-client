@@ -18,7 +18,7 @@ syntax = "proto3";
 
 package exonum.consensus;
 
-import "helpers.proto";
+import "types.proto";
 import "blockchain.proto";
 import "runtime.proto";
 import "google/protobuf/timestamp.proto";

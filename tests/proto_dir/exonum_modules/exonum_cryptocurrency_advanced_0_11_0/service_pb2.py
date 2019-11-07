@@ -13,7 +13,7 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
-from . import helpers_pb2 as helpers__pb2
+from . import types_pb2 as types__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
@@ -21,9 +21,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='exonum.examples.cryptocurrency_advanced',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\rservice.proto\x12\'exonum.examples.cryptocurrency_advanced\x1a\rhelpers.proto\"G\n\x08Transfer\x12\x1d\n\x02to\x18\x01 \x01(\x0b\x32\x11.exonum.PublicKey\x12\x0e\n\x06\x61mount\x18\x02 \x01(\x04\x12\x0c\n\x04seed\x18\x03 \x01(\x04\"%\n\x05Issue\x12\x0e\n\x06\x61mount\x18\x01 \x01(\x04\x12\x0c\n\x04seed\x18\x02 \x01(\x04\"\x1c\n\x0c\x43reateWallet\x12\x0c\n\x04name\x18\x01 \x01(\t\"\x84\x01\n\x06Wallet\x12\"\n\x07pub_key\x18\x01 \x01(\x0b\x32\x11.exonum.PublicKey\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x0f\n\x07\x62\x61lance\x18\x03 \x01(\x04\x12\x13\n\x0bhistory_len\x18\x04 \x01(\x04\x12\"\n\x0chistory_hash\x18\x05 \x01(\x0b\x32\x0c.exonum.Hash\"\x08\n\x06\x43onfigb\x06proto3')
+  serialized_pb=_b('\n\rservice.proto\x12\'exonum.examples.cryptocurrency_advanced\x1a\rtypes.proto\"G\n\x08Transfer\x12\x1d\n\x02to\x18\x01 \x01(\x0b\x32\x11.exonum.PublicKey\x12\x0e\n\x06\x61mount\x18\x02 \x01(\x04\x12\x0c\n\x04seed\x18\x03 \x01(\x04\"%\n\x05Issue\x12\x0e\n\x06\x61mount\x18\x01 \x01(\x04\x12\x0c\n\x04seed\x18\x02 \x01(\x04\"\x1c\n\x0c\x43reateWallet\x12\x0c\n\x04name\x18\x01 \x01(\t\"\x84\x01\n\x06Wallet\x12\"\n\x07pub_key\x18\x01 \x01(\x0b\x32\x11.exonum.PublicKey\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x0f\n\x07\x62\x61lance\x18\x03 \x01(\x04\x12\x13\n\x0bhistory_len\x18\x04 \x01(\x04\x12\"\n\x0chistory_hash\x18\x05 \x01(\x0b\x32\x0c.exonum.Hash\"\x08\n\x06\x43onfigb\x06proto3')
   ,
-  dependencies=[helpers__pb2.DESCRIPTOR,])
+  dependencies=[types__pb2.DESCRIPTOR,])
 
 
 
@@ -224,9 +224,9 @@ _CONFIG = _descriptor.Descriptor(
   serialized_end=358,
 )
 
-_TRANSFER.fields_by_name['to'].message_type = helpers__pb2._PUBLICKEY
-_WALLET.fields_by_name['pub_key'].message_type = helpers__pb2._PUBLICKEY
-_WALLET.fields_by_name['history_hash'].message_type = helpers__pb2._HASH
+_TRANSFER.fields_by_name['to'].message_type = types__pb2._PUBLICKEY
+_WALLET.fields_by_name['pub_key'].message_type = types__pb2._PUBLICKEY
+_WALLET.fields_by_name['history_hash'].message_type = types__pb2._HASH
 DESCRIPTOR.message_types_by_name['Transfer'] = _TRANSFER
 DESCRIPTOR.message_types_by_name['Issue'] = _ISSUE
 DESCRIPTOR.message_types_by_name['CreateWallet'] = _CREATEWALLET
