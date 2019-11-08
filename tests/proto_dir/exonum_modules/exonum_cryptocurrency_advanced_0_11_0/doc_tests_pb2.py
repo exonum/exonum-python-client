@@ -13,7 +13,7 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
-from . import helpers_pb2 as helpers__pb2
+from . import types_pb2 as types__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
@@ -21,9 +21,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='exonum.doc_tests',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x0f\x64oc_tests.proto\x12\x10\x65xonum.doc_tests\x1a\rhelpers.proto\"\x1c\n\x0c\x43reateWallet\x12\x0c\n\x04name\x18\x01 \x01(\t\"\x1d\n\x05Point\x12\t\n\x01x\x18\x01 \x01(\x05\x12\t\n\x01y\x18\x02 \x01(\x05\"\x05\n\x03TxA\"\x05\n\x03TxB\"6\n\rMyTransaction\x12%\n\npublic_key\x18\x01 \x01(\x0b\x32\x11.exonum.PublicKey\"X\n\rMyStructSmall\x12\x1e\n\x03key\x18\x01 \x01(\x0b\x32\x11.exonum.PublicKey\x12\x11\n\tnum_field\x18\x02 \x01(\r\x12\x14\n\x0cstring_field\x18\x03 \x01(\t\"c\n\x0bMyStructBig\x12\x1a\n\x04hash\x18\x01 \x01(\x0b\x32\x0c.exonum.Hash\x12\x38\n\x0fmy_struct_small\x18\x02 \x01(\x0b\x32\x1f.exonum.doc_tests.MyStructSmallb\x06proto3')
+  serialized_pb=_b('\n\x0f\x64oc_tests.proto\x12\x10\x65xonum.doc_tests\x1a\rtypes.proto\"\x1c\n\x0c\x43reateWallet\x12\x0c\n\x04name\x18\x01 \x01(\t\"\x1d\n\x05Point\x12\t\n\x01x\x18\x01 \x01(\x05\x12\t\n\x01y\x18\x02 \x01(\x05\"\x05\n\x03TxA\"\x05\n\x03TxB\"6\n\rMyTransaction\x12%\n\npublic_key\x18\x01 \x01(\x0b\x32\x11.exonum.PublicKey\"X\n\rMyStructSmall\x12\x1e\n\x03key\x18\x01 \x01(\x0b\x32\x11.exonum.PublicKey\x12\x11\n\tnum_field\x18\x02 \x01(\r\x12\x14\n\x0cstring_field\x18\x03 \x01(\t\"c\n\x0bMyStructBig\x12\x1a\n\x04hash\x18\x01 \x01(\x0b\x32\x0c.exonum.Hash\x12\x38\n\x0fmy_struct_small\x18\x02 \x01(\x0b\x32\x1f.exonum.doc_tests.MyStructSmallb\x06proto3')
   ,
-  dependencies=[helpers__pb2.DESCRIPTOR,])
+  dependencies=[types__pb2.DESCRIPTOR,])
 
 
 
@@ -258,9 +258,9 @@ _MYSTRUCTBIG = _descriptor.Descriptor(
   serialized_end=372,
 )
 
-_MYTRANSACTION.fields_by_name['public_key'].message_type = helpers__pb2._PUBLICKEY
-_MYSTRUCTSMALL.fields_by_name['key'].message_type = helpers__pb2._PUBLICKEY
-_MYSTRUCTBIG.fields_by_name['hash'].message_type = helpers__pb2._HASH
+_MYTRANSACTION.fields_by_name['public_key'].message_type = types__pb2._PUBLICKEY
+_MYSTRUCTSMALL.fields_by_name['key'].message_type = types__pb2._PUBLICKEY
+_MYSTRUCTBIG.fields_by_name['hash'].message_type = types__pb2._HASH
 _MYSTRUCTBIG.fields_by_name['my_struct_small'].message_type = _MYSTRUCTSMALL
 DESCRIPTOR.message_types_by_name['CreateWallet'] = _CREATEWALLET
 DESCRIPTOR.message_types_by_name['Point'] = _POINT

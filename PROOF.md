@@ -48,10 +48,10 @@ create_wallet_bob_tx.sign(bob_keys)
 client.send_transaction(create_wallet_bob_tx)
 ```
 
-Import the **Helpers** module:
+Import the **Types** module:
 
 ```python
-helpers_module = ModuleManager.import_service_module(cryptocurrency_service_name, 'helpers')
+types_module = ModuleManager.import_service_module(cryptocurrency_service_name, 'types')
 ```
 
 Create a **Transfer** object:
@@ -60,7 +60,7 @@ Create a **Transfer** object:
 transfer = cryptocurrency_module.Transfer()  
 transfer.amount = 100  
 transfer.seed = random.getrandbits(64)  
-transfer.to.CopyFrom(helpers_module.PublicKey(data=bob_keys.public_key.value))
+transfer.to.CopyFrom(types_module.PublicKey(data=bob_keys.public_key.value))
 ```
 
 Send a **Transfer** transaction. Use Alice's keys to sign the transaction:

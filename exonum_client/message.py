@@ -177,15 +177,15 @@ class ExonumMessage:
         self._author = public_key
 
         consensus_mod = ModuleManager.import_main_module("consensus")
-        helpers_mod = ModuleManager.import_main_module("helpers")
+        types_mod = ModuleManager.import_main_module("types")
 
         signed_message = consensus_mod.SignedMessage()
         signed_message.payload = self._any_tx_raw
-        signed_message.author.CopyFrom(helpers_mod.PublicKey(data=public_key.value))
+        signed_message.author.CopyFrom(types_mod.PublicKey(data=public_key.value))
 
         signature = Signature.sign(signed_message.payload, secret_key)
 
-        signed_message.signature.CopyFrom(helpers_mod.Signature(data=signature.value))
+        signed_message.signature.CopyFrom(types_mod.Signature(data=signature.value))
 
         self._signature = signature
 

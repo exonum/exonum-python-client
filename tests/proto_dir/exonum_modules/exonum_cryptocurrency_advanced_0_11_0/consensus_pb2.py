@@ -13,7 +13,7 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
-from . import helpers_pb2 as helpers__pb2
+from . import types_pb2 as types__pb2
 from . import blockchain_pb2 as blockchain__pb2
 from . import runtime_pb2 as runtime__pb2
 from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
@@ -24,9 +24,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='exonum.consensus',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x0f\x63onsensus.proto\x12\x10\x65xonum.consensus\x1a\rhelpers.proto\x1a\x10\x62lockchain.proto\x1a\rruntime.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"i\n\rSignedMessage\x12\x0f\n\x07payload\x18\x01 \x01(\x0c\x12!\n\x06\x61uthor\x18\x02 \x01(\x0b\x32\x11.exonum.PublicKey\x12$\n\tsignature\x18\x03 \x01(\x0b\x32\x11.exonum.Signature\"U\n\x07\x43onnect\x12\x0c\n\x04host\x18\x01 \x01(\t\x12(\n\x04time\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x12\n\nuser_agent\x18\x03 \x01(\t\"9\n\x06Status\x12\x0e\n\x06height\x18\x01 \x01(\x04\x12\x1f\n\tlast_hash\x18\x02 \x01(\x0b\x32\x0c.exonum.Hash\"\x80\x01\n\x07Propose\x12\x11\n\tvalidator\x18\x01 \x01(\r\x12\x0e\n\x06height\x18\x02 \x01(\x04\x12\r\n\x05round\x18\x03 \x01(\r\x12\x1f\n\tprev_hash\x18\x04 \x01(\x0b\x32\x0c.exonum.Hash\x12\"\n\x0ctransactions\x18\x05 \x03(\x0b\x32\x0c.exonum.Hash\"u\n\x07Prevote\x12\x11\n\tvalidator\x18\x01 \x01(\r\x12\x0e\n\x06height\x18\x02 \x01(\x04\x12\r\n\x05round\x18\x03 \x01(\r\x12\"\n\x0cpropose_hash\x18\x04 \x01(\x0b\x32\x0c.exonum.Hash\x12\x14\n\x0clocked_round\x18\x05 \x01(\r\"\xad\x01\n\tPrecommit\x12\x11\n\tvalidator\x18\x01 \x01(\r\x12\x0e\n\x06height\x18\x02 \x01(\x04\x12\r\n\x05round\x18\x03 \x01(\r\x12\"\n\x0cpropose_hash\x18\x04 \x01(\x0b\x32\x0c.exonum.Hash\x12 \n\nblock_hash\x18\x05 \x01(\x0b\x32\x0c.exonum.Hash\x12(\n\x04time\x18\x06 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"\x84\x01\n\rBlockResponse\x12\x1d\n\x02to\x18\x01 \x01(\x0b\x32\x11.exonum.PublicKey\x12\x1c\n\x05\x62lock\x18\x02 \x01(\x0b\x32\r.exonum.Block\x12\x12\n\nprecommits\x18\x03 \x03(\x0c\x12\"\n\x0ctransactions\x18\x04 \x03(\x0b\x32\x0c.exonum.Hash\"K\n\x14TransactionsResponse\x12\x1d\n\x02to\x18\x01 \x01(\x0b\x32\x11.exonum.PublicKey\x12\x14\n\x0ctransactions\x18\x02 \x03(\x0c\"c\n\x0eProposeRequest\x12\x1d\n\x02to\x18\x01 \x01(\x0b\x32\x11.exonum.PublicKey\x12\x0e\n\x06height\x18\x02 \x01(\x04\x12\"\n\x0cpropose_hash\x18\x03 \x01(\x0b\x32\x0c.exonum.Hash\"O\n\x13TransactionsRequest\x12\x1d\n\x02to\x18\x01 \x01(\x0b\x32\x11.exonum.PublicKey\x12\x19\n\x03txs\x18\x02 \x03(\x0b\x32\x0c.exonum.Hash\"\x97\x01\n\x0fPrevotesRequest\x12\x1d\n\x02to\x18\x01 \x01(\x0b\x32\x11.exonum.PublicKey\x12\x0e\n\x06height\x18\x02 \x01(\x04\x12\r\n\x05round\x18\x03 \x01(\r\x12\"\n\x0cpropose_hash\x18\x04 \x01(\x0b\x32\x0c.exonum.Hash\x12\"\n\nvalidators\x18\x05 \x01(\x0b\x32\x0e.exonum.BitVec\"-\n\x0cPeersRequest\x12\x1d\n\x02to\x18\x01 \x01(\x0b\x32\x11.exonum.PublicKey\"=\n\x0c\x42lockRequest\x12\x1d\n\x02to\x18\x01 \x01(\x0b\x32\x11.exonum.PublicKey\x12\x0e\n\x06height\x18\x02 \x01(\x04\"\xe4\x05\n\rExonumMessage\x12\'\n\x06\x61ny_tx\x18\x01 \x01(\x0b\x32\x15.exonum.runtime.AnyTxH\x00\x12,\n\x07\x63onnect\x18\x02 \x01(\x0b\x32\x19.exonum.consensus.ConnectH\x00\x12*\n\x06status\x18\x03 \x01(\x0b\x32\x18.exonum.consensus.StatusH\x00\x12\x30\n\tprecommit\x18\x04 \x01(\x0b\x32\x1b.exonum.consensus.PrecommitH\x00\x12,\n\x07propose\x18\x05 \x01(\x0b\x32\x19.exonum.consensus.ProposeH\x00\x12,\n\x07prevote\x18\x06 \x01(\x0b\x32\x19.exonum.consensus.PrevoteH\x00\x12G\n\x15transactions_response\x18\x07 \x01(\x0b\x32&.exonum.consensus.TransactionsResponseH\x00\x12\x39\n\x0e\x62lock_response\x18\x08 \x01(\x0b\x32\x1f.exonum.consensus.BlockResponseH\x00\x12;\n\x0fpropose_request\x18\t \x01(\x0b\x32 .exonum.consensus.ProposeRequestH\x00\x12\x45\n\x14transactions_request\x18\n \x01(\x0b\x32%.exonum.consensus.TransactionsRequestH\x00\x12=\n\x10prevotes_request\x18\x0b \x01(\x0b\x32!.exonum.consensus.PrevotesRequestH\x00\x12\x37\n\rpeers_request\x18\x0c \x01(\x0b\x32\x1e.exonum.consensus.PeersRequestH\x00\x12\x37\n\rblock_request\x18\r \x01(\x0b\x32\x1e.exonum.consensus.BlockRequestH\x00\x42\t\n\x07messageb\x06proto3')
+  serialized_pb=_b('\n\x0f\x63onsensus.proto\x12\x10\x65xonum.consensus\x1a\rtypes.proto\x1a\x10\x62lockchain.proto\x1a\rruntime.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"i\n\rSignedMessage\x12\x0f\n\x07payload\x18\x01 \x01(\x0c\x12!\n\x06\x61uthor\x18\x02 \x01(\x0b\x32\x11.exonum.PublicKey\x12$\n\tsignature\x18\x03 \x01(\x0b\x32\x11.exonum.Signature\"U\n\x07\x43onnect\x12\x0c\n\x04host\x18\x01 \x01(\t\x12(\n\x04time\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x12\n\nuser_agent\x18\x03 \x01(\t\"9\n\x06Status\x12\x0e\n\x06height\x18\x01 \x01(\x04\x12\x1f\n\tlast_hash\x18\x02 \x01(\x0b\x32\x0c.exonum.Hash\"\x80\x01\n\x07Propose\x12\x11\n\tvalidator\x18\x01 \x01(\r\x12\x0e\n\x06height\x18\x02 \x01(\x04\x12\r\n\x05round\x18\x03 \x01(\r\x12\x1f\n\tprev_hash\x18\x04 \x01(\x0b\x32\x0c.exonum.Hash\x12\"\n\x0ctransactions\x18\x05 \x03(\x0b\x32\x0c.exonum.Hash\"u\n\x07Prevote\x12\x11\n\tvalidator\x18\x01 \x01(\r\x12\x0e\n\x06height\x18\x02 \x01(\x04\x12\r\n\x05round\x18\x03 \x01(\r\x12\"\n\x0cpropose_hash\x18\x04 \x01(\x0b\x32\x0c.exonum.Hash\x12\x14\n\x0clocked_round\x18\x05 \x01(\r\"\xad\x01\n\tPrecommit\x12\x11\n\tvalidator\x18\x01 \x01(\r\x12\x0e\n\x06height\x18\x02 \x01(\x04\x12\r\n\x05round\x18\x03 \x01(\r\x12\"\n\x0cpropose_hash\x18\x04 \x01(\x0b\x32\x0c.exonum.Hash\x12 \n\nblock_hash\x18\x05 \x01(\x0b\x32\x0c.exonum.Hash\x12(\n\x04time\x18\x06 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"\x84\x01\n\rBlockResponse\x12\x1d\n\x02to\x18\x01 \x01(\x0b\x32\x11.exonum.PublicKey\x12\x1c\n\x05\x62lock\x18\x02 \x01(\x0b\x32\r.exonum.Block\x12\x12\n\nprecommits\x18\x03 \x03(\x0c\x12\"\n\x0ctransactions\x18\x04 \x03(\x0b\x32\x0c.exonum.Hash\"K\n\x14TransactionsResponse\x12\x1d\n\x02to\x18\x01 \x01(\x0b\x32\x11.exonum.PublicKey\x12\x14\n\x0ctransactions\x18\x02 \x03(\x0c\"c\n\x0eProposeRequest\x12\x1d\n\x02to\x18\x01 \x01(\x0b\x32\x11.exonum.PublicKey\x12\x0e\n\x06height\x18\x02 \x01(\x04\x12\"\n\x0cpropose_hash\x18\x03 \x01(\x0b\x32\x0c.exonum.Hash\"O\n\x13TransactionsRequest\x12\x1d\n\x02to\x18\x01 \x01(\x0b\x32\x11.exonum.PublicKey\x12\x19\n\x03txs\x18\x02 \x03(\x0b\x32\x0c.exonum.Hash\"\x97\x01\n\x0fPrevotesRequest\x12\x1d\n\x02to\x18\x01 \x01(\x0b\x32\x11.exonum.PublicKey\x12\x0e\n\x06height\x18\x02 \x01(\x04\x12\r\n\x05round\x18\x03 \x01(\r\x12\"\n\x0cpropose_hash\x18\x04 \x01(\x0b\x32\x0c.exonum.Hash\x12\"\n\nvalidators\x18\x05 \x01(\x0b\x32\x0e.exonum.BitVec\"-\n\x0cPeersRequest\x12\x1d\n\x02to\x18\x01 \x01(\x0b\x32\x11.exonum.PublicKey\"=\n\x0c\x42lockRequest\x12\x1d\n\x02to\x18\x01 \x01(\x0b\x32\x11.exonum.PublicKey\x12\x0e\n\x06height\x18\x02 \x01(\x04\"\xe4\x05\n\rExonumMessage\x12\'\n\x06\x61ny_tx\x18\x01 \x01(\x0b\x32\x15.exonum.runtime.AnyTxH\x00\x12,\n\x07\x63onnect\x18\x02 \x01(\x0b\x32\x19.exonum.consensus.ConnectH\x00\x12*\n\x06status\x18\x03 \x01(\x0b\x32\x18.exonum.consensus.StatusH\x00\x12\x30\n\tprecommit\x18\x04 \x01(\x0b\x32\x1b.exonum.consensus.PrecommitH\x00\x12,\n\x07propose\x18\x05 \x01(\x0b\x32\x19.exonum.consensus.ProposeH\x00\x12,\n\x07prevote\x18\x06 \x01(\x0b\x32\x19.exonum.consensus.PrevoteH\x00\x12G\n\x15transactions_response\x18\x07 \x01(\x0b\x32&.exonum.consensus.TransactionsResponseH\x00\x12\x39\n\x0e\x62lock_response\x18\x08 \x01(\x0b\x32\x1f.exonum.consensus.BlockResponseH\x00\x12;\n\x0fpropose_request\x18\t \x01(\x0b\x32 .exonum.consensus.ProposeRequestH\x00\x12\x45\n\x14transactions_request\x18\n \x01(\x0b\x32%.exonum.consensus.TransactionsRequestH\x00\x12=\n\x10prevotes_request\x18\x0b \x01(\x0b\x32!.exonum.consensus.PrevotesRequestH\x00\x12\x37\n\rpeers_request\x18\x0c \x01(\x0b\x32\x1e.exonum.consensus.PeersRequestH\x00\x12\x37\n\rblock_request\x18\r \x01(\x0b\x32\x1e.exonum.consensus.BlockRequestH\x00\x42\t\n\x07messageb\x06proto3')
   ,
-  dependencies=[helpers__pb2.DESCRIPTOR,blockchain__pb2.DESCRIPTOR,runtime__pb2.DESCRIPTOR,google_dot_protobuf_dot_timestamp__pb2.DESCRIPTOR,])
+  dependencies=[types__pb2.DESCRIPTOR,blockchain__pb2.DESCRIPTOR,runtime__pb2.DESCRIPTOR,google_dot_protobuf_dot_timestamp__pb2.DESCRIPTOR,])
 
 
 
@@ -761,29 +761,29 @@ _EXONUMMESSAGE = _descriptor.Descriptor(
   serialized_end=2196,
 )
 
-_SIGNEDMESSAGE.fields_by_name['author'].message_type = helpers__pb2._PUBLICKEY
-_SIGNEDMESSAGE.fields_by_name['signature'].message_type = helpers__pb2._SIGNATURE
+_SIGNEDMESSAGE.fields_by_name['author'].message_type = types__pb2._PUBLICKEY
+_SIGNEDMESSAGE.fields_by_name['signature'].message_type = types__pb2._SIGNATURE
 _CONNECT.fields_by_name['time'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
-_STATUS.fields_by_name['last_hash'].message_type = helpers__pb2._HASH
-_PROPOSE.fields_by_name['prev_hash'].message_type = helpers__pb2._HASH
-_PROPOSE.fields_by_name['transactions'].message_type = helpers__pb2._HASH
-_PREVOTE.fields_by_name['propose_hash'].message_type = helpers__pb2._HASH
-_PRECOMMIT.fields_by_name['propose_hash'].message_type = helpers__pb2._HASH
-_PRECOMMIT.fields_by_name['block_hash'].message_type = helpers__pb2._HASH
+_STATUS.fields_by_name['last_hash'].message_type = types__pb2._HASH
+_PROPOSE.fields_by_name['prev_hash'].message_type = types__pb2._HASH
+_PROPOSE.fields_by_name['transactions'].message_type = types__pb2._HASH
+_PREVOTE.fields_by_name['propose_hash'].message_type = types__pb2._HASH
+_PRECOMMIT.fields_by_name['propose_hash'].message_type = types__pb2._HASH
+_PRECOMMIT.fields_by_name['block_hash'].message_type = types__pb2._HASH
 _PRECOMMIT.fields_by_name['time'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
-_BLOCKRESPONSE.fields_by_name['to'].message_type = helpers__pb2._PUBLICKEY
+_BLOCKRESPONSE.fields_by_name['to'].message_type = types__pb2._PUBLICKEY
 _BLOCKRESPONSE.fields_by_name['block'].message_type = blockchain__pb2._BLOCK
-_BLOCKRESPONSE.fields_by_name['transactions'].message_type = helpers__pb2._HASH
-_TRANSACTIONSRESPONSE.fields_by_name['to'].message_type = helpers__pb2._PUBLICKEY
-_PROPOSEREQUEST.fields_by_name['to'].message_type = helpers__pb2._PUBLICKEY
-_PROPOSEREQUEST.fields_by_name['propose_hash'].message_type = helpers__pb2._HASH
-_TRANSACTIONSREQUEST.fields_by_name['to'].message_type = helpers__pb2._PUBLICKEY
-_TRANSACTIONSREQUEST.fields_by_name['txs'].message_type = helpers__pb2._HASH
-_PREVOTESREQUEST.fields_by_name['to'].message_type = helpers__pb2._PUBLICKEY
-_PREVOTESREQUEST.fields_by_name['propose_hash'].message_type = helpers__pb2._HASH
-_PREVOTESREQUEST.fields_by_name['validators'].message_type = helpers__pb2._BITVEC
-_PEERSREQUEST.fields_by_name['to'].message_type = helpers__pb2._PUBLICKEY
-_BLOCKREQUEST.fields_by_name['to'].message_type = helpers__pb2._PUBLICKEY
+_BLOCKRESPONSE.fields_by_name['transactions'].message_type = types__pb2._HASH
+_TRANSACTIONSRESPONSE.fields_by_name['to'].message_type = types__pb2._PUBLICKEY
+_PROPOSEREQUEST.fields_by_name['to'].message_type = types__pb2._PUBLICKEY
+_PROPOSEREQUEST.fields_by_name['propose_hash'].message_type = types__pb2._HASH
+_TRANSACTIONSREQUEST.fields_by_name['to'].message_type = types__pb2._PUBLICKEY
+_TRANSACTIONSREQUEST.fields_by_name['txs'].message_type = types__pb2._HASH
+_PREVOTESREQUEST.fields_by_name['to'].message_type = types__pb2._PUBLICKEY
+_PREVOTESREQUEST.fields_by_name['propose_hash'].message_type = types__pb2._HASH
+_PREVOTESREQUEST.fields_by_name['validators'].message_type = types__pb2._BITVEC
+_PEERSREQUEST.fields_by_name['to'].message_type = types__pb2._PUBLICKEY
+_BLOCKREQUEST.fields_by_name['to'].message_type = types__pb2._PUBLICKEY
 _EXONUMMESSAGE.fields_by_name['any_tx'].message_type = runtime__pb2._ANYTX
 _EXONUMMESSAGE.fields_by_name['connect'].message_type = _CONNECT
 _EXONUMMESSAGE.fields_by_name['status'].message_type = _STATUS
