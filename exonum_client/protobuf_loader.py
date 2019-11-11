@@ -161,6 +161,12 @@ class ProtobufLoader:
         sys.path.remove(self._proto_dir)
         shutil.rmtree(self._proto_dir)
 
+        # Unload any previously loaded `exonum_main` modules from test_exonum_client:
+        loaded_modules = list(sys.modules.keys())
+        for module in loaded_modules:
+            if module.startswith("exonum_modules"):
+                del sys.modules[module]
+
     @staticmethod
     def _save_proto_file(path: str, file_content: str) -> None:
         with open(path, "wt") as file_out:
