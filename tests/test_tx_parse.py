@@ -17,12 +17,6 @@ class TestTxParse(unittest.TestCase):
         # Add a folder with the pre-compiled Protobuf messages to the path (so that it could be imported):
         sys.path.append(os.path.abspath("tests/proto_dir"))
 
-        # Unload any previously loaded `exonum_main` modules from test_exonum_client:
-        loaded_modules = list(sys.modules.keys())
-        for module in loaded_modules:
-            if module.startswith("exonum_modules"):
-                del sys.modules[module]
-
         # Gen init data:
         keys = KeyPair.generate()
 
