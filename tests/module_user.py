@@ -6,12 +6,7 @@ import sys
 import os
 
 
-class ModuleUserTestCase(unittest.TestCase):
-    def setUp(self):
-        pass
-
-
-class PrecompiledModuleUserTestCase(ModuleUserTestCase):
+class PrecompiledModuleUserTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Add a folder with pre-compiled Protobuf messages to the path (so it can be imported):
