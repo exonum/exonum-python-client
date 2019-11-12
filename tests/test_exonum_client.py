@@ -49,7 +49,7 @@ def mock_requests_get(url, params=None):
     exonum_public_base = EXONUM_URL_BASE.format(EXONUM_PROTO, EXONUM_IP, EXONUM_PUBLIC_PORT)
     _exonum_private_base = EXONUM_URL_BASE.format(EXONUM_PROTO, EXONUM_IP, EXONUM_PRIVATE_PORT)
 
-    proto_sources_endpoint = exonum_public_base + SYSTEM_ENDPOINT_POSTFIX.format("proto-sources")
+    proto_sources_endpoint = exonum_public_base + "runtimes/rust/proto-sources"
 
     healthcheck_endpoint = exonum_public_base + SYSTEM_ENDPOINT_POSTFIX.format("healthcheck")
     stats_endpoint = exonum_public_base + SYSTEM_ENDPOINT_POSTFIX.format("stats")
