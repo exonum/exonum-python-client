@@ -55,7 +55,7 @@ class ProtobufLoader:
     >>> ... # Some code
     >>> loader.deinitialize()
 
-    If you forget to call `deinitialize` (or if the code enters early, for example because of unhandled exception),
+    If you forget to call `deinitialize` (or if the code exits earlier, for example because of unhandled exception),
     the recourses created in the temp folder (which may differ depending on your OS) will not be removed.
 
     Creating more than one entity at a time will result in retrieving the same object:
@@ -150,7 +150,7 @@ class ProtobufLoader:
         # Decrement the reference counter:
         ProtobufLoader._reference_count -= 1
 
-        # If there is still more than one reference, nothing should be done:
+        # If there is at least one reference, nothing should be done:
         if ProtobufLoader._reference_count > 0:
             return
 
