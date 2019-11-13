@@ -17,7 +17,7 @@ from .message import ExonumMessage
 # Example of a formatted prefix: "https://127.0.0.1:8000"
 _ENDPOINT_PREFIX = "{}://{}:{}"
 
-_PROTO_SOURCES_URL = _ENDPOINT_PREFIX + "/runtimes/rust/{}"
+_PROTO_SOURCES_URL = _ENDPOINT_PREFIX + "/api/runtimes/rust/{}"
 _TX_URL = _ENDPOINT_PREFIX + "/api/explorer/v1/transactions"
 _BLOCK_URL = _ENDPOINT_PREFIX + "/api/explorer/v1/block"
 _BLOCKS_URL = _ENDPOINT_PREFIX + "/api/explorer/v1/blocks"
@@ -454,7 +454,7 @@ class ExonumClient(ProtobufProviderInterface):
 
     def get_proto_sources_for_artifact(self, runtime_id: int, artifact_name: str) -> List[ProtoFile]:
         # Performs a GET request to the `proto-sources` Exonum endpoint with a provided runtime ID and an artifact name:
-        params = {"artifact": "{}:{}".format(runtime_id, artifact_name)}
+        params = {"artifact": "{}".format(artifact_name)}
 
         return self._get_proto_sources(params=params)
 

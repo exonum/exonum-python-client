@@ -49,7 +49,7 @@ def mock_requests_get(url, params=None):
     exonum_public_base = EXONUM_URL_BASE.format(EXONUM_PROTO, EXONUM_IP, EXONUM_PUBLIC_PORT)
     _exonum_private_base = EXONUM_URL_BASE.format(EXONUM_PROTO, EXONUM_IP, EXONUM_PRIVATE_PORT)
 
-    proto_sources_endpoint = exonum_public_base + "runtimes/rust/proto-sources"
+    proto_sources_endpoint = exonum_public_base + "api/runtimes/rust/proto-sources"
 
     healthcheck_endpoint = exonum_public_base + SYSTEM_ENDPOINT_POSTFIX.format("healthcheck")
     stats_endpoint = exonum_public_base + SYSTEM_ENDPOINT_POSTFIX.format("stats")
@@ -60,7 +60,7 @@ def mock_requests_get(url, params=None):
         # Proto sources without params (main sources):
         (proto_sources_endpoint, "None"): proto_sources_response("main"),
         # Proto sources for the supervisor service:
-        (proto_sources_endpoint, "{'artifact': '0:exonum-supervisor:0.11.0'}"): proto_sources_response("supervisor"),
+        (proto_sources_endpoint, "{'artifact': 'exonum-supervisor:0.11.0'}"): proto_sources_response("supervisor"),
         # System endpoints:
         (healthcheck_endpoint, "None"): ok_response(),
         (stats_endpoint, "None"): ok_response(),
