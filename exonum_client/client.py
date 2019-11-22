@@ -438,8 +438,9 @@ class ExonumClient(ProtobufProviderInterface):
 
     # Implementation of ProtobufProviderInterface:
     def _get_proto_sources(self, params: Optional[Dict[str, str]] = None) -> List[ProtoFile]:
-        proto_sources_endpoint = _RUST_RUNTIME_URL.format(self.schema, self.hostname,
-                                                           self.public_api_port, "proto-sources")
+        proto_sources_endpoint = _RUST_RUNTIME_URL.format(
+            self.schema, self.hostname, self.public_api_port, "proto-sources"
+        )
         response = _get(proto_sources_endpoint, params=params)
         if response.status_code != 200 or "application/json" not in response.headers["content-type"]:
             raise RuntimeError("Unsuccessfully attempted to retrieve Protobuf sources: {}".format(response.content))
