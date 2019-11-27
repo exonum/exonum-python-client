@@ -1,5 +1,6 @@
 """Module with the Bindings to Protoc."""
 from typing import List, Optional
+import logging
 import os
 import shutil
 import subprocess
@@ -25,7 +26,7 @@ class Protoc:
     def __init__(self) -> None:
         protoc_path = _find_protoc()
         if protoc_path is None:
-            print("Protobuf compiler not found")
+            logging.critical("Protobuf compiler not found.")
             raise RuntimeError("protoc was not found, make sure that it is installed")
 
         self._protoc_path = protoc_path
@@ -77,9 +78,9 @@ class Protoc:
         code = protoc_process.wait()
         (_, stderr) = protoc_process.communicate()
         if code == 0:
-            print("Proto files were compiled successfully")
+            logging.info("Proto files were compiled successfully.")
         else:
-            print("Error acquired while compiling files: {}".format(stderr.decode("utf-8")))
+            logging.error("Error acquired while compiling files: {}.".format(stderr.decode("utf-8")))
 
         modules = [proto_path.replace(".proto", "") for proto_path in proto_files]
         for file in filter(lambda f: f.endswith(".py"), os.listdir(path_out)):

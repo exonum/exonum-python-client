@@ -1,4 +1,6 @@
 """ Module with a MapProof Representation of the Branch Node. """
+import logging
+
 from exonum_client.crypto import Hash
 from .constants import PROOF_PATH_SIZE
 from .proof_path import ProofPath
@@ -17,6 +19,7 @@ class BranchNode:
     @staticmethod
     def _verify_kind(kind: str) -> None:
         if kind not in ["left", "right"]:
+            logging.critical(f"Incorrect child kind: {kind}. Should be one of these: 'left', 'right'.")
             raise ValueError("Incorrect child kind: {}".format(kind))
 
     def _hash_slice(self, kind: str) -> slice:

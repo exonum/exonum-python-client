@@ -2,6 +2,7 @@
 from typing import Optional
 from functools import total_ordering
 from enum import IntEnum
+import logging
 
 from ..utils import div_ceil, reset_bits, leb128_encode_unsigned
 
@@ -47,6 +48,7 @@ class ProofPath:
         length = len(bits)
         if length == 0 or length > 8 * KEY_SIZE:
             error = "Incorrect MapProof path length: {}".format(length)
+            logging.critical(error)
             raise MalformedMapProofError.malformed_entry(bits, error)
 
         data = [0] * KEY_SIZE
@@ -58,14 +60,17 @@ class ProofPath:
                 data[i // 8] += 1 << (i % 8)
             else:
                 error = "Unexpected MapProof path symbol: {}".format(char)
+                logging.critical(error)
                 raise MalformedMapProofError.malformed_entry(bits, error)
 
         data_bytes = bytes(data)
 
+        proof_path = ProofPath.from_bytes(data_bytes)
         if length == 8 * KEY_SIZE:
-            return ProofPath.from_bytes(data_bytes)
+            proof_path = proof_path.prefix(length)
 
-        return ProofPath.from_bytes(data_bytes).prefix(length)
+        logging.debug("Successfully parsed a ProofPath from a string.")
+        return proof_path
 
     @staticmethod
     def from_bytes(data_bytes: bytes) -> "ProofPath":
@@ -88,6 +93,7 @@ class ProofPath:
             Length of provided array is not equal to KEY_SIZE constant.
         """
         if len(data_bytes) != KEY_SIZE:
+            logging.critical(f"Wrong length of the provided byte sequence: expected {KEY_SIZE}, got {len(data_bytes)}")
             raise ValueError("Incorrect data size")
 
         inner = bytearray([0] * PROOF_PATH_SIZE)
@@ -127,7 +133,7 @@ class ProofPath:
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, ProofPath):
-            raise ValueError("Attempt to compare ProofPath with an object of a different type")
+            raise TypeError("Attempt to compare ProofPath with an object of a different type.")
         return len(self) == len(other) and self.starts_with(other)
 
     def bit(self, idx: int) -> int:
@@ -139,7 +145,7 @@ class ProofPath:
 
     def __lt__(self, other: object) -> bool:
         if not isinstance(other, ProofPath):
-            raise ValueError("Attempt to compare ProofPath with an object of a different type")
+            raise TypeError("Attempt to compare ProofPath with an object of a different type.")
 
         if self.start() != other.start():
             return NotImplemented
@@ -195,7 +201,8 @@ class ProofPath:
         key_len = KEY_SIZE * 8
 
         if end >= key_len:
-            raise ValueError("Length of the prefix ({}) should not be greater than KEY_SIZE * 8".format(end))
+            logging.critical(f"Length of the prefix ({end}) should not be greater than KEY_SIZE * 8 ({key_len})")
+            raise ValueError(f"Length of the prefix ({end}) should not be greater than KEY_SIZE * 8 ({key_len})")
 
         key = ProofPath(bytearray(self.data_bytes), self._start)
         key.set_end(end)
@@ -205,9 +212,11 @@ class ProofPath:
     def match_len(self, other: "ProofPath", from_bit: int) -> int:
         """ Returns the length of the common segment. """
         if self.start() != other.start():
+            logging.critical(f"Misaligned bit ranges: {self.start()} != {other.start()}")
             raise ValueError("Misaligned bit ranges")
 
         if from_bit < self.start() or from_bit > self.end():
+            logging.critical(f"Incorrect from_bit value: {from_bit}")
             raise ValueError("Incorrect from_bit value: {}".format(from_bit))
 
         len_to_the_end = min(len(self), len(other))

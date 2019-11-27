@@ -2,6 +2,7 @@
 
 from typing import Dict, List, Tuple, Any, Callable
 import itertools
+import logging
 
 from exonum_client.crypto import Hash
 from ..utils import is_field_hash, is_field_int, calculate_height
@@ -21,6 +22,7 @@ class HashedEntry:
     def parse(cls, data: Dict[Any, Any]) -> "HashedEntry":
         """ Creates a HashedEntry object from the provided dict. """
         if not isinstance(data, dict) or not is_field_hash(data, "hash"):
+            logging.critical("Could not parse `hash` from dict, which is required for HashedEntry object creation.")
             raise MalformedListProofError.parse_error(str(data))
 
         key = ProofListKey.parse(data)
@@ -28,7 +30,7 @@ class HashedEntry:
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, HashedEntry):
-            raise ValueError("Attempt to compare HashedEntry with an object of a different type")
+            raise TypeError("Attempt to compare HashedEntry with an object of a different type.")
         return self.key == other.key and self.entry_hash == other.entry_hash
 
 
@@ -45,6 +47,7 @@ def _hash_layer(layer: List[HashedEntry], last_index: int) -> List[HashedEntry]:
         if len(layer) > right_idx:
             # Verify that entries are in the correct order:
             if not layer[left_idx].key.is_left() or layer[right_idx].key.index != layer[left_idx].key.index + 1:
+                logging.critical("Missing hash.")
                 raise MalformedListProofError.missing_hash()
 
             left_hash = layer[left_idx].entry_hash
@@ -54,6 +57,7 @@ def _hash_layer(layer: List[HashedEntry], last_index: int) -> List[HashedEntry]:
             # If there is an odd number of entries, the index of the last one should be equal to provided last_index:
             full_layer_length = last_index + 1
             if full_layer_length % 2 == 0 or layer[left_idx].key.index != last_index:
+                logging.critical("Missing hash.")
                 raise MalformedListProofError.missing_hash()
 
             left_hash = layer[left_idx].entry_hash
@@ -156,12 +160,14 @@ class ListProof:
             or not isinstance(proof_dict.get("entries"), list)
             or not is_field_int(proof_dict, "length")
         ):
+            logging.critical("The structure of the provided dict does not match the expected one.")
             raise MalformedListProofError.parse_error(str(proof_dict))
 
         proof = [HashedEntry.parse(entry) for entry in proof_dict["proof"]]
         entries = [cls._parse_entry(entry) for entry in proof_dict["entries"]]
         length = proof_dict["length"]
 
+        logging.debug("Successfully parsed ListProof from the dict.")
         return ListProof(proof, entries, length, value_to_bytes)
 
     def validate(self, expected_hash: Hash) -> List[Tuple[int, Any]]:
@@ -186,19 +192,22 @@ class ListProof:
             If the proof is malformed, an exception `MalformedListProofError` is raised.
         """
         if not isinstance(expected_hash, Hash):
-            raise ValueError("expected_hash should be Hash")
+            raise TypeError("`expected_hash` should be of type Hash.")
 
         tree_root = self._collect()
 
         calculated_hash = Hasher.hash_list_node(self._length, tree_root)
         if calculated_hash != expected_hash:
+            logging.critical("Provided root hash does not match the calculated one.")
             raise ListProofVerificationError(expected_hash.value, calculated_hash.value)
+        logging.debug("Successfully validated the provided proof against the given expected hash.")
 
         return self._entries
 
     @staticmethod
     def _parse_entry(data: List[Any]) -> Tuple[int, Any]:
         if not isinstance(data, list) or not len(data) == 2:
+            logging.critical("Could not parse a list.")
             raise MalformedListProofError.parse_error(str(data))
         return data[0], data[1]
 
@@ -213,6 +222,7 @@ class ListProof:
     def _check_duplicates(entries: List[Any]) -> None:
         for idx in range(1, len(entries)):
             if entries[idx][0] == entries[idx - 1][0]:
+                logging.critical(MalformedListProofError.ErrorKind.DUPLICATE_KEY)
                 raise MalformedListProofError.duplicate_key()
 
     def _collect(self) -> Hash:
@@ -235,18 +245,22 @@ class ListProof:
 
         # Check an edge case when the list contains no elements:
         if tree_height == 0 and (not self._proof or not self._entries):
+            logging.critical(MalformedListProofError.ErrorKind.NON_EMPTY_PROOF)
             raise MalformedListProofError.non_empty_proof()
 
         # If there are no entries, the proof should contain only a single root hash:
         if not self._entries:
             if len(self._proof) != 1:
                 if self._proof:
+                    logging.critical(MalformedListProofError.ErrorKind.MISSING_HASH)
                     raise MalformedListProofError.missing_hash()
+                logging.critical(MalformedListProofError.ErrorKind.UNEXPECTED_BRANCH)
                 raise MalformedListProofError.unexpected_branch()
 
             if self._proof[0].key == ProofListKey(tree_height, 0):
                 return self._proof[0].entry_hash
 
+            logging.critical(MalformedListProofError.ErrorKind.UNEXPECTED_BRANCH)
             raise MalformedListProofError.unexpected_branch()
 
         # Sort the entries and the proof:
@@ -261,11 +275,13 @@ class ListProof:
         for entry in self._proof:
             height = entry.key.height
             if height == 0:
+                logging.critical(MalformedListProofError.ErrorKind.UNEXPECTED_LEAF)
                 raise MalformedListProofError.unexpected_leaf()
 
             # self._length -1 is the index of the last element at `height = 1`.
             # This index is divided by 2 with each new height:
             if height >= tree_height or entry.key.index > (self._length - 1) >> (height - 1):
+                logging.critical(MalformedListProofError.ErrorKind.UNEXPECTED_BRANCH)
                 raise MalformedListProofError.unexpected_branch()
 
         # Create the first layer:

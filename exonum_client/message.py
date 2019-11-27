@@ -2,6 +2,7 @@
 
 from typing import Dict, Optional, Tuple, Any
 import json
+import logging
 
 from google.protobuf.message import Message as ProtobufMessage, DecodeError as ProtobufDecodeError
 
@@ -158,8 +159,10 @@ class ExonumMessage:
             exonum_message = cls(service_id, message_id, decoded_msg, prebuilt=exonum_msg.any_tx.SerializeToString())
 
             cls._set_signature_data(exonum_message, author, signature, bytes.fromhex(message_hex))
+            logging.debug("Exonum message parsed successfully.")
             return exonum_message
         except ProtobufDecodeError:
+            logging.error("Failed to parse an Exonum message.")
             return None
 
     def sign(self, keys: KeyPair) -> None:
@@ -191,6 +194,8 @@ class ExonumMessage:
 
         self._signed_tx_raw = bytes(signed_message.SerializeToString())
 
+        logging.debug("Signed the message with the provided pair of keys.")
+
     def validate(self) -> bool:
         """
         Validates the message.
@@ -208,6 +213,7 @@ class ExonumMessage:
 
             return self._signature.verify(signed_msg.payload, self._author)
         except (ProtobufDecodeError, ValueError):
+            logging.error("Failed to parse a message.")
             return False
 
     def pack_into_json(self) -> str:
@@ -226,7 +232,8 @@ class ExonumMessage:
             An error will be raised on attempt to call `pack_into_json` with an unsigned message.
         """
         if self._signed_tx_raw is None:
-            raise RuntimeError("Attempt to call `to_json` on an unsigned message.")
+            logging.critical("Attempt to call `to_json` on an unsigned message into JSON format.")
+            raise RuntimeError("Attempt to pack an unsigned message.")
         return json.dumps({"tx_body": self._signed_tx_raw.hex()}, indent=4)
 
     def hash(self) -> Hash:
