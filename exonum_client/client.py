@@ -234,9 +234,9 @@ class ExonumClient(ProtobufProviderInterface):
         return _get(_SYSTEM_URL.format(self.schema, self.hostname, self.public_api_port, "services"))
 
 
-    def get_instance_id_by_name(self, name: str) -> int:
+    def get_instance_id_by_name(self, name: str) -> Optional[int]:
         """
-        Gets an instance id with provided name.
+        Gets an ID of the service instance with the provided name.
 
         Example:
 
@@ -252,21 +252,24 @@ class ExonumClient(ProtobufProviderInterface):
         -------
         result: int
             ID of the instance.
+
+        Raises
+        ------
+        RuntimeError
+            An error will be raised if a response code is not 200.
         """
-        id = None
-        available_services = self.available_services().json()
-        if not "services" in available_services:
-            raise RuntimeError("No services exist")
+        response = self.available_services()
+
+        if response.status_code != 200:
+            raise RuntimeError("Couldn't get info about available services")
+
+        available_services = response.json()
 
         for service in available_services["services"]:
             if service["name"] == name:
-                id = service["id"]
-                break
+                return service["id"]
 
-        if id is None:
-            raise RuntimeError("No service with name: {}".format(name))
-
-        return id
+        return None
 
 
     def send_transaction(self, message: ExonumMessage) -> requests.Response:
