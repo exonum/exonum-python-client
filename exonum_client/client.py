@@ -233,6 +233,45 @@ class ExonumClient(ProtobufProviderInterface):
         """
         return _get(_SYSTEM_URL.format(self.schema, self.hostname, self.public_api_port, "services"))
 
+
+    def get_instance_id_by_name(self, name: str) -> Optional[int]:
+        """
+        Gets an ID of the service instance with the provided name.
+
+        Example:
+
+        >>> id = client.get_instance_id_by_name("cryptocurrency")
+        >>> id
+        42
+
+        Parameters
+        ----------
+        name: Name of the service.
+
+        Returns
+        -------
+        result: int
+            ID of the instance.
+
+        Raises
+        ------
+        RuntimeError
+            An error will be raised if a response code is not 200.
+        """
+        response = self.available_services()
+
+        if response.status_code != 200:
+            raise RuntimeError("Couldn't get info about available services")
+
+        available_services = response.json()
+
+        for service in available_services["services"]:
+            if service["name"] == name:
+                return service["id"]
+
+        return None
+
+
     def send_transaction(self, message: ExonumMessage) -> requests.Response:
         """
         Sends a transaction into an Exonum node via REST API.
