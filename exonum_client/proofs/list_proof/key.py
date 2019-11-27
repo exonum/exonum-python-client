@@ -1,6 +1,7 @@
 """ ProofListKey Module. """
 from typing import Dict, Any
 from functools import total_ordering
+import logging
 
 from ..utils import is_field_int
 from .errors import MalformedListProofError
@@ -18,6 +19,7 @@ class ProofListKey:
     def parse(cls, data: Dict[Any, Any]) -> "ProofListKey":
         """ Parses ProofListKey from dict. """
         if not is_field_int(data, "index") or not is_field_int(data, "height"):
+            logging.critical(f"Could not parse ProofListKey from dict.")
             raise MalformedListProofError.parse_error(str(data))
 
         return cls(data["height"], data["index"])
@@ -32,12 +34,12 @@ class ProofListKey:
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, ProofListKey):
-            raise ValueError("Attempt to compare ProofListKey with an object of a different type")
+            raise TypeError("Attempt to compare ProofListKey with an object of a different type.")
         return self.index == other.index and self.height == other.height
 
     def __lt__(self, other: object) -> bool:
         if not isinstance(other, ProofListKey):
-            raise ValueError("Attempt to compare ProofListKey with an object of a different type")
+            raise TypeError("Attempt to compare ProofListKey with an object of a different type.")
 
         # Try to compare by height, otherwise compare by index.
         if self.height != other.height:

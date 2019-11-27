@@ -1,5 +1,6 @@
 """Module with OptionalEntry of MapProof."""
 from typing import Optional, Any, Dict
+import logging
 
 from .errors import MalformedMapProofError
 
@@ -27,4 +28,5 @@ class OptionalEntry:
         if data.get("key") and data.get("value"):
             return OptionalEntry(key=data["key"], value=data["value"])
 
+        logging.critical("Failed to parse an OptionalEntry from the provided JSON dict.")
         raise MalformedMapProofError.malformed_entry(data)

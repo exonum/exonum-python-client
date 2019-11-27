@@ -7,6 +7,7 @@ This module provides you with two handy classes:
 """
 from typing import Optional, Any, Callable, Union, Iterable, List, Dict
 
+import logging
 from threading import Thread
 from websocket import WebSocket
 import requests
@@ -76,8 +77,9 @@ class Subscriber:
             self._is_running = True
             self._thread.setDaemon(True)
             self._thread.start()
+            logging.debug("Subscriber thread started successfully.")
         except RuntimeError as error:
-            print(f"Error occured during running subscriber thread: {error}")
+            logging.error(f"Error occured during running subscriber thread: {error}")
 
     def _event_processing(self) -> None:
         while self._is_running:
@@ -495,7 +497,9 @@ class ExonumClient(ProtobufProviderInterface):
         )
         response = _get(proto_sources_endpoint, params=params)
         if response.status_code != 200 or "application/json" not in response.headers["content-type"]:
+            logging.critical("Unsuccessfully attempted to retrieve Protobuf sources.")
             raise RuntimeError("Unsuccessfully attempted to retrieve Protobuf sources: {}".format(response.content))
+        logging.debug("Protobuf sources retrieve successfully.")
 
         proto_files = [
             ProtoFile(name=proto_file["name"], content=proto_file["content"]) for proto_file in response.json()
@@ -510,6 +514,7 @@ class ExonumClient(ProtobufProviderInterface):
     def get_proto_sources_for_artifact(self, runtime_id: int, artifact_name: str) -> List[ProtoFile]:
         # Raise an exception if runtime ID is not equal to the rust runtime ID
         if runtime_id != RUST_RUNTIME_ID:
+            logging.critical(f"Provided runtime ID: {runtime_id} is not equal to Rust runtime ID: {RUST_RUNTIME_ID}.")
             raise RuntimeError(
                 "Provided runtime ID: {} is not equal to Rust runtime ID: {}".format(runtime_id, RUST_RUNTIME_ID)
             )

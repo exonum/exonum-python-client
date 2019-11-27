@@ -1,5 +1,6 @@
 """MapProofBuilder module."""
 from typing import Optional, Dict, Any
+import logging
 
 from exonum_client.module_manager import ModuleManager
 from .map_proof import MapProof
@@ -48,15 +49,20 @@ class MapProofBuilder:
             elif service_name and service_module:
                 module = ModuleManager.import_service_module(service_name, service_module)
             else:
+                logging.critical("Module data not provided.")
                 raise MapProofBuilderError("Module data not provided")
 
-            return getattr(module, structure_name)
+            encoder = getattr(module, structure_name)
+            logging.debug("Successfully got encoder.")
+            return encoder
         except (ModuleNotFoundError, ImportError):
             error_data = {"main_module": main_module, "service_name": service_name, "service_module": service_module}
 
+            logging.critical(f"Incorrect module data: {error_data}")
             raise MapProofBuilderError("Incorrect module data", error_data)
         except AttributeError:
             error_data = {"service_name": structure_name}
+            logging.critical(f"Incorrect structure name: {error_data}")
             raise MapProofBuilderError("Incorrect structure name", error_data)
 
     def set_key_encoder(
@@ -148,6 +154,7 @@ class MapProofBuilder:
             rises.
         """
         if not self._key_encoder or not self._value_encoder:
+            logging.critical("Encoders are not set.")
             raise MapProofBuilderError("Encoders are not set")
 
         key_encoder_func = build_encoder_function(self._key_encoder)
