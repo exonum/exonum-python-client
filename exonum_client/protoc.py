@@ -1,10 +1,12 @@
 """Module with the Bindings to Protoc."""
 from typing import List, Optional
 import os
+import re
 import shutil
 import subprocess
 
 PROTOC_ENV_NAME = "PROTOC"
+PROTOC_MIN_VERSION = (3, 6, 1)
 
 
 def _find_protoc() -> Optional[str]:
@@ -30,6 +32,8 @@ class Protoc:
 
         self._protoc_path = protoc_path
 
+        self._ensure_protoc_version()
+
     @staticmethod
     def _modify_file(path: str, modules: List[str]) -> None:
         # This method modifies imports in the generated files to be relative:
@@ -41,6 +45,26 @@ class Protoc:
                 for module in modules:
                     line = line.replace("import {}_pb2 ".format(module), "from . import {}_pb2 ".format(module))
                 file_out.write(line)
+
+    def _ensure_protoc_version(self) -> None:
+        """Checks that installed protoc has sufficient version."""
+        protoc_args = [self._protoc_path, "--version"]
+        version_stdout = subprocess.run(protoc_args, stdout=subprocess.PIPE, check=True).stdout
+
+        # Convert bytestring to string and split into words.
+        # b'libprotoc 3.7.1\n' => ['libprotoc', '3.7.1']
+        version = version_stdout.decode("utf-8").strip().split()
+
+        # Expected output is like 'libprotoc 3.7.1'
+        if len(version) != 2 or not re.match(r"\d+.\d+.\d+", version[1]):
+            raise RuntimeError(f"Unexpected output on resolving protoc version: {version}")
+
+        # "3.7.1" => (3, 7, 1)
+        parsed_version = tuple(map(int, version[1].split(".")))
+        if parsed_version < PROTOC_MIN_VERSION:
+            raise RuntimeError(
+                f"Installed version of protoc is too old: {parsed_version}, install at least {PROTOC_MIN_VERSION}"
+            )
 
     def compile(self, path_in: str, path_out: str, include: str = None) -> None:
         """Compiles .proto files from the `path_in` to `path_out` folder.
