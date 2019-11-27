@@ -233,6 +233,42 @@ class ExonumClient(ProtobufProviderInterface):
         """
         return _get(_SYSTEM_URL.format(self.schema, self.hostname, self.public_api_port, "services"))
 
+
+    def get_instance_id_by_name(self, name: str) -> int:
+        """
+        Gets an instance id with provided name.
+
+        Example:
+
+        >>> id = client.get_instance_id_by_name("cryptocurrency")
+        >>> id
+        42
+
+        Parameters
+        ----------
+        name: Name of the service.
+
+        Returns
+        -------
+        result: int
+            ID of the instance.
+        """
+        id = None
+        available_services = self.available_services().json()
+        if not "services" in available_services:
+            raise RuntimeError("No services exist")
+
+        for service in available_services["services"]:
+            if service["name"] == name:
+                id = service["id"]
+                break
+
+        if id is None:
+            raise RuntimeError("No service with name: {}".format(name))
+
+        return id
+
+
     def send_transaction(self, message: ExonumMessage) -> requests.Response:
         """
         Sends a transaction into an Exonum node via REST API.
