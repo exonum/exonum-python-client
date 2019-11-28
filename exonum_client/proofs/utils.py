@@ -1,6 +1,6 @@
 """Common Utils for Proofs Modules."""
 from typing import Any, Dict, Callable, Optional
-import logging
+from logging import getLogger
 import re
 
 # Those utils are internal and very simple, so they don't require docs.
@@ -35,7 +35,7 @@ def is_field_convertible(json: Dict[Any, Any], field: str, value_to_bytes: Calla
         value_to_bytes(json[field])
         return True
     except ValueError:
-        logging.error(f"Field '{field}' is not convertible.")
+        getLogger(__name__).warning(f"Field '{field}' is not convertible.")
         return False
 
 
@@ -48,7 +48,9 @@ def to_bytes(hex_data: str) -> Optional[bytes]:
 
 def calculate_height(number: int) -> int:
     if number < 0:
-        logging.critical(f"Number {number} is used for tree height calculation and cannot be less than zero.")
+        getLogger(__name__).critical(
+            f"Number {number} is used for tree height calculation and cannot be less than zero."
+        )
         raise ValueError(f"Number {number} is less than zero.")
     if number == 0:
         return 1
@@ -76,7 +78,7 @@ def reset_bits(value: int, pos: int) -> int:
 def leb128_encode_unsigned(value: int) -> bytes:
     """ Encodes an unsigned number with leb128 algorithm. """
     if value < 0:
-        logging.critical("Value passed to LEB128 for unsigned integers should be non-negative.")
+        getLogger(__name__).critical("Value passed to LEB128 for unsigned integers should be non-negative.")
         raise ValueError("Value should be non-negative")
 
     result = []
