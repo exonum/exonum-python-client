@@ -2,7 +2,7 @@
 
 ProtobufLoader is capable of downloading Protobuf sources from Exonum."""
 from typing import List, Optional, Any, NamedTuple
-import logging
+from logging import getLogger
 import shutil
 import sys
 import os
@@ -26,12 +26,10 @@ class ProtobufProviderInterface:
 
     def get_main_proto_sources(self) -> List[ProtoFile]:
         """Gets the Exonum core proto sources."""
-        logging.critical("Method `get_main_proto_sources` is not yet implemented.")
         raise NotImplementedError
 
     def get_proto_sources_for_artifact(self, runtime_id: int, artifact_name: str) -> List[ProtoFile]:
         """Gets the Exonum core proto sources."""
-        logging.critical("Method `get_proto_sources_for_artifact` is not yet implemented.")
         raise NotImplementedError
 
 
@@ -103,13 +101,25 @@ class ProtobufLoader:
         # Check that the client is the same as expected:
         if ProtobufLoader._entity is not None:
             if client is not None and client != ProtobufLoader._entity.client:
-                logging.critical("Attempt to create ProtobufLoader entity with a different client.")
-                raise ValueError("Attempt to create ProtobufLoader entity with a different client")
+                err_msg = (
+                    f"Attempt to create ProtobufLoader entity with a different client. "
+                    f"used client: 'object': {ProtobufLoader._entity.client}, "
+                    f"'host': {ProtobufLoader._entity.client.hostname}, "
+                    f"'public_port': {ProtobufLoader._entity.client.public_api_port}, "
+                    f"'private_port': {ProtobufLoader._entity.client.private_api_port}; "
+                    f"provided client: 'object': {client}"
+                    f"'host': {client.hostname}, "
+                    f"'public_port': {client.public_api_port}, "
+                    f"'private_port': {client.private_api_port}."
+                )
+                getLogger(__name__).critical(err_msg)
+                raise ValueError(err_msg)
             return
 
         if client is None:
-            logging.critical("Client is not set for the initial object creation.")
-            raise ValueError("Client is expected to be set for the initial object creation")
+            err_msg = "Client is expected to be set for the initial object creation."
+            getLogger(__name__).critical(err_msg)
+            raise ValueError(err_msg)
 
         ProtobufLoader._entity = self
         self.client = client
@@ -147,13 +157,20 @@ class ProtobufLoader:
         # Add a directory with exonum_modules into the Python path:
         sys.path.append(self._proto_dir)
 
-        logging.debug("Successfully initialized ProtobufLoader.")
+        getLogger(__name__).debug(
+            f"Successfully initialized ProtobufLoader for client '{self.client}': "
+            f"'host': {self.client.hostname}, "
+            f"'public_port': {self.client.public_api_port}, "
+            f"'private_port': {self.client.private_api_port}. "
+            f"Current reference count: {ProtobufLoader._reference_count}."
+        )
 
     def deinitialize(self) -> None:
         """Performs a deinitialization process."""
         if self._proto_dir is None:
-            logging.critical("Attempt to deinitialize uninitialized ProtobufLoader.")
-            raise RuntimeError("Attempt to deinitialize uninitialized ProtobufLoader")
+            err_msg = "Attempt to deinitialize uninitialized ProtobufLoader."
+            getLogger(__name__).critical(err_msg)
+            raise RuntimeError(err_msg)
 
         # Decrement the reference counter:
         ProtobufLoader._reference_count -= 1
@@ -175,7 +192,7 @@ class ProtobufLoader:
             if module.startswith("exonum_modules"):
                 del sys.modules[module]
 
-        logging.debug("Successfully deinitialized ProtobufLoader.")
+        getLogger(__name__).debug("Successfully deinitialized ProtobufLoader.")
 
     @staticmethod
     def _save_proto_file(path: str, file_content: str) -> None:
@@ -191,8 +208,9 @@ class ProtobufLoader:
     def load_main_proto_files(self) -> None:
         """Loads and compiles the main Exonum proto files."""
         if self._proto_dir is None:
-            logging.critical("Attempt to use uninitialized ProtobufLoader.")
-            raise RuntimeError("Attempt to use uninitialized ProtobufLoader")
+            err_msg = "Attempt to use uninitialized ProtobufLoader."
+            getLogger(__name__).critical(err_msg)
+            raise RuntimeError(err_msg)
 
         # This method is not intended to be used by end users, but it is OK to call it here.
         # pylint: disable=protected-access
@@ -209,7 +227,7 @@ class ProtobufLoader:
     def load_service_proto_files(self, runtime_id: int, service_name: str) -> None:
         """Loads and compiles proto files for a service."""
         if self._proto_dir is None:
-            logging.critical("Attempt to use unititialized ProtobufLoader.")
+            getLogger(__name__).critical("Attempt to use unititialized ProtobufLoader.")
             raise RuntimeError("Attempt to use unititialized ProtobufLoader")
 
         # This method is not intended to be used by end users, but it is OK to call it here.

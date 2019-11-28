@@ -2,7 +2,7 @@
 
 This module uses libsodium as a backend."""
 from typing import Optional
-import logging
+from logging import getLogger
 
 from pysodium import (
     crypto_sign_keypair,
@@ -29,8 +29,7 @@ class _FixedByteArray:
 
     def __init__(self, data: bytes, expected_len: int):
         if len(data) != expected_len:
-            logging.critical(f"Incorrect data length: expected {expected_len}, got {len(data)}.")
-            raise ValueError("Incorrect data length: expected {}, got {}".format(expected_len, len(data)))
+            raise ValueError(f"Incorrect data length: expected {expected_len}, got {len(data)}.")
 
         self.value = data
 
@@ -88,8 +87,7 @@ class KeyPair:
         # check as presented.
         # libsodium secret key contains a public key inside.
         if secret_key.value[PUBLIC_KEY_BYTES_LEN:] != public_key.value:
-            logging.critical("Public key doesn't correspond to the secret key.")
-            raise ValueError("Public key doesn't correspond to the secret key")
+            raise ValueError("Public key doesn't correspond to the secret key.")
 
         self.public_key = public_key
         self.secret_key = secret_key
@@ -120,9 +118,7 @@ class Signature(_FixedByteArray):
 
         try:
             crypto_sign_verify_detached(self.value, data, key.value)
-            logging.debug("Signature verification process completed successfully.")
             return True
         except ValueError:
             # ValueError is raised if verification fails.
-            logging.error("Signature verification failed.")
             return False

@@ -1,7 +1,7 @@
 """ ProofListKey Module. """
 from typing import Dict, Any
 from functools import total_ordering
-import logging
+from logging import getLogger
 
 from ..utils import is_field_int
 from .errors import MalformedListProofError
@@ -19,7 +19,7 @@ class ProofListKey:
     def parse(cls, data: Dict[Any, Any]) -> "ProofListKey":
         """ Parses ProofListKey from dict. """
         if not is_field_int(data, "index") or not is_field_int(data, "height"):
-            logging.critical(f"Could not parse ProofListKey from dict.")
+            getLogger(__name__).warning(f"Could not parse ProofListKey from dict.")
             raise MalformedListProofError.parse_error(str(data))
 
         return cls(data["height"], data["index"])
