@@ -233,7 +233,6 @@ class ExonumClient(ProtobufProviderInterface):
         """
         return _get(_SYSTEM_URL.format(self.schema, self.hostname, self.public_api_port, "services"))
 
-
     def get_instance_id_by_name(self, name: str) -> Optional[int]:
         """
         Gets an ID of the service instance with the provided name.
@@ -270,7 +269,6 @@ class ExonumClient(ProtobufProviderInterface):
                 return service["id"]
 
         return None
-
 
     def send_transaction(self, message: ExonumMessage) -> requests.Response:
         """
@@ -348,7 +346,13 @@ class ExonumClient(ProtobufProviderInterface):
         return _get(_BLOCK_URL.format(self.schema, self.hostname, self.public_api_port), params={"height": height})
 
     def get_blocks(
-        self, count: int, latest: Optional[int] = None, skip_empty_blocks: bool = False, add_blocks_time: bool = False
+        self,
+        count: int,
+        earliest: Optional[int] = None,
+        latest: Optional[int] = None,
+        add_precommits: bool = False,
+        skip_empty_blocks: bool = False,
+        add_blocks_time: bool = False,
     ) -> requests.Response:
         """
         Gets a range of blocks.
@@ -360,27 +364,36 @@ class ExonumClient(ProtobufProviderInterface):
         ----------
         count: int
             Amount of blocks. Should not be greater than Exonum's parameter MAX_BLOCKS_PER_REQUEST
+        earliest: Optional[int]
+            If not provided, it is considered to be the height of the earliest block in the blockchain.
+            Otherwise, a provided value will be used.
         latest: Optional[int]
             If not provided, it is considered to be the height of the latest block in the blockchain.
             Otherwise, a provided value will be used.
+        add_precommits: bool
+            If True, precommits will also be taken into account.
         skip_empty_blocks: bool
             If True, only non-empty blocks will be returned. By default it is False.
         add_blocks_time: bool
             If True, then the returned `times` field of BlockRange will contain a median time from the
-            corresponding blocks precommits.
+            corresponding block precommits.
 
         Returns
         -------
         blocks_range_response: requests.Response
             Result of an API call.
-            If it is successfull, a JSON representation of the block range will be in the responce.
+            If it is successful, a JSON representation of the block range will be in the response.
         """
         blocks_url = _BLOCKS_URL.format(self.schema, self.hostname, self.public_api_port)
         params: Dict[str, Union[int, str]] = dict()
         params["count"] = count
 
+        if earliest:
+            params["earliest"] = earliest
         if latest:
             params["latest"] = latest
+        if add_precommits:
+            params["add_precommits"] = "true"
         if skip_empty_blocks:
             params["skip_empty_blocks"] = "true"
         if add_blocks_time:
