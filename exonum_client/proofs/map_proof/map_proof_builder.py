@@ -1,10 +1,14 @@
 """MapProofBuilder module."""
 from typing import Optional, Dict, Any
+from logging import getLogger
 
 from exonum_client.module_manager import ModuleManager
 from .map_proof import MapProof
 from .errors import MapProofBuilderError
 from ..encoder import build_encoder_function
+
+# pylint: disable=C0103
+logger = getLogger(__name__)
 
 
 class MapProofBuilder:
@@ -48,16 +52,25 @@ class MapProofBuilder:
             elif service_name and service_module:
                 module = ModuleManager.import_service_module(service_name, service_module)
             else:
-                raise MapProofBuilderError("Module data not provided")
+                err = MapProofBuilderError("Module data not provided")
+                logger.warning(str(err))
+                raise err
 
-            return getattr(module, structure_name)
+            encoder = getattr(module, structure_name)
+            logger.debug("Successfully got encoder.")
+            return encoder
         except (ModuleNotFoundError, ImportError):
             error_data = {"main_module": main_module, "service_name": service_name, "service_module": service_module}
 
-            raise MapProofBuilderError("Incorrect module data", error_data)
+            err = MapProofBuilderError("Incorrect module data", error_data)
+            logger.warning("%s: %s", str(err), error_data)
+            raise err
         except AttributeError:
             error_data = {"service_name": structure_name}
-            raise MapProofBuilderError("Incorrect structure name", error_data)
+
+            err = MapProofBuilderError("Incorrect structure name", error_data)
+            logger.warning("%s: %s", str(err), error_data)
+            raise err
 
     def set_key_encoder(
         self,
@@ -148,7 +161,9 @@ class MapProofBuilder:
             rises.
         """
         if not self._key_encoder or not self._value_encoder:
-            raise MapProofBuilderError("Encoders are not set")
+            err = MapProofBuilderError("Encoders are not set.")
+            logger.warning(str(err))
+            raise err
 
         key_encoder_func = build_encoder_function(self._key_encoder)
         value_encoder_func = build_encoder_function(self._value_encoder)

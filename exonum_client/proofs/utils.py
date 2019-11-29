@@ -1,9 +1,12 @@
 """Common Utils for Proofs Modules."""
 from typing import Any, Dict, Callable, Optional
+from logging import getLogger
 import re
 
 # Those utils are internal and very simple, so they don't require docs.
 # pylint: disable=missing-docstring
+# pylint: disable=C0103
+logger = getLogger(__name__)
 
 
 def is_dict(json: Any) -> bool:
@@ -34,6 +37,7 @@ def is_field_convertible(json: Dict[Any, Any], field: str, value_to_bytes: Calla
         value_to_bytes(json[field])
         return True
     except ValueError:
+        logger.warning("Field '%s' is not convertible.", field)
         return False
 
 
@@ -46,7 +50,8 @@ def to_bytes(hex_data: str) -> Optional[bytes]:
 
 def calculate_height(number: int) -> int:
     if number < 0:
-        raise ValueError(f"Number {number} is less than zero")
+        logger.warning("Number %s is used for tree height calculation and cannot be less than zero.", number)
+        raise ValueError(f"Number {number} is less than zero.")
     if number == 0:
         return 1
 
@@ -73,6 +78,7 @@ def reset_bits(value: int, pos: int) -> int:
 def leb128_encode_unsigned(value: int) -> bytes:
     """ Encodes an unsigned number with leb128 algorithm. """
     if value < 0:
+        logger.warning("Value passed to LEB128 for unsigned integers should be non-negative.")
         raise ValueError("Value should be non-negative")
 
     result = []

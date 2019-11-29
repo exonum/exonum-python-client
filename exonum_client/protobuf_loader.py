@@ -2,6 +2,7 @@
 
 ProtobufLoader is capable of downloading Protobuf sources from Exonum."""
 from typing import List, Optional, Any, NamedTuple
+from logging import getLogger
 import shutil
 import sys
 import os
@@ -9,6 +10,9 @@ import tempfile
 import re
 
 from .protoc import Protoc
+
+# pylint: disable=C0103
+logger = getLogger(__name__)
 
 PYTHON_RUNTIME = 2
 
@@ -100,11 +104,19 @@ class ProtobufLoader:
         # Check that the client is the same as expected:
         if ProtobufLoader._entity is not None:
             if client is not None and client != ProtobufLoader._entity.client:
-                raise ValueError("Attempt to create ProtobufLoader entity with a different client")
+                err_msg = (
+                    f"Attempt to create ProtobufLoader entity with a different client:\n"
+                    f"used client:\n{ProtobufLoader._entity.client}\n"
+                    f"provided client:\n{client}\n"
+                )
+                logger.critical(err_msg)
+                raise ValueError(err_msg)
             return
 
         if client is None:
-            raise ValueError("Client is expected to be set for the initial object creation")
+            err_msg = "Client is expected to be set for the initial object creation."
+            logger.critical(err_msg)
+            raise ValueError(err_msg)
 
         ProtobufLoader._entity = self
         self.client = client
@@ -124,6 +136,7 @@ class ProtobufLoader:
 
         # Update the reference counter:
         ProtobufLoader._reference_count += 1
+        logger.debug("Current ProtobufLoader reference count: %s.", ProtobufLoader._reference_count)
         if ProtobufLoader._reference_count > 1:
             # If this is a second (third, etc) entity, everything is already initialized:
             return
@@ -142,13 +155,18 @@ class ProtobufLoader:
         # Add a directory with exonum_modules into the Python path:
         sys.path.append(self._proto_dir)
 
+        logger.debug("Successfully initialized ProtobufLoader for client:\n%s\n", self.client)
+
     def deinitialize(self) -> None:
         """Performs a deinitialization process."""
         if self._proto_dir is None:
-            raise RuntimeError("Attempt to deinitialize unititialized ProtobufLoader")
+            err_msg = "Attempt to deinitialize uninitialized ProtobufLoader."
+            logger.critical(err_msg)
+            raise RuntimeError(err_msg)
 
         # Decrement the reference counter:
         ProtobufLoader._reference_count -= 1
+        logger.debug("Current ProtobufLoader reference count: %s.", ProtobufLoader._reference_count)
 
         # If there is at least one reference, nothing should be done:
         if ProtobufLoader._reference_count > 0:
@@ -167,6 +185,8 @@ class ProtobufLoader:
             if module.startswith("exonum_modules"):
                 del sys.modules[module]
 
+        logger.debug("Successfully deinitialized ProtobufLoader.")
+
     @staticmethod
     def _save_proto_file(path: str, file_content: str) -> None:
         with open(path, "wt") as file_out:
@@ -181,7 +201,9 @@ class ProtobufLoader:
     def load_main_proto_files(self) -> None:
         """Loads and compiles the main Exonum proto files."""
         if self._proto_dir is None:
-            raise RuntimeError("Attempt to use unititialized ProtobufLoader")
+            err_msg = "Attempt to use uninitialized ProtobufLoader."
+            logger.critical(err_msg)
+            raise RuntimeError(err_msg)
 
         # This method is not intended to be used by end users, but it is OK to call it here.
         # pylint: disable=protected-access
@@ -198,6 +220,7 @@ class ProtobufLoader:
     def load_service_proto_files(self, runtime_id: int, service_name: str) -> None:
         """Loads and compiles proto files for a service."""
         if self._proto_dir is None:
+            logger.critical("Attempt to use unititialized ProtobufLoader.")
             raise RuntimeError("Attempt to use unititialized ProtobufLoader")
 
         # This method is not intended to be used by end users, but it is OK to call it here.

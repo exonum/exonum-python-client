@@ -1,9 +1,13 @@
 """Module with the Bindings to Protoc."""
 from typing import List, Optional
+from logging import getLogger
 import os
 import re
 import shutil
 import subprocess
+
+# pylint: disable=C0103
+logger = getLogger(__name__)
 
 PROTOC_ENV_NAME = "PROTOC"
 PROTOC_MIN_VERSION = (3, 6, 1)
@@ -27,7 +31,7 @@ class Protoc:
     def __init__(self) -> None:
         protoc_path = _find_protoc()
         if protoc_path is None:
-            print("Protobuf compiler not found")
+            logger.critical("Protobuf compiler not found.")
             raise RuntimeError("protoc was not found, make sure that it is installed")
 
         self._protoc_path = protoc_path
@@ -101,9 +105,9 @@ class Protoc:
         code = protoc_process.wait()
         (_, stderr) = protoc_process.communicate()
         if code == 0:
-            print("Proto files were compiled successfully")
+            logger.debug("Proto files were compiled successfully: %s", proto_files)
         else:
-            print("Error acquired while compiling files: {}".format(stderr.decode("utf-8")))
+            logger.error("Error acquired while compiling files: %s. Files: %s.", stderr.decode("utf-8"), proto_files)
 
         modules = [proto_path.replace(".proto", "") for proto_path in proto_files]
         for file in filter(lambda f: f.endswith(".py"), os.listdir(path_out)):
