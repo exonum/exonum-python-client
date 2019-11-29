@@ -50,7 +50,7 @@ def to_bytes(hex_data: str) -> Optional[bytes]:
 
 def calculate_height(number: int) -> int:
     if number < 0:
-        logger.critical("Number %s is used for tree height calculation and cannot be less than zero.", number)
+        logger.warning("Number %s is used for tree height calculation and cannot be less than zero.", number)
         raise ValueError(f"Number {number} is less than zero.")
     if number == 0:
         return 1
@@ -78,7 +78,7 @@ def reset_bits(value: int, pos: int) -> int:
 def leb128_encode_unsigned(value: int) -> bytes:
     """ Encodes an unsigned number with leb128 algorithm. """
     if value < 0:
-        logger.critical("Value passed to LEB128 for unsigned integers should be non-negative.")
+        logger.warning("Value passed to LEB128 for unsigned integers should be non-negative.")
         raise ValueError("Value should be non-negative")
 
     result = []
