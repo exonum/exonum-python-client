@@ -6,6 +6,9 @@ from logging import getLogger
 from ..utils import is_field_int
 from .errors import MalformedListProofError
 
+# pylint: disable=C0103
+logger = getLogger(__name__)
+
 
 @total_ordering
 class ProofListKey:
@@ -19,8 +22,9 @@ class ProofListKey:
     def parse(cls, data: Dict[Any, Any]) -> "ProofListKey":
         """ Parses ProofListKey from dict. """
         if not is_field_int(data, "index") or not is_field_int(data, "height"):
-            getLogger(__name__).warning(f"Could not parse ProofListKey from dict.")
-            raise MalformedListProofError.parse_error(str(data))
+            err = MalformedListProofError.parse_error(str(data))
+            logger.warning(str(err))
+            raise err
 
         return cls(data["height"], data["index"])
 

@@ -9,6 +9,9 @@ from google.protobuf.message import Message as ProtobufMessage, DecodeError as P
 from .crypto import PublicKey, Hash, Signature, KeyPair
 from .module_manager import ModuleManager
 
+# pylint: disable=C0103
+logger = getLogger(__name__)
+
 
 class MessageGenerator:
     """MessageGenerator is a class which helps you create transactions.
@@ -159,15 +162,19 @@ class ExonumMessage:
             exonum_message = cls(service_id, message_id, decoded_msg, prebuilt=exonum_msg.any_tx.SerializeToString())
 
             cls._set_signature_data(exonum_message, author, signature, bytes.fromhex(message_hex))
-            getLogger(__name__).debug(
-                f"Exonum message (ID: {message_id}) from the service artifact '{artifact_name}' "
-                f"for transaction '{tx_name}' parsed successfully."
+            logger.debug(
+                "Exonum message (ID: %s) from the service artifact '%s' " "for transaction '%s' parsed successfully.",
+                message_id,
+                artifact_name,
+                tx_name,
             )
             return exonum_message
-        except ProtobufDecodeError:
-            getLogger(__name__).error(
-                f"Failed to parse an Exonum message from the service artifact '{artifact_name}' "
-                f"for transaction '{tx_name}'."
+        except ProtobufDecodeError as e:
+            logger.error(
+                "Failed to parse an Exonum message from the service artifact '%s' " "for transaction '%s'. Error: %s.",
+                artifact_name,
+                tx_name,
+                str(e),
             )
             return None
 
@@ -200,9 +207,11 @@ class ExonumMessage:
 
         self._signed_tx_raw = bytes(signed_message.SerializeToString())
 
-        getLogger(__name__).debug(
-            f"Signed the message (message ID: {self._message_id}, service instance ID: {self._instance_id}) "
-            f"with the provided pair of keys: public_key='{public_key}'."
+        logger.debug(
+            "Successfully signed the message (message ID: %s, service instance ID: %s): public_key='%s'.",
+            self._message_id,
+            self._instance_id,
+            public_key,
         )
 
     def validate(self) -> bool:
@@ -221,10 +230,13 @@ class ExonumMessage:
             signed_msg.ParseFromString(self._signed_tx_raw)
 
             return self._signature.verify(signed_msg.payload, self._author)
-        except (ProtobufDecodeError, ValueError):
-            getLogger(__name__).error(
-                f"Failed to parse Exonum message (message ID: {self._message_id}, "
-                f"service instance ID: {self._instance_id}): public_key='{self._author}'."
+        except (ProtobufDecodeError, ValueError) as e:
+            logger.error(
+                "Failed to parse Exonum message (message ID: %s, service instance ID: %s): public_key='%s'. Error: %s",
+                self._message_id,
+                self._instance_id,
+                self._author,
+                str(e),
             )
             return False
 
@@ -244,7 +256,7 @@ class ExonumMessage:
             An error will be raised on attempt to call `pack_into_json` with an unsigned message.
         """
         if self._signed_tx_raw is None:
-            getLogger(__name__).critical("Attempt to call `to_json` on an unsigned message into JSON format.")
+            logger.critical("Attempt to call `to_json` on an unsigned message into JSON format.")
             raise RuntimeError("Attempt to pack an unsigned message.")
         return json.dumps({"tx_body": self._signed_tx_raw.hex()}, indent=4)
 

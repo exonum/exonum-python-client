@@ -9,6 +9,9 @@ from ..utils import div_ceil, reset_bits, leb128_encode_unsigned
 from .constants import KEY_SIZE, PROOF_PATH_SIZE
 from .errors import MalformedMapProofError
 
+# pylint: disable=C0103
+logger = getLogger(__name__)
+
 
 @total_ordering
 class ProofPath:
@@ -48,7 +51,7 @@ class ProofPath:
         length = len(bits)
         if length == 0 or length > 8 * KEY_SIZE:
             error = "Incorrect MapProof path length: {}".format(length)
-            getLogger(__name__).warning(error)
+            logger.warning(error)
             raise MalformedMapProofError.malformed_entry(bits, error)
 
         data = [0] * KEY_SIZE
@@ -60,7 +63,7 @@ class ProofPath:
                 data[i // 8] += 1 << (i % 8)
             else:
                 error = "Unexpected MapProof path symbol: {}".format(char)
-                getLogger(__name__).warning(error)
+                logger.warning(error)
                 raise MalformedMapProofError.malformed_entry(bits, error)
 
         data_bytes = bytes(data)
@@ -69,7 +72,7 @@ class ProofPath:
         if length != 8 * KEY_SIZE:
             proof_path = proof_path.prefix(length)
 
-        getLogger(__name__).debug("Successfully parsed a ProofPath from a string.")
+        logger.debug("Successfully parsed a ProofPath from a string.")
         return proof_path
 
     @staticmethod
@@ -93,9 +96,7 @@ class ProofPath:
             Length of provided array is not equal to KEY_SIZE constant.
         """
         if len(data_bytes) != KEY_SIZE:
-            getLogger(__name__).warning(
-                f"Wrong length of the provided byte sequence: expected {KEY_SIZE}, got {len(data_bytes)}"
-            )
+            logger.warning("Wrong length of the provided byte sequence: expected %s, got %s", KEY_SIZE, len(data_bytes))
             raise ValueError("Incorrect data size")
 
         inner = bytearray([0] * PROOF_PATH_SIZE)
@@ -204,7 +205,7 @@ class ProofPath:
 
         if end >= key_len:
             err_msg = f"Length of the prefix ({end}) should not be greater than KEY_SIZE * 8 ({key_len})."
-            getLogger(__name__).warning(err_msg)
+            logger.warning(err_msg)
             raise ValueError(err_msg)
 
         key = ProofPath(bytearray(self.data_bytes), self._start)
@@ -215,12 +216,12 @@ class ProofPath:
     def match_len(self, other: "ProofPath", from_bit: int) -> int:
         """ Returns the length of the common segment. """
         if self.start() != other.start():
-            getLogger(__name__).warning(f"Misaligned bit ranges: {self.start()} != {other.start()}")
+            logger.warning("Misaligned bit ranges: %s != %s", self.start(), other.start())
             raise ValueError("Misaligned bit ranges")
 
         if from_bit < self.start() or from_bit > self.end():
             err_msg = f"Incorrect from_bit value: {from_bit}"
-            getLogger(__name__).warning(err_msg)
+            logger.warning(err_msg)
             raise ValueError(err_msg)
 
         len_to_the_end = min(len(self), len(other))

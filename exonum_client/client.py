@@ -7,6 +7,7 @@ This module provides you with two handy classes:
 """
 from typing import Optional, Any, Callable, Union, Iterable, List, Dict
 
+import json
 from logging import getLogger
 from threading import Thread
 from websocket import WebSocket
@@ -14,6 +15,9 @@ import requests
 
 from .protobuf_loader import ProtobufLoader, ProtobufProviderInterface, ProtoFile
 from .message import ExonumMessage
+
+# pylint: disable=C0103
+logger = getLogger(__name__)
 
 RUST_RUNTIME_ID = 0
 
@@ -77,9 +81,9 @@ class Subscriber:
             self._is_running = True
             self._thread.setDaemon(True)
             self._thread.start()
-            getLogger(__name__).debug("Subscriber thread started successfully.")
+            logger.debug("Subscriber thread started successfully.")
         except RuntimeError as error:
-            getLogger(__name__).error(f"Error occured during running subscriber thread: {error}")
+            logger.error("Error occurred during running subscriber thread: %s", error)
 
     def _event_processing(self) -> None:
         while self._is_running:
@@ -145,6 +149,17 @@ class ExonumClient(ProtobufProviderInterface):
         self.public_api_port = public_api_port
         self.private_api_port = private_api_port
         self.tx_url = _TX_URL.format(self.schema, hostname, public_api_port)
+
+    def __repr__(self) -> str:
+        """ Conversion to a string. """
+        d = dict()
+
+        d["object"] = f"<{self.__class__.__name__} instance at {id(self)}>"
+        d["host"] = self.hostname
+        d["public_port"] = self.public_api_port
+        d["private_port"] = self.private_api_port
+
+        return json.dumps(d, indent=2)
 
     def protobuf_loader(self) -> ProtobufLoader:
         """
@@ -347,6 +362,7 @@ class ExonumClient(ProtobufProviderInterface):
         """
         return _get(_BLOCK_URL.format(self.schema, self.hostname, self.public_api_port), params={"height": height})
 
+    # pylint: disable=too-many-arguments
     def get_blocks(
         self,
         count: int,
@@ -497,9 +513,13 @@ class ExonumClient(ProtobufProviderInterface):
         )
         response = _get(proto_sources_endpoint, params=params)
         if response.status_code != 200 or "application/json" not in response.headers["content-type"]:
-            getLogger(__name__).critical("Unsuccessfully attempted to retrieve Protobuf sources.")
+            logger.critical(
+                "Unsuccessfully attempted to retrieve Protobuf sources.\n" "Status code: %s,\n" "body:\n%s",
+                response.status_code,
+                json.dumps(response.json(), indent=2),
+            )
             raise RuntimeError("Unsuccessfully attempted to retrieve Protobuf sources: {}".format(response.content))
-        getLogger(__name__).debug("Protobuf sources retrieved successfully.")
+        logger.debug("Protobuf sources retrieved successfully.")
 
         proto_files = [
             ProtoFile(name=proto_file["name"], content=proto_file["content"]) for proto_file in response.json()
@@ -515,7 +535,7 @@ class ExonumClient(ProtobufProviderInterface):
         # Raise an exception if runtime ID is not equal to the rust runtime ID
         if runtime_id != RUST_RUNTIME_ID:
             err_msg = f"Provided runtime ID: {runtime_id} is not equal to Rust runtime ID: {RUST_RUNTIME_ID}."
-            getLogger(__name__).critical(err_msg)
+            logger.critical(err_msg)
             raise RuntimeError(err_msg)
         # Performs a GET request to the `proto-sources` Exonum endpoint with a provided artifact name:
         params = {"artifact": "{}".format(artifact_name)}

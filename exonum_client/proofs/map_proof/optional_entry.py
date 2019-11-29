@@ -4,6 +4,9 @@ from logging import getLogger
 
 from .errors import MalformedMapProofError
 
+# pylint: disable=C0103
+logger = getLogger(__name__)
+
 
 class OptionalEntry:
     """Optional entry is an entry of MapProof which can either miss a key or a key/value pair."""
@@ -28,5 +31,5 @@ class OptionalEntry:
         if data.get("key") and data.get("value"):
             return OptionalEntry(key=data["key"], value=data["value"])
 
-        getLogger(__name__).warning("Failed to parse an OptionalEntry from the provided JSON dict.")
+        logger.warning("Failed to parse an OptionalEntry from the provided JSON dict.")
         raise MalformedMapProofError.malformed_entry(data)

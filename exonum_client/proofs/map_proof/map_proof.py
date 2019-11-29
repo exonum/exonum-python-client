@@ -10,6 +10,9 @@ from .branch_node import BranchNode
 from ..hasher import Hasher
 from ..utils import is_field_hash, to_bytes
 
+# pylint: disable=C0103
+logger = getLogger(__name__)
+
 
 class _MapProofEntry:
     def __init__(self, path: ProofPath, data_hash: Hash):
@@ -25,7 +28,7 @@ class _MapProofEntry:
 
         if not isinstance(data.get("path"), str) or not is_field_hash(data, "hash"):
             err = MalformedMapProofError.malformed_entry(data)
-            getLogger(__name__).warning(str(err))
+            logger.warning(str(err))
             raise err
 
         path_bits = data["path"]
@@ -34,7 +37,7 @@ class _MapProofEntry:
         data_hash = to_bytes(data["hash"])
         if data_hash is None:
             err = MalformedMapProofError.malformed_entry(data)
-            getLogger(__name__).warning(str(err))
+            logger.warning(str(err))
             raise err
 
         return _MapProofEntry(path, Hash(data_hash))
@@ -82,7 +85,7 @@ def collect(entries: List[_MapProofEntry]) -> Hash:
     if len(entries) == 1:
         if not entries[0].path.is_leaf():
             err = MalformedMapProofError.non_terminal_node(entries[0].path)
-            getLogger(__name__).warning(str(err))
+            logger.warning(str(err))
             raise err
 
         return Hasher.hash_single_entry_map(entries[0].path.as_bytes(), entries[0].hash)
@@ -117,7 +120,7 @@ def collect(entries: List[_MapProofEntry]) -> Hash:
         if prefix:
             last_prefix = prefix
 
-    getLogger(__name__).debug("Successfully computed the root hash of the Merkle Patricia tree.")
+    logger.debug("Successfully computed the root hash of the Merkle Patricia tree.")
     return contour[0].hash
 
 
@@ -249,14 +252,14 @@ class MapProof:
         """
 
         if data.get("entries") is None or data.get("proof") is None:
-            getLogger(__name__).warning("'entries' and 'proof' fields are missing in the proof dictionary.")
+            logger.warning("'entries' or 'proof' field is missing in the proof dictionary.")
             raise MalformedMapProofError.malformed_entry(data)
 
         entries: List[OptionalEntry] = [OptionalEntry.parse(raw_entry) for raw_entry in data["entries"]]
         proof: List[_MapProofEntry] = [_MapProofEntry.parse(raw_entry) for raw_entry in data["proof"]]
 
         map_proof = MapProof(entries, proof, key_to_bytes, value_to_bytes)
-        getLogger(__name__).debug("Successfully built MapProof from the given proof dictionary.")
+        logger.debug("Successfully built MapProof from the given proof dictionary.")
         return map_proof
 
     @staticmethod
@@ -267,15 +270,15 @@ class MapProof:
             if prev_path < path:
                 if path.starts_with(prev_path):
                     err = MalformedMapProofError.embedded_paths(prev_path, path)
-                    getLogger(__name__).warning(str(err))
+                    logger.warning(str(err))
                     raise err
             elif prev_path == path:
                 err = MalformedMapProofError.duplicate_path(path)
-                getLogger(__name__).warning(str(err))
+                logger.warning(str(err))
                 raise err
             elif prev_path > path:
                 err = MalformedMapProofError.invalid_ordering(prev_path, path)
-                getLogger(__name__).warning(str(err))
+                logger.warning(str(err))
                 raise err
             else:
                 assert False, "Incomparable keys in the proof"

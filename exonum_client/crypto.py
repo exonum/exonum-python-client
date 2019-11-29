@@ -2,7 +2,6 @@
 
 This module uses libsodium as a backend."""
 from typing import Optional
-from logging import getLogger
 
 from pysodium import (
     crypto_sign_keypair,

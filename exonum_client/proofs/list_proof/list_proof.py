@@ -10,6 +10,9 @@ from ..hasher import Hasher
 from .key import ProofListKey
 from .errors import MalformedListProofError, ListProofVerificationError
 
+# pylint: disable=C0103
+logger = getLogger(__name__)
+
 
 class HashedEntry:
     """ Element of a proof with a key and a hash. """
@@ -22,10 +25,11 @@ class HashedEntry:
     def parse(cls, data: Dict[Any, Any]) -> "HashedEntry":
         """ Creates a HashedEntry object from the provided dict. """
         if not isinstance(data, dict) or not is_field_hash(data, "hash"):
-            getLogger(__name__).warning(
-                "Could not parse `hash` from dict, which is required for HashedEntry object creation."
+            err = MalformedListProofError.parse_error(str(data))
+            logger.warning(
+                "Could not parse `hash` from dict, which is required for HashedEntry object creation. %s", str(err)
             )
-            raise MalformedListProofError.parse_error(str(data))
+            raise err
 
         key = ProofListKey.parse(data)
         return HashedEntry(key, Hash(bytes.fromhex(data["hash"])))
@@ -50,7 +54,7 @@ def _hash_layer(layer: List[HashedEntry], last_index: int) -> List[HashedEntry]:
             # Verify that entries are in the correct order:
             if not layer[left_idx].key.is_left() or layer[right_idx].key.index != layer[left_idx].key.index + 1:
                 err = MalformedListProofError.missing_hash()
-                getLogger(__name__).warning(str(err))
+                logger.warning(str(err))
                 raise err
 
             left_hash = layer[left_idx].entry_hash
@@ -61,7 +65,7 @@ def _hash_layer(layer: List[HashedEntry], last_index: int) -> List[HashedEntry]:
             full_layer_length = last_index + 1
             if full_layer_length % 2 == 0 or layer[left_idx].key.index != last_index:
                 err = MalformedListProofError.missing_hash()
-                getLogger(__name__).warning(str(err))
+                logger.warning(str(err))
                 raise err
 
             left_hash = layer[left_idx].entry_hash
@@ -164,14 +168,15 @@ class ListProof:
             or not isinstance(proof_dict.get("entries"), list)
             or not is_field_int(proof_dict, "length")
         ):
-            getLogger(__name__).warning("The structure of the provided dict does not match the expected one.")
-            raise MalformedListProofError.parse_error(str(proof_dict))
+            err = MalformedListProofError.parse_error(str(proof_dict))
+            logger.warning("The structure of the provided dict does not match the expected one. %s", str(err))
+            raise err
 
         proof = [HashedEntry.parse(entry) for entry in proof_dict["proof"]]
         entries = [cls._parse_entry(entry) for entry in proof_dict["entries"]]
         length = proof_dict["length"]
 
-        getLogger(__name__).debug("Successfully parsed ListProof from the dict.")
+        logger.debug("Successfully parsed ListProof from the dict.")
         return ListProof(proof, entries, length, value_to_bytes)
 
     def validate(self, expected_hash: Hash) -> List[Tuple[int, Any]]:
@@ -202,17 +207,18 @@ class ListProof:
 
         calculated_hash = Hasher.hash_list_node(self._length, tree_root)
         if calculated_hash != expected_hash:
-            getLogger(__name__).warning("Provided root hash does not match the calculated one.")
+            logger.warning("Provided root hash does not match the calculated one.")
             raise ListProofVerificationError(expected_hash.value, calculated_hash.value)
-        getLogger(__name__).debug("Successfully validated the provided proof against the given expected hash.")
+        logger.debug("Successfully validated the provided proof against the given expected hash.")
 
         return self._entries
 
     @staticmethod
     def _parse_entry(data: List[Any]) -> Tuple[int, Any]:
         if not isinstance(data, list) or not len(data) == 2:
-            getLogger(__name__).warning("Could not parse a list.")
-            raise MalformedListProofError.parse_error(str(data))
+            err = MalformedListProofError.parse_error(str(data))
+            logger.warning("Could not parse a list. %s", err)
+            raise err
         return data[0], data[1]
 
     @staticmethod
@@ -227,7 +233,7 @@ class ListProof:
         for idx in range(1, len(entries)):
             if entries[idx][0] == entries[idx - 1][0]:
                 err = MalformedListProofError.duplicate_key()
-                getLogger(__name__).warning(str(err))
+                logger.warning(str(err))
                 raise err
 
     def _collect(self) -> Hash:
@@ -251,7 +257,7 @@ class ListProof:
         # Check an edge case when the list contains no elements:
         if tree_height == 0 and (not self._proof or not self._entries):
             err = MalformedListProofError.non_empty_proof()
-            getLogger(__name__).warning(str(err))
+            logger.warning(str(err))
             raise err
 
         # If there are no entries, the proof should contain only a single root hash:
@@ -259,17 +265,17 @@ class ListProof:
             if len(self._proof) != 1:
                 if self._proof:
                     err = MalformedListProofError.missing_hash()
-                    getLogger(__name__).warning(str(err))
+                    logger.warning(str(err))
                     raise err
                 err = MalformedListProofError.unexpected_branch()
-                getLogger(__name__).warning(str(err))
+                logger.warning(str(err))
                 raise err
 
             if self._proof[0].key == ProofListKey(tree_height, 0):
                 return self._proof[0].entry_hash
 
             err = MalformedListProofError.unexpected_branch()
-            getLogger(__name__).warning(str(err))
+            logger.warning(str(err))
             raise err
 
         # Sort the entries and the proof:
@@ -285,14 +291,14 @@ class ListProof:
             height = entry.key.height
             if height == 0:
                 err = MalformedListProofError.unexpected_leaf()
-                getLogger(__name__).warning(str(err))
+                logger.warning(str(err))
                 raise err
 
             # self._length -1 is the index of the last element at `height = 1`.
             # This index is divided by 2 with each new height:
             if height >= tree_height or entry.key.index > (self._length - 1) >> (height - 1):
                 err = MalformedListProofError.unexpected_branch()
-                getLogger(__name__).warning(str(err))
+                logger.warning(str(err))
                 raise err
 
         # Create the first layer:
