@@ -238,12 +238,15 @@ class ExonumClient(ProtobufProviderInterface):
           ],
           "services": [
             {
-              "id": 0,
-              "name": "supervisor",
-              "artifact": {
-                "runtime_id": 0,
-                "name": "exonum-supervisor:0.12.0"
-              }
+              "spec": {
+                "id": 0,
+                "name": "supervisor",
+                "artifact": {
+                  "runtime_id": 0,
+                  "name": "exonum-supervisor:0.12.0"
+                }
+              },
+              "status": "Active"
             }
           ]
         }
