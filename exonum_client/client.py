@@ -284,7 +284,8 @@ class ExonumClient(ProtobufProviderInterface):
 
         available_services = response.json()
 
-        for service in available_services["services"]:
+        for state in available_services["services"]:
+            service = state["spec"]
             if service["name"] == name:
                 return service["id"]
 
