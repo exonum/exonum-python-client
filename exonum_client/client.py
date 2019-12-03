@@ -238,12 +238,15 @@ class ExonumClient(ProtobufProviderInterface):
           ],
           "services": [
             {
-              "id": 0,
-              "name": "supervisor",
-              "artifact": {
-                "runtime_id": 0,
-                "name": "exonum-supervisor:0.12.0"
-              }
+              "spec": {
+                "id": 0,
+                "name": "supervisor",
+                "artifact": {
+                  "runtime_id": 0,
+                  "name": "exonum-supervisor:0.12.0"
+                }
+              },
+              "status": "Active"
             }
           ]
         }
@@ -281,7 +284,8 @@ class ExonumClient(ProtobufProviderInterface):
 
         available_services = response.json()
 
-        for service in available_services["services"]:
+        for state in available_services["services"]:
+            service = state["spec"]
             if service["name"] == name:
                 return service["id"]
 
