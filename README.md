@@ -51,7 +51,7 @@ First of all we need to install our client library:
 
 ```shell
 git clone git@github.com:exonum/exonum-python-client.git
-pip3 install -e exonum-python-client
+pip3 install -e exonum-python-client --no-binary=protobuf
 ```
 
 ### Exonum Client Initialization
