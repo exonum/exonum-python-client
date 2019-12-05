@@ -25,7 +25,7 @@ have an `exonum-cryptocurrency-advanced` artifact available for deploy.
 ## How to run examples
 
 First of all, ensure that you have both `exonum-cryptocurrency-advanced` and
-`exonum-python-clien` installed:
+`exonum-python-client` installed:
 
 ```sh
 # Run the following in the exonum core folder.
