@@ -251,7 +251,7 @@ class ExonumClient(ProtobufProviderInterface):
           ]
         }
         """
-        return _get(_SYSTEM_URL.format(self.schema, self.hostname, self.public_api_port, "services"))
+        return _get(self._system_public_endpoint("services"))
 
     def get_instance_id_by_name(self, name: str) -> Optional[int]:
         """
@@ -327,7 +327,7 @@ class ExonumClient(ProtobufProviderInterface):
         Returns
         -------
         results: List[requests.Response]
-            A list of responces for each sent transaction.
+            A list of responses for each sent transaction.
         """
         return [self.send_transaction(message) for message in messages]
 
@@ -362,7 +362,7 @@ class ExonumClient(ProtobufProviderInterface):
         -------
         block_response: requests.Response
             Result of an API call.
-            If it is successfull, a JSON representation of the block will be in the responce.
+            If it is successful, a JSON representation of the block will be in the response.
         """
         return _get(_BLOCK_URL.format(self.schema, self.hostname, self.public_api_port), params={"height": height})
 
@@ -466,7 +466,7 @@ class ExonumClient(ProtobufProviderInterface):
         -------
         block_response: requests.Response
             Result of an API call.
-            If it is successfull, a JSON representation of the transaction info will be in the responce.
+            If it is successful, a JSON representation of the transaction info will be in the response.
         """
         return _get(_TX_URL.format(self.schema, self.hostname, self.public_api_port), params={"hash": tx_hash})
 
@@ -500,15 +500,153 @@ class ExonumClient(ProtobufProviderInterface):
 
     def health_info(self) -> requests.Response:
         """ Performs a GET request to the healthcheck Exonum endpoint. """
-        return _get(self._system_endpoint("healthcheck"))
+        return _get(self._system_public_endpoint("healthcheck"))
 
     def stats(self) -> requests.Response:
         """ Performs a GET request to the stats Exonum endpoint. """
-        return _get(self._system_endpoint("stats"))
+        return _get(self._system_public_endpoint("stats"))
 
     def user_agent(self) -> requests.Response:
         """ Performs a GET request to the user_agent Exonum endpoint. """
-        return _get(self._system_endpoint("user_agent"))
+        return _get(self._system_public_endpoint("user_agent"))
+
+    def add_peer(self, address: str, public_key: str) -> requests.Response:
+        """
+        Performs a POST request to the '{system_base_path}/peers' endpoint in order to add a new peer to the node.
+
+        Parameters
+        ----------
+        address: IP address of the node which the present node should connect to.
+        public_key: public key of the node which the present node should connect to.
+
+        Returns
+        -------
+        response: requests.Response
+            Result of an API call.
+        """
+        # added address and public key
+        data = json.dumps({"address": address, "public_key": public_key})
+        response = _post(
+            self._system_private_endpoint("peers"), data=data, headers={"content-type": "application/json"}
+        )
+        return response
+
+    def get_peers(self) -> requests.Response:
+        """
+        Performs a GET request to the '{system_base_path}/peers' to get a list of peers of the node.
+
+        Example:
+        >>> peers = client.get_peers().json()
+        >>> print(json.dumps(peers, indent=2))
+        {
+          "incoming_connections": [{
+            "address": "127.0.0.1:57671",
+            "public_key": "8a17bdfe42c10abdb7f27b5648691db3338400c27812e847e02eb7193ad490f2"
+          }],
+          "outgoing_connections": {
+            "127.0.0.1:6334": {
+              "public_key": "dcb46dceaeb7d0eab7b6ed000f317f2ab9f7c8423ec9a6a602d81c0979e1333a",
+              "state": {
+                "type": "Active"
+              }
+            },
+            "127.0.0.1:6335": {
+              "public_key": "dcb46dceaeb7d0eab7b6ed000f317f2ab9f7c8423ec9a6a602d81c0979e1333a",
+              "state": {
+                "delay": 4000,
+                "type": "Reconnect"
+              }
+            },
+            "127.0.0.1:6336": {
+              "public_key": null,
+              "state": {
+                "type": "Active"
+              }
+            },
+            "127.0.0.1:6337": {
+              "public_key": null,
+              "state": {
+                "delay": 4000,
+                "type": "Reconnect"
+              }
+            }
+          }
+        }
+
+        Returns
+        -------
+        response: requests.Response
+            Result of an API call.
+            If it is successful, a list of peers will be returned.
+        """
+        return _get(self._system_private_endpoint("peers"))
+
+    def set_consensus_interaction(self, enabled: True) -> requests.Response:
+        """
+        Performs a POST request to the '{system_base_path}/consensus_enabled'
+        to witch consensus interaction of the node on or off.
+
+        Parameters
+        ----------
+        enabled: flag that switches consensus interaction of the node on (True) or off (False).
+
+        Returns
+        -------
+        response: requests.Response
+            Result of an API call.
+        """
+        data = json.dumps({"enabled": enabled})
+        return _post(
+            self._system_private_endpoint("consensus_enabled"), data=data, headers={"content-type": "application/json"}
+        )
+
+    def get_consensus_interaction(self):
+        """
+        Performs a GET request to the '{system_base_path}/consensus_enabled' to get boolean value that states
+        if the node participates in consensus.
+
+        Example:
+        >>> client.get_consensus_interaction().json()
+        True
+
+        Returns
+        -------
+        response: requests.Response
+            Result of an API call.
+        """
+        return _get(self._system_private_endpoint("consensus_enabled"))
+
+    def get_network_info(self):
+        """
+        Performs a GET request to the '{system_base_path}/network'
+        to get info about the serialization protocol and the services functioning in the network.
+
+        Example:
+        >>> network_info = client.get_network_info().json()
+        >>> print(json.dumps(network_info, indent=2))
+        {
+          "core_version": "0.10.2"
+        }
+
+        Returns
+        -------
+        response: requests.Response
+            Result of an API call.
+        """
+        return _get(self._system_private_endpoint("network"))
+
+    def shutdown(self):
+        """
+        Performs a POST request to the '{system_base_path}/shutdown' to stop the node.
+        After receiving this request, the node stops processing transactions, participating in consensus and
+        terminates after all messages in the event queue are processed.
+
+        Returns
+        -------
+        response: requests.Response
+            Result of an API call.
+        """
+        return _post(self._system_private_endpoint("shutdown"), headers={"content-type": "application/json"})
 
     # Implementation of ProtobufProviderInterface:
     def _get_proto_sources(self, params: Optional[Dict[str, str]] = None) -> List[ProtoFile]:
@@ -546,8 +684,11 @@ class ExonumClient(ProtobufProviderInterface):
 
         return self._get_proto_sources(params=params)
 
-    def _system_endpoint(self, endpoint: str) -> str:
+    def _system_public_endpoint(self, endpoint: str) -> str:
         return _SYSTEM_URL.format(self.schema, self.hostname, self.public_api_port, endpoint)
+
+    def _system_private_endpoint(self, endpoint: str) -> str:
+        return _SYSTEM_URL.format(self.schema, self.hostname, self.private_api_port, endpoint)
 
 
 def _get(url: str, params: Optional[Dict[Any, Any]] = None) -> requests.Response:
