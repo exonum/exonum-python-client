@@ -536,6 +536,7 @@ class ExonumClient(ProtobufProviderInterface):
         Performs a GET request to the '{system_base_path}/peers' to get a list of peers of the node.
 
         Example:
+
         >>> peers = client.get_peers().json()
         >>> print(json.dumps(peers, indent=2))
         {
@@ -606,6 +607,7 @@ class ExonumClient(ProtobufProviderInterface):
         if the node participates in consensus.
 
         Example:
+
         >>> client.get_consensus_interaction().json()
         True
 
@@ -622,6 +624,7 @@ class ExonumClient(ProtobufProviderInterface):
         to get info about the serialization protocol and the services functioning in the network.
 
         Example:
+
         >>> network_info = client.get_network_info().json()
         >>> print(json.dumps(network_info, indent=2))
         {
