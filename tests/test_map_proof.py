@@ -338,3 +338,49 @@ class TestMapProof(PrecompiledModuleUserTestCase):
         expected_hash = "3ccac1646fbbbc7e22a70b2a426c0d22bdde14a03f4ffc3547207245a4774afc"
 
         self.assertEqual(result.root_hash().hex(), expected_hash)
+
+    def test_raw_map_proof(self):
+        proof = {
+            "entries": [
+                {
+                    "key": "85a2386718cd07204f6b043531923be28ef9265584b113f4c509dfcd004ed0b6",
+                    "value": {
+                        "pub_key": {
+                            "data": list(
+                                bytes.fromhex("85a2386718cd07204f6b043531923be28ef9265584b113f4c509dfcd004ed0b6")
+                            )
+                        },
+                        "name": "Alice",
+                        "balance": 100,
+                        "history_len": 1,
+                        "history_hash": {
+                            "data": list(
+                                bytes.fromhex("a7e4c01c666f8eca6d8bc994ee65d947a5e80e857d4bda8b59deb2a8388431f3")
+                            )
+                        },
+                    },
+                }
+            ],
+            "proof": [
+                {"path": "0", "hash": "859a29b78999f8e068f7fc194f0553a56cd8d07b0e09dc71dfea7d815e0d662c"},
+                {
+                    "path": "10000001000000100111000110000011011100111010101001011011000101100111111011100001001000110"
+                    "00000010110000011001111110011100010110001101101000000000010011110101100001000011101001000"
+                    "101001110110111111111101101100110011101111010001011010110100010001110101101101",
+                    "hash": "5f176f6f98e83934c87679999822533c6d173b750b0ff8f0e38a54f65a3d84e2",
+                },
+            ],
+        }
+
+        cryptocurrency_service_name = "exonum-cryptocurrency-advanced:0.11.0"
+        cryptocurrency_module = ModuleManager.import_service_module(cryptocurrency_service_name, "service")
+
+        cryptocurrency_decoder = build_encoder_function(cryptocurrency_module.Wallet)
+
+        parsed_proof = MapProof.parse(proof, bytes.fromhex, cryptocurrency_decoder, raw=True)
+
+        result = parsed_proof.check()
+
+        expected_hash = "d3de42248cfa078d94861defe11e39176b2e91fa2ad24be96d44977457691e19"
+
+        self.assertEqual(result.root_hash().hex(), expected_hash)
