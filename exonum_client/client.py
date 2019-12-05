@@ -110,6 +110,7 @@ class Subscriber:
             self._is_running = False
 
 
+# pylint: disable=too-many-public-methods
 class ExonumClient(ProtobufProviderInterface):
     """ExonumClient class is capable of interaction with ExonumBlockchain.
 
@@ -601,7 +602,7 @@ class ExonumClient(ProtobufProviderInterface):
             self._system_private_endpoint("consensus_enabled"), data=data, headers={"content-type": "application/json"}
         )
 
-    def get_consensus_interaction(self):
+    def get_consensus_interaction(self) -> requests.Response:
         """
         Performs a GET request to the '{system_base_path}/consensus_enabled' to get boolean value that states
         if the node participates in consensus.
@@ -618,7 +619,7 @@ class ExonumClient(ProtobufProviderInterface):
         """
         return _get(self._system_private_endpoint("consensus_enabled"))
 
-    def get_network_info(self):
+    def get_network_info(self) -> requests.Response:
         """
         Performs a GET request to the '{system_base_path}/network'
         to get info about the serialization protocol and the services functioning in the network.
@@ -638,7 +639,7 @@ class ExonumClient(ProtobufProviderInterface):
         """
         return _get(self._system_private_endpoint("network"))
 
-    def shutdown(self):
+    def shutdown(self) -> requests.Response:
         """
         Performs a POST request to the '{system_base_path}/shutdown' to stop the node.
         After receiving this request, the node stops processing transactions, participating in consensus and
@@ -649,7 +650,8 @@ class ExonumClient(ProtobufProviderInterface):
         response: requests.Response
             Result of an API call.
         """
-        return _post(self._system_private_endpoint("shutdown"), headers={"content-type": "application/json"})
+        data = json.dumps(None)
+        return _post(self._system_private_endpoint("shutdown"), data=data, headers={"content-type": "application/json"})
 
     # Implementation of ProtobufProviderInterface:
     def _get_proto_sources(self, params: Optional[Dict[str, str]] = None) -> List[ProtoFile]:
