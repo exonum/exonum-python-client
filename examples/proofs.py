@@ -11,14 +11,8 @@ from exonum_client.proofs import (
     ListProofVerificationError,
     MalformedListProofError,
 )
-from examples.transactions import (
-    RUST_RUNTIME_ID,
-    CRYPTOCURRENCY_ARTIFACT_NAME,
-    CRYPTOCURRENCY_INSTANCE_NAME,
-    create_wallet,
-    get_cryptocurrency_instance_id,
-    ensure_status_code,
-)
+from examples.deploy import RUST_RUNTIME_ID, CRYPTOCURRENCY_ARTIFACT_NAME, CRYPTOCURRENCY_INSTANCE_NAME
+from examples.transactions import create_wallet, get_cryptocurrency_instance_id, ensure_status_code
 
 
 def run() -> None:

@@ -4,6 +4,9 @@ import json
 from exonum_client import ExonumClient, ModuleManager
 
 RUST_RUNTIME_ID = 0
+SUPERVISOR_ARTIFACT_NAME = "exonum-supervisor:0.13.0-rc.2"
+CRYPTOCURRENCY_ARTIFACT_NAME = "exonum-cryptocurrency-advanced:0.13.0-rc.2"
+CRYPTOCURRENCY_INSTANCE_NAME = "XNM"
 
 
 def run() -> None:
@@ -13,16 +16,14 @@ def run() -> None:
     For actual deployment consider using `exonum-launcher` tool."""
     client = ExonumClient(hostname="127.0.0.1", public_api_port=8080, private_api_port=8081)
 
-    # Name of the artifact:
-    service_name = "exonum-cryptocurrency-advanced:0.13.0-rc.2"
-
-    # Name of the service instance that we want to create:
-    instance_name = "XNM"
+    # Create better-looking aliases for constants.
+    service_name = CRYPTOCURRENCY_ARTIFACT_NAME
+    instance_name = CRYPTOCURRENCY_INSTANCE_NAME
 
     with client.protobuf_loader() as loader:
         # Load and compile proto files:
         loader.load_main_proto_files()
-        loader.load_service_proto_files(RUST_RUNTIME_ID, "exonum-supervisor:0.13.0-rc.2")
+        loader.load_service_proto_files(RUST_RUNTIME_ID, SUPERVISOR_ARTIFACT_NAME)
 
         try:
             print(f"Started deploying `{service_name}` artifact.")
@@ -46,7 +47,7 @@ def deploy_service(client: ExonumClient, service_name: str) -> None:
     and waits until it is deployed."""
 
     # Create a deploy request message:
-    service_module = ModuleManager.import_service_module("exonum-supervisor:0.13.0-rc.2", "service")
+    service_module = ModuleManager.import_service_module(SUPERVISOR_ARTIFACT_NAME, "service")
 
     deploy_request = service_module.DeployRequest()
     deploy_request.artifact.runtime_id = 0  # Rust runtime ID.
@@ -71,7 +72,7 @@ def start_service(client: ExonumClient, service_name: str, instance_name: str) -
     """This function starts the previously deployed service instance."""
 
     # Create a start request:
-    service_module = ModuleManager.import_service_module("exonum-supervisor:0.13.0-rc.2", "service")
+    service_module = ModuleManager.import_service_module(SUPERVISOR_ARTIFACT_NAME, "service")
     start_request = service_module.StartService()
     start_request.artifact.runtime_id = 0  # Rust runtime ID.
     start_request.artifact.name = service_name

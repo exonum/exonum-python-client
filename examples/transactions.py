@@ -9,9 +9,7 @@ import requests
 from exonum_client import ExonumClient, ModuleManager, MessageGenerator
 from exonum_client.crypto import KeyPair, PublicKey
 
-RUST_RUNTIME_ID = 0
-CRYPTOCURRENCY_ARTIFACT_NAME = "exonum-cryptocurrency-advanced:0.13.0-rc.2"
-CRYPTOCURRENCY_INSTANCE_NAME = "XNM"
+from examples.deploy import RUST_RUNTIME_ID, CRYPTOCURRENCY_ARTIFACT_NAME, CRYPTOCURRENCY_INSTANCE_NAME
 
 
 def run() -> None:
