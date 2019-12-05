@@ -525,7 +525,6 @@ class ExonumClient(ProtobufProviderInterface):
         response: requests.Response
             Result of an API call.
         """
-        # added address and public key
         data = json.dumps({"address": address, "public_key": public_key})
         response = _post(
             self._system_private_endpoint("peers"), data=data, headers={"content-type": "application/json"}
@@ -586,7 +585,7 @@ class ExonumClient(ProtobufProviderInterface):
     def set_consensus_interaction(self, enabled: True) -> requests.Response:
         """
         Performs a POST request to the '{system_base_path}/consensus_enabled'
-        to witch consensus interaction of the node on or off.
+        to switch consensus interaction of the node on or off.
 
         Parameters
         ----------
