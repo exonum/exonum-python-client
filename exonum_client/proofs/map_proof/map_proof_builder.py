@@ -26,6 +26,10 @@ class MapProofBuilder:
     >>> proof_builder.set_value_encoder('Wallet', service_name='cryptocurrency', service_module='service')
     >>> proof = proof_builder.build_proof(map_proof)
 
+    If the proof is built from `RawProofMapIndex`, you can provide bool `raw` variable to the constructor:
+
+    >>> proof_builder = MapProofBuilder(raw=True)
+
     If your key/value type does not require convertion to bytes through Protobuf, use `MapProof.parse`
     instead and provide your converter functions by yourself.
 
@@ -34,10 +38,11 @@ class MapProofBuilder:
     returns a converter function.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, raw: bool = False) -> None:
         """ Constructor of MapProofBuilder. """
         self._key_encoder: Optional[type] = None
         self._value_encoder: Optional[type] = None
+        self._raw = raw
 
     @staticmethod
     def _get_encoder(
@@ -168,4 +173,4 @@ class MapProofBuilder:
         key_encoder_func = build_encoder_function(self._key_encoder)
         value_encoder_func = build_encoder_function(self._value_encoder)
 
-        return MapProof.parse(proof, key_encoder_func, value_encoder_func)
+        return MapProof.parse(proof, key_encoder_func, value_encoder_func, self._raw)

@@ -3,6 +3,7 @@ from typing import Optional, Dict, Any, List, Iterator, Callable
 from logging import getLogger
 
 from exonum_client.crypto import Hash
+from .constants import KEY_SIZE
 from .proof_path import ProofPath
 from .errors import MalformedMapProofError
 from .optional_entry import OptionalEntry
@@ -179,6 +180,7 @@ class MapProof:
         proof: List[_MapProofEntry],
         key_to_bytes: Callable[[Any], bytes],
         value_to_bytes: Callable[[Any], bytes],
+        raw: bool = False,
     ):
         """
         Constructor of MapProof. Do not call it directly, use `MapProof.parse`.
@@ -187,6 +189,7 @@ class MapProof:
         self.proof = proof
         self._key_to_bytes = key_to_bytes
         self._value_to_bytes = value_to_bytes
+        self._raw = raw
 
     def __repr__(self) -> str:
         format_str = "MapProof [\n  Entries: {}\n  Proof: {}\n]\n"
@@ -195,7 +198,10 @@ class MapProof:
 
     @staticmethod
     def parse(
-        data: Dict[str, Any], key_to_bytes: Callable[[Any], bytes], value_to_bytes: Callable[[Any], bytes]
+        data: Dict[str, Any],
+        key_to_bytes: Callable[[Any], bytes],
+        value_to_bytes: Callable[[Any], bytes],
+        raw: bool = False,
     ) -> "MapProof":
         """
         Method to parse a proof.
@@ -238,6 +244,10 @@ class MapProof:
             Function that will be used to convert keys to bytes.
         value_to_bytes: Callable[[Any], bytes]
             Function that will be used to convert values to bytes.
+        raw: bool
+            Denotes if type of the proof is `RawMapProof` (meaning that key should not be hashed and
+            maps directly to the `ProofPath`).
+            Defaults to `False`.
 
         Returns
         -------
@@ -258,7 +268,7 @@ class MapProof:
         entries: List[OptionalEntry] = [OptionalEntry.parse(raw_entry) for raw_entry in data["entries"]]
         proof: List[_MapProofEntry] = [_MapProofEntry.parse(raw_entry) for raw_entry in data["proof"]]
 
-        map_proof = MapProof(entries, proof, key_to_bytes, value_to_bytes)
+        map_proof = MapProof(entries, proof, key_to_bytes, value_to_bytes, raw)
         logger.debug("Successfully built MapProof from the given proof dictionary.")
         return map_proof
 
@@ -301,9 +311,16 @@ class MapProof:
 
         def kv_to_map_entry(key_value: OptionalEntry) -> _MapProofEntry:
             key_bytes = self._key_to_bytes(key_value.key)
-            key_hash = Hasher.hash_raw_data(key_bytes)
+            if self._raw:
+                # For raw map proof keys aren't hashed.
+                if len(key_bytes) != KEY_SIZE:
+                    raise MalformedMapProofError.invalid_key_size(key_bytes)
+                key = key_bytes
+            else:
+                # For usual proofs we need to hash the key.
+                key = Hasher.hash_raw_data(key_bytes).value
 
-            path = ProofPath.from_bytes(key_hash.value)
+            path = ProofPath.from_bytes(key)
             value_hash = Hasher.hash_leaf(self._value_to_bytes(key_value.value))
 
             return _MapProofEntry(path, value_hash)

@@ -55,7 +55,6 @@ def run() -> None:
         expected_to_wallet_hash_raw = wallet_info["wallet_proof"]["to_table"]["entries"][0]["value"]
         expected_to_wallet_hash = Hash(bytes.fromhex(expected_to_wallet_hash_raw))
 
-        # TODO: verification of the proof to wallet fails because [ECR-3883]
         # Verify the proof to the wallet:
         verify_proof_to_wallet(proof_to_wallet, expected_to_wallet_hash)
 
@@ -114,7 +113,7 @@ def verify_proof_to_wallet(proof: Dict[Any, Any], expected_hash: Hash) -> None:
     value_encoder = build_encoder_function(cryptocurrency_module.Wallet)
 
     try:
-        parsed_proof = MapProof.parse(proof, key_encoder, value_encoder)
+        parsed_proof = MapProof.parse(proof, key_encoder, value_encoder, raw=True)
 
         result = parsed_proof.check()
 
