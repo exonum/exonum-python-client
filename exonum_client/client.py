@@ -126,7 +126,7 @@ class ExonumClient(ProtobufProviderInterface):
     >>> health_info = client.health_info().json()
     {'consensus_status': 'Enabled', 'connected_peers': 0}
     >>> user_agent = client.user_agent().json()
-    exonum 0.12.0/rustc 1.37.0 (eae3437df 2019-08-13)
+    exonum 0.13.0-rc.2/rustc 1.37.0 (eae3437df 2019-08-13)
     """
 
     def __init__(self, hostname: str, public_api_port: int = 80, private_api_port: int = 81, ssl: bool = False):
@@ -171,7 +171,7 @@ class ExonumClient(ProtobufProviderInterface):
 
         >>> with client.protobuf_loader() as loader:
         >>>     loader.load_main_proto_files()
-        >>>     loader.load_service_proto_files(0, "exonum-supervisor:0.12.0")
+        >>>     loader.load_service_proto_files(0, "exonum-supervisor:0.13.0-rc.2")
         """
         return ProtobufLoader(self)
 
@@ -233,7 +233,7 @@ class ExonumClient(ProtobufProviderInterface):
           "artifacts": [
             {
               "runtime_id": 0,
-              "name": "exonum-supervisor:0.12.0"
+              "name": "exonum-supervisor:0.13.0-rc.2"
             }
           ],
           "services": [
@@ -243,7 +243,7 @@ class ExonumClient(ProtobufProviderInterface):
                 "name": "supervisor",
                 "artifact": {
                   "runtime_id": 0,
-                  "name": "exonum-supervisor:0.12.0"
+                  "name": "exonum-supervisor:0.13.0-rc.2"
                 }
               },
               "status": "Active"

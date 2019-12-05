@@ -15,9 +15,9 @@ class ModuleManager:
 
     >>> with client.protobuf_loader() as loader:
     >>>     loader.load_main_proto_files()
-    >>>     loader.load_service_proto_files(0, "exonum-supervisor:0.12.0")
+    >>>     loader.load_service_proto_files(0, "exonum-supervisor:0.13.0-rc.2")
     >>>     main_module = ModuleManager.import_main_module("runtime")
-    >>>     service_module = ModuleManager.import_service_module("exonum-supervisor:0.12.0", "service")
+    >>>     service_module = ModuleManager.import_service_module("exonum-supervisor:0.13.0-rc.2", "service")
     """
 
     @staticmethod

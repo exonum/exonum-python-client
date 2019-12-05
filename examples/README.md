@@ -21,3 +21,33 @@ public port 8080 and private port 8081.
 
 All examples except for the `api.py` and `protobuf.py` also expect the node to
 have an `exonum-cryptocurrency-advanced` artifact available for deploy.
+
+## How to run examples
+
+First of all, ensure that you have both `exonum-cryptocurrency-advanced` and
+`exonum-python-clien` installed:
+
+```sh
+# Run the following in the exonum core folder.
+cargo install --path examples/cryptocurrency-advanced/backend --force
+# Run the following in the exonum-python-client folder.
+pip install -e . --no-binary=protobuf
+```
+
+Then, run the `exonum-cryptocurrency-advanced` example in the `run-dev` mode:
+
+```sh
+exonum-cryptocurrency-advanced run-dev -a /tmp/crypt
+```
+
+`/tmp/crypt` here is a folder for temporary files of `exonum-cryptocurrency-advanced`.
+
+You may optionally call `rm -rf /tmp/crypt` as well, if this is not the first launch.
+
+Then, you can run any example:
+
+```sh
+python examples/api.py
+python examples/deploy.py
+python examples/transactions.py
+```

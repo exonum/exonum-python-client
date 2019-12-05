@@ -15,7 +15,7 @@ def run() -> None:
         # Load core proto files:
         loader.load_main_proto_files()
         # Load proto files for the Exonum supervisor service:
-        loader.load_service_proto_files(RUST_RUNTIME_ID, "exonum-supervisor:0.12.0")
+        loader.load_service_proto_files(RUST_RUNTIME_ID, "exonum-supervisor:0.13.0-rc.2")
 
         # Load the main module (runtime.proto):
         main_module = ModuleManager.import_main_module("runtime")
@@ -31,7 +31,7 @@ def run() -> None:
         instance_spec.artifact.CopyFrom(artifact_id)
 
         # Load the service module (service.proto from the supervisor service):
-        service_module = ModuleManager.import_service_module("exonum-supervisor:0.12.0", "service")
+        service_module = ModuleManager.import_service_module("exonum-supervisor:0.13.0-rc.2", "service")
 
         # Workflow is the same as for the main modules:
         _deploy_request = service_module.DeployRequest()

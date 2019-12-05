@@ -14,7 +14,7 @@ def run() -> None:
     client = ExonumClient(hostname="127.0.0.1", public_api_port=8080, private_api_port=8081)
 
     # Name of the artifact:
-    service_name = "exonum-cryptocurrency-advanced:0.12.0"
+    service_name = "exonum-cryptocurrency-advanced:0.13.0-rc.2"
 
     # Name of the service instance that we want to create:
     instance_name = "XNM"
@@ -22,7 +22,7 @@ def run() -> None:
     with client.protobuf_loader() as loader:
         # Load and compile proto files:
         loader.load_main_proto_files()
-        loader.load_service_proto_files(RUST_RUNTIME_ID, "exonum-supervisor:0.12.0")
+        loader.load_service_proto_files(RUST_RUNTIME_ID, "exonum-supervisor:0.13.0-rc.2")
 
         try:
             print(f"Started deploying `{service_name}` artifact.")
@@ -46,7 +46,7 @@ def deploy_service(client: ExonumClient, service_name: str) -> None:
     and waits until it is deployed."""
 
     # Create a deploy request message:
-    service_module = ModuleManager.import_service_module("exonum-supervisor:0.12.0", "service")
+    service_module = ModuleManager.import_service_module("exonum-supervisor:0.13.0-rc.2", "service")
 
     deploy_request = service_module.DeployRequest()
     deploy_request.artifact.runtime_id = 0  # Rust runtime ID.
@@ -71,27 +71,35 @@ def start_service(client: ExonumClient, service_name: str, instance_name: str) -
     """This function starts the previously deployed service instance."""
 
     # Create a start request:
-    service_module = ModuleManager.import_service_module("exonum-supervisor:0.12.0", "service")
+    service_module = ModuleManager.import_service_module("exonum-supervisor:0.13.0-rc.2", "service")
     start_request = service_module.StartService()
     start_request.artifact.runtime_id = 0  # Rust runtime ID.
     start_request.artifact.name = service_name
     start_request.name = instance_name
-    start_request.deadline_height = 1000000  # Some big number.
 
-    # Convert the request from a Protobuf message to bytes:
-    request_bytes = start_request.SerializeToString()
+    # Create a config change object:
+    config_change = service_module.ConfigChange()
+    config_change.start_service.CopyFrom(start_request)
+
+    # Create a config proposal:
+    config_proposal = service_module.ConfigPropose()
+    config_proposal.changes.append(config_change)
+
+    # Convert the config proposal from a Protobuf message to bytes:
+    request_bytes = config_proposal.SerializeToString()
 
     # Send the request and wait for Exonum to process it:
-    send_request(client, "start-service", request_bytes)
+    send_request(client, "propose-config", request_bytes)
 
     # Ensure that the service is added to the running instances list:
     available_services = client.available_services().json()
-    if instance_name not in map(lambda x: x["name"], available_services["services"]):
+    if instance_name not in map(lambda x: x["spec"]["name"], available_services["services"]):
         raise RuntimeError(f"{instance_name} is not listed in running instances after starting")
 
     # Service has started.
     # Return the running instance ID:
-    for instance in available_services["services"]:
+    for state in available_services["services"]:
+        instance = state["spec"]
         if instance["name"] == instance_name:
             return instance["id"]
 
