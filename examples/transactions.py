@@ -9,9 +9,7 @@ import requests
 from exonum_client import ExonumClient, ModuleManager, MessageGenerator
 from exonum_client.crypto import KeyPair, PublicKey
 
-RUST_RUNTIME_ID = 0
-CRYPTOCURRENCY_ARTIFACT_NAME = "exonum-cryptocurrency-advanced:0.12.0"
-CRYPTOCURRENCY_INSTANCE_NAME = "XNM"
+from examples.deploy import RUST_RUNTIME_ID, CRYPTOCURRENCY_ARTIFACT_NAME, CRYPTOCURRENCY_INSTANCE_NAME
 
 
 def run() -> None:
@@ -61,14 +59,14 @@ def get_cryptocurrency_instance_id(client: ExonumClient) -> int:
     the ID of the instance."""
     instance_name = CRYPTOCURRENCY_INSTANCE_NAME
     available_services = client.available_services().json()
-    if instance_name not in map(lambda x: x["name"], available_services["services"]):
+    if instance_name not in map(lambda x: x["spec"]["name"], available_services["services"]):
         raise RuntimeError(f"{instance_name} is not listed in the running instances after the start")
 
     # Service starts.
     # Return the running instance ID:
     for instance in available_services["services"]:
-        if instance["name"] == instance_name:
-            return instance["id"]
+        if instance["spec"]["name"] == instance_name:
+            return instance["spec"]["id"]
 
     raise RuntimeError("Instance ID was not found")
 

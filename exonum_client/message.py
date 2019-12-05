@@ -41,7 +41,7 @@ class MessageGenerator:
             ID of the desired Exonum service instance.
         artifact_name: str
             The name of the service artifact you want to communicate with.
-            The name should be in the format provided by Exonum, like 'exonum-cryptocurrency-advanced:0.12.0'.
+            The name should be in the format provided by Exonum, like 'exonum-cryptocurrency-advanced:0.13.0-rc.2'.
         """
         self._instance_id = instance_id
 
@@ -141,7 +141,7 @@ class ExonumMessage:
             Serialized message as a hexadecimal string.
         artifact_name: str
             The name of the service artifact you want to communicate with.
-            The name should be in the format provided by Exonum, like 'exonum-cryptocurrency-advanced:0.12.0'.
+            The name should be in the format provided by Exonum, like 'exonum-cryptocurrency-advanced:0.13.0-rc.2'.
         tx_name: str
             The name of the transaction to be parsed, e.g. 'CreateWallet'.
 

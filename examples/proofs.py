@@ -11,14 +11,8 @@ from exonum_client.proofs import (
     ListProofVerificationError,
     MalformedListProofError,
 )
-from examples.transactions import (
-    RUST_RUNTIME_ID,
-    CRYPTOCURRENCY_ARTIFACT_NAME,
-    CRYPTOCURRENCY_INSTANCE_NAME,
-    create_wallet,
-    get_cryptocurrency_instance_id,
-    ensure_status_code,
-)
+from examples.deploy import RUST_RUNTIME_ID, CRYPTOCURRENCY_ARTIFACT_NAME, CRYPTOCURRENCY_INSTANCE_NAME
+from examples.transactions import create_wallet, get_cryptocurrency_instance_id, ensure_status_code
 
 
 def run() -> None:
@@ -61,6 +55,7 @@ def run() -> None:
         expected_to_wallet_hash_raw = wallet_info["wallet_proof"]["to_table"]["entries"][0]["value"]
         expected_to_wallet_hash = Hash(bytes.fromhex(expected_to_wallet_hash_raw))
 
+        # TODO: verification of the proof to wallet fails because [ECR-3883]
         # Verify the proof to the wallet:
         verify_proof_to_wallet(proof_to_wallet, expected_to_wallet_hash)
 
@@ -84,7 +79,7 @@ def verify_proof_to_table(proof: Dict[Any, Any], expected_hash: Hash) -> None:
         import struct
 
         format_str = ">HIH"
-        res = struct.pack(format_str, data["tag"], data["group_id"], data["index_id"])
+        res = struct.pack(format_str, data["origin_label"], data["local_schema_id"], data["index_id"])
         return res
 
     # Values in the proof to the table are encoded as a byte sequence parsed

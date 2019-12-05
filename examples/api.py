@@ -15,7 +15,8 @@ def run() -> None:
         for artifact in available_services["artifacts"]:
             print(f"  - {artifact['name']} (runtime ID {artifact['runtime_id']})")
         print(" Instances:")
-        for instance in available_services["services"]:
+        for state in available_services["services"]:
+            instance = state["spec"]
             print(f"  - ID {instance['id']} => {instance['name']} (artifact {instance['artifact']['name']})")
     else:
         print("Available services request failed")
