@@ -2,6 +2,8 @@
 from typing import Dict, Any
 from enum import Enum, auto as enum_auto
 
+from .constants import KEY_SIZE
+
 # Methods are self-documenting here.
 # pylint: disable=missing-docstring
 
@@ -17,6 +19,7 @@ class MalformedMapProofError(Exception):
         INVALID_ORDERING = enum_auto()
         NON_TERMINAL_NODE = enum_auto()
         MALFORMED_ENTRY = enum_auto()
+        INVALID_KEY_SIZE = enum_auto()
 
     def __init__(self, message: str, error_data: Dict[str, Any]) -> None:
         super().__init__(message)
@@ -57,6 +60,14 @@ class MalformedMapProofError(Exception):
         if additional_info:
             error_msg += " [{}]".format(additional_info)
         error_data = {"kind": cls.ErrorKind.MALFORMED_ENTRY, "entry": entry}
+
+        return cls(error_msg, error_data)
+
+    @classmethod
+    def invalid_key_size(cls, key: bytes) -> "MalformedMapProofError":
+        error_msg = f"Invalid key '{key}' for raw MapProof, expected size {KEY_SIZE}, actual {len(key)}"
+
+        error_data = {"kind": cls.ErrorKind.INVALID_KEY_SIZE, "key": key}
 
         return cls(error_msg, error_data)
 

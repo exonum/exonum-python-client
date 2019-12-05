@@ -34,10 +34,11 @@ class MapProofBuilder:
     returns a converter function.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, raw: bool = False) -> None:
         """ Constructor of MapProofBuilder. """
         self._key_encoder: Optional[type] = None
         self._value_encoder: Optional[type] = None
+        self._raw = raw
 
     @staticmethod
     def _get_encoder(
@@ -168,4 +169,4 @@ class MapProofBuilder:
         key_encoder_func = build_encoder_function(self._key_encoder)
         value_encoder_func = build_encoder_function(self._value_encoder)
 
-        return MapProof.parse(proof, key_encoder_func, value_encoder_func)
+        return MapProof.parse(proof, key_encoder_func, value_encoder_func, self._raw)
