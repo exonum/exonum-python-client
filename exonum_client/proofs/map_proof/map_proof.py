@@ -244,6 +244,10 @@ class MapProof:
             Function that will be used to convert keys to bytes.
         value_to_bytes: Callable[[Any], bytes]
             Function that will be used to convert values to bytes.
+        raw: bool
+            Denotes if type of the proof is `RawMapProof` (meaning that key should not be hashed and
+            maps directly to the `ProofPath`).
+            Defaults to `False`.
 
         Returns
         -------
