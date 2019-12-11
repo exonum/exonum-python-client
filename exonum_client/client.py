@@ -65,7 +65,6 @@ class Subscriber:
             raise err
         parameters = "?" + urlencode(filters) if filters else ""
         self._address = _SUBSCRIPTION_WEBSOCKET_URI.format(address, port, subscription_type) + parameters
-        self._filters = filters
         self._is_running = False
         self._connected = False
         self._ws_client = WebSocket()
