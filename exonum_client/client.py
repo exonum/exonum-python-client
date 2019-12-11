@@ -42,23 +42,28 @@ class Subscriber:
     # Type of the `Callback` (`Callable` that takes `ReceiveType` as an argument and produces nothing).
     CallbackType = Callable[[ReceiveType], None]
 
-    def __init__(self, address: str, port: int, subscription_type: str = "blocks"):
+    def __init__(self, address: str, port: int, subscription_type: str, filters: Optional[Dict[str, Any]] = None):
         """Subscriber constructor.
 
         Parameters
         ----------
         address: str
             IP address of the Exonum node.
-        post: int
+        port: int
             Port of the exonum node.
-        type: str
+        subscription_type: str
             Type of subscription: "blocks" or "transactions".
+        filters: Optional[Dict[str, Any]]
+            Dictionary of filters, such as 'service_id' and 'tx_id' for transactions.
         """
         if subscription_type not in _SUBSCRIPTION_TYPES:
-            err = ValueError(f"Subscription type must be one of these: {_SUBSCRIPTION_TYPES}, while {subscription_type} is given.")
+            err = ValueError(
+                f"Subscription type must be one of these: {_SUBSCRIPTION_TYPES}, while {subscription_type} is given."
+            )
             logger.error("Error occurred during subscriber initialization: %s", err)
             raise err
         self._address = _SUBSCRIPTION_WEBSOCKET_URI.format(address, port, subscription_type)
+        self._filters = filters
         self._is_running = False
         self._connected = False
         self._ws_client = WebSocket()
@@ -76,6 +81,8 @@ class Subscriber:
     def connect(self) -> None:
         """Connects the subscriber to the Exonum, so it will be able to receive events. """
         self._ws_client.connect(self._address)
+        if self._filters:
+            self._ws_client.send(json.dumps(self._filters))
         self._connected = True
 
     def set_handler(self, handler: "Subscriber.CallbackType") -> None:
