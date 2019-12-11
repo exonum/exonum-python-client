@@ -10,9 +10,9 @@ from typing import Optional, Any, Callable, Union, Iterable, List, Dict
 import json
 from logging import getLogger
 from threading import Thread
+from urllib.parse import urlencode
 from websocket import WebSocket
 import requests
-from urllib.parse import urlencode
 
 from .protobuf_loader import ProtobufLoader, ProtobufProviderInterface, ProtoFile
 from .message import ExonumMessage

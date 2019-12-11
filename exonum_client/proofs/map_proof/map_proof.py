@@ -174,6 +174,7 @@ class MapProof:
     ```
     """
 
+    # pylint: disable=too-many-arguments
     def __init__(
         self,
         entries: List[OptionalEntry],
