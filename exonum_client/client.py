@@ -12,6 +12,7 @@ from logging import getLogger
 from threading import Thread
 from websocket import WebSocket
 import requests
+from urllib.parse import urlencode
 
 from .protobuf_loader import ProtobufLoader, ProtobufProviderInterface, ProtoFile
 from .message import ExonumMessage
@@ -62,7 +63,8 @@ class Subscriber:
             )
             logger.error("Error occurred during subscriber initialization: %s", err)
             raise err
-        self._address = _SUBSCRIPTION_WEBSOCKET_URI.format(address, port, subscription_type)
+        parameters = "?" + urlencode(filters) if filters else ""
+        self._address = _SUBSCRIPTION_WEBSOCKET_URI.format(address, port, subscription_type) + parameters
         self._filters = filters
         self._is_running = False
         self._connected = False
@@ -81,8 +83,6 @@ class Subscriber:
     def connect(self) -> None:
         """Connects the subscriber to the Exonum, so it will be able to receive events. """
         self._ws_client.connect(self._address)
-        if self._filters:
-            self._ws_client.send(json.dumps(self._filters))
         self._connected = True
 
     def set_handler(self, handler: "Subscriber.CallbackType") -> None:
