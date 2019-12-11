@@ -32,6 +32,7 @@ _BLOCKS_URL = _ENDPOINT_PREFIX + "/api/explorer/v1/blocks"
 _SYSTEM_URL = _ENDPOINT_PREFIX + "/api/system/v1/{}"
 _SERVICE_URL = _ENDPOINT_PREFIX + "/api/services/{}/"
 _SUBSCRIPTION_WEBSOCKET_URI = "ws://{}:{}/api/explorer/v1/{}/subscribe"
+_SENDING_WEBSOCKET_URI = "ws://{}:{}/api/explorer/v1/ws"
 _SUBSCRIPTION_TYPES = ["blocks", "transactions"]
 
 
@@ -164,6 +165,7 @@ class ExonumClient(ProtobufProviderInterface):
         self.public_api_port = public_api_port
         self.private_api_port = private_api_port
         self.tx_url = _TX_URL.format(self.schema, hostname, public_api_port)
+        self.ws_uri = _SENDING_WEBSOCKET_URI.format(hostname, public_api_port)
 
     def __repr__(self) -> str:
         """ Conversion to a string. """
@@ -310,6 +312,30 @@ class ExonumClient(ProtobufProviderInterface):
                 return service["id"]
 
         return None
+
+    def send_websocket_transaction(self, message: ExonumMessage) -> str:
+        """
+        Sends a transaction into an Exonum node via WebSocket.
+        Example:
+        >>> response = client.send_websocket_transaction(message)
+        >>> json.loads(response)
+        {'tx_hash': '713de312f48fe15559c0d4f7fb3f274dfbd3893a8a80d9f4224e97248f0e314e'}
+        Parameters
+        ----------
+        msg: ExonumMessage
+            Prepared and signed an Exonum message.
+        Returns
+        -------
+        result: str
+            Result of the WebSocket request.
+            If a transaction is correct and it is accepted, it will contain a JSON with a hash of the transaction.
+        """
+        ws_client = WebSocket()
+        ws_client.connect(self.ws_uri)
+        ws_client.send(message.pack_into_json())
+        response = ws_client.recv()
+        ws_client.close()
+        return response
 
     def send_transaction(self, message: ExonumMessage) -> requests.Response:
         """
