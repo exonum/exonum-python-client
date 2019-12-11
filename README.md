@@ -136,19 +136,19 @@ response = client.send_transaction(create_wallet_alice_tx)
 
 ### Subscribing to events
 
-If you want to subscribe to events, use the following code:
+If you want to subscribe to events (subscription_type: "transactions" or "blocks"), use the following code:
 
 ```python
-with client.create_subscriber() as subscriber:
-    subscriber.wait_for_new_block()
-    subscriber.wait_for_new_block()
+with client.create_subscriber(subscription_type="blocks") as subscriber:
+    subscriber.wait_for_new_event()
+    subscriber.wait_for_new_event()
 ```
 
 Context manager will automatically create a connection and will disconnect after use.
 Or you can manually do the same:
 
 ```python
-subscriber = client.create_subscriber()
+subscriber = client.create_subscriber(subscription_type="blocks")
 subscriber.connect()
 # ... Your code
 subscriber.stop()

@@ -10,6 +10,7 @@ from typing import Optional, Any, Callable, Union, Iterable, List, Dict
 import json
 from logging import getLogger
 from threading import Thread
+from urllib.parse import urlencode
 from websocket import WebSocket
 import requests
 
@@ -30,7 +31,8 @@ _BLOCK_URL = _ENDPOINT_PREFIX + "/api/explorer/v1/block"
 _BLOCKS_URL = _ENDPOINT_PREFIX + "/api/explorer/v1/blocks"
 _SYSTEM_URL = _ENDPOINT_PREFIX + "/api/system/v1/{}"
 _SERVICE_URL = _ENDPOINT_PREFIX + "/api/services/{}/"
-_WEBSOCKET_URI = "ws://{}:{}/api/explorer/v1/blocks/subscribe"
+_SUBSCRIPTION_WEBSOCKET_URI = "ws://{}:{}/api/explorer/v1/{}/subscribe"
+_SUBSCRIPTION_TYPES = ["blocks", "transactions"]
 
 
 class Subscriber:
@@ -41,17 +43,28 @@ class Subscriber:
     # Type of the `Callback` (`Callable` that takes `ReceiveType` as an argument and produces nothing).
     CallbackType = Callable[[ReceiveType], None]
 
-    def __init__(self, address: str, port: int):
+    def __init__(self, address: str, port: int, subscription_type: str, filters: Optional[Dict[str, Any]] = None):
         """Subscriber constructor.
 
         Parameters
         ----------
         address: str
             IP address of the Exonum node.
-        post: int
+        port: int
             Port of the exonum node.
+        subscription_type: str
+            Type of subscription: "blocks" or "transactions".
+        filters: Optional[Dict[str, Any]]
+            Dictionary of filters, such as 'service_id' and 'tx_id' for transactions.
         """
-        self._address = _WEBSOCKET_URI.format(address, port)
+        if subscription_type not in _SUBSCRIPTION_TYPES:
+            err = ValueError(
+                f"Subscription type must be one of these: {_SUBSCRIPTION_TYPES}, while {subscription_type} is given."
+            )
+            logger.error("Error occurred during subscriber initialization: %s", err)
+            raise err
+        parameters = "?" + urlencode(filters) if filters else ""
+        self._address = _SUBSCRIPTION_WEBSOCKET_URI.format(address, port, subscription_type) + parameters
         self._is_running = False
         self._connected = False
         self._ws_client = WebSocket()
@@ -91,8 +104,8 @@ class Subscriber:
             if data and self._handler:
                 self._handler(data)
 
-    def wait_for_new_block(self) -> None:
-        """ Waits until a new block is ready. Please note that this method is a blocking one. """
+    def wait_for_new_event(self) -> None:
+        """ Waits until a new event (block or transaction) is ready. Please note that this method is a blocking one. """
         if self._is_running:
             print("Subscriber is already running...")
         else:
@@ -100,14 +113,15 @@ class Subscriber:
 
     def stop(self) -> None:
         """Closes connection with the websocket and, if the thread is running, joins it. """
+        if self._is_running:
+            self._is_running = False
+
+        if self._thread.isAlive():
+            self._thread.join()
+
         if self._connected:
             self._ws_client.close()
             self._connected = False
-
-        if self._is_running:
-            if self._thread.isAlive():
-                self._thread.join()
-            self._is_running = False
 
 
 # pylint: disable=too-many-public-methods
@@ -170,13 +184,13 @@ class ExonumClient(ProtobufProviderInterface):
 
         Example:
 
-        >>> with client.protobuf_loader() as loader:
+        >>> with client.protobuf_loader("blocks") as loader:
         >>>     loader.load_main_proto_files()
         >>>     loader.load_service_proto_files(0, "exonum-supervisor:0.13.0-rc.2")
         """
         return ProtobufLoader(self)
 
-    def create_subscriber(self) -> Subscriber:
+    def create_subscriber(self, subscription_type: str) -> Subscriber:
         """
         Creates a Subscriber object from the current ExonumClient object.
 
@@ -184,10 +198,15 @@ class ExonumClient(ProtobufProviderInterface):
 
         Example:
 
-        >>> with client.create_subscriber() as subscriber:
-        >>>     subscriber.wait_for_new_block()
+        >>> with client.create_subscriber("blocks") as subscriber:
+        >>>     subscriber.wait_for_new_event()
+
+        Parameters
+        ----------
+        subscription_type: str
+            Sets type of subscription: "blocks" or "transactions".
         """
-        subscriber = Subscriber(self.hostname, self.public_api_port)
+        subscriber = Subscriber(self.hostname, self.public_api_port, subscription_type)
         return subscriber
 
     def service_endpoint(self, service_name: str, sub_uri: str, private: bool = False) -> str:
