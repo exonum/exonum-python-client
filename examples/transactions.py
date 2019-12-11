@@ -92,9 +92,9 @@ def create_wallet(client: ExonumClient, message_generator: MessageGenerator, nam
     tx_hash = response.json()["tx_hash"]
 
     # Wait for new blocks:
-    with client.create_subscriber() as subscriber:
-        subscriber.wait_for_new_block()
-        subscriber.wait_for_new_block()
+    with client.create_subscriber("blocks") as subscriber:
+        subscriber.wait_for_new_event()
+        subscriber.wait_for_new_event()
 
     ensure_transaction_success(client, tx_hash)
 
@@ -128,9 +128,9 @@ def transfer(
 
     # Wait for new blocks:
 
-    with client.create_subscriber() as subscriber:
-        subscriber.wait_for_new_block()
-        subscriber.wait_for_new_block()
+    with client.create_subscriber("blocks") as subscriber:
+        subscriber.wait_for_new_event()
+        subscriber.wait_for_new_event()
 
     ensure_transaction_success(client, tx_hash)
 
