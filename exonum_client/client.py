@@ -44,7 +44,9 @@ class Subscriber:
     # Type of the `Callback` (`Callable` that takes `ReceiveType` as an argument and produces nothing).
     CallbackType = Callable[[ReceiveType], None]
 
-    def __init__(self, address: str, port: int, subscription_type: str, filters: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self, address: str, port: int, subscription_type: Optional[str] = None, filters: Optional[Dict[str, Any]] = None
+    ):
         """Subscriber constructor.
 
         Parameters
@@ -53,19 +55,24 @@ class Subscriber:
             IP address of the Exonum node.
         port: int
             Port of the exonum node.
-        subscription_type: str
-            Type of subscription: "blocks" or "transactions".
+        subscription_type: Optional[str]
+            Type of subscription: "blocks" or "transactions". If not given,
+            it is assumed that subscriber is used to send transactions.
         filters: Optional[Dict[str, Any]]
             Dictionary of filters, such as 'service_id' and 'tx_id' for transactions.
         """
-        if subscription_type not in _SUBSCRIPTION_TYPES:
-            err = ValueError(
-                f"Subscription type must be one of these: {_SUBSCRIPTION_TYPES}, while {subscription_type} is given."
-            )
-            logger.error("Error occurred during subscriber initialization: %s", err)
-            raise err
-        parameters = "?" + urlencode(filters) if filters else ""
-        self._address = _SUBSCRIPTION_WEBSOCKET_URI.format(address, port, subscription_type) + parameters
+        if not subscription_type:
+            self._address = _SENDING_WEBSOCKET_URI.format(address, port)
+        else:
+            if subscription_type not in _SUBSCRIPTION_TYPES:
+                err = ValueError(
+                    f"Subscription type must be one of these: {_SUBSCRIPTION_TYPES}, "
+                    f"while {subscription_type} is given."
+                )
+                logger.error("Error occurred during subscriber initialization: %s", err)
+                raise err
+            parameters = "?" + urlencode(filters) if filters else ""
+            self._address = _SUBSCRIPTION_WEBSOCKET_URI.format(address, port, subscription_type) + parameters
         self._is_running = False
         self._connected = False
         self._ws_client = WebSocket()
@@ -101,12 +108,7 @@ class Subscriber:
 
     def _event_processing(self) -> None:
         while self._is_running:
-            data = None
-            try:
-                data = self._ws_client.recv()
-            except Exception as err:
-                if self._is_running:
-                    raise err
+            data = self._ws_client.recv()
             if data and self._handler:
                 self._handler(data)
 
@@ -128,6 +130,31 @@ class Subscriber:
 
         if self._thread.isAlive():
             self._thread.join()
+
+    def send_transaction(self, message: ExonumMessage) -> str:
+        """
+        Sends a transaction into an Exonum node via WebSocket.
+        Example:
+        >>> response = client.send_websocket_transaction(message)
+        >>> print(response)
+        {"result":"success","response":{"tx_hash":"48b7d71d388f3c2dfa665bcf837e1fa0417ca559fb0163533ea72de6319e61ca"}}
+        Parameters
+        ----------
+        message: ExonumMessage
+            Prepared and signed an Exonum message.
+        Returns
+        -------
+        result: str
+            Result of the WebSocket request.
+            If a transaction is correct and it is accepted, it will contain a JSON with a hash of the transaction.
+        """
+        ws_client = WebSocket()
+        ws_client.connect(self._address)
+        data = json.dumps({"type": "transaction", "payload": {"tx_body": message.signed_raw().hex()}})
+        ws_client.send(data)
+        response = ws_client.recv()
+        ws_client.close()
+        return response
 
 
 # pylint: disable=too-many-public-methods
@@ -170,7 +197,6 @@ class ExonumClient(ProtobufProviderInterface):
         self.public_api_port = public_api_port
         self.private_api_port = private_api_port
         self.tx_url = _TX_URL.format(self.schema, hostname, public_api_port)
-        self.ws_uri = _SENDING_WEBSOCKET_URI.format(hostname, public_api_port)
 
     def __repr__(self) -> str:
         """ Conversion to a string. """
@@ -318,31 +344,6 @@ class ExonumClient(ProtobufProviderInterface):
 
         return None
 
-    def send_websocket_transaction(self, message: ExonumMessage) -> str:
-        """
-        Sends a transaction into an Exonum node via WebSocket.
-        Example:
-        >>> response = client.send_websocket_transaction(message)
-        >>> print(response)
-        {"result":"success","response":{"tx_hash":"48b7d71d388f3c2dfa665bcf837e1fa0417ca559fb0163533ea72de6319e61ca"}}
-        Parameters
-        ----------
-        msg: ExonumMessage
-            Prepared and signed an Exonum message.
-        Returns
-        -------
-        result: str
-            Result of the WebSocket request.
-            If a transaction is correct and it is accepted, it will contain a JSON with a hash of the transaction.
-        """
-        ws_client = WebSocket()
-        ws_client.connect(self.ws_uri)
-        data = json.dumps({"type": "transaction", "payload": {"tx_body": message.signed_raw().hex()}})
-        ws_client.send(data)
-        response = ws_client.recv()
-        ws_client.close()
-        return response
-
     def send_transaction(self, message: ExonumMessage) -> requests.Response:
         """
         Sends a transaction into an Exonum node via REST API.
@@ -355,7 +356,7 @@ class ExonumClient(ProtobufProviderInterface):
 
         Parameters
         ----------
-        msg: ExonumMessage
+        message: ExonumMessage
             Prepared and signed an Exonum message.
 
         Returns
