@@ -101,7 +101,12 @@ class Subscriber:
 
     def _event_processing(self) -> None:
         while self._is_running:
-            data = self._ws_client.recv()
+            data = None
+            try:
+                data = self._ws_client.recv()
+            except Exception as err:
+                if self._is_running:
+                    raise err
             if data and self._handler:
                 self._handler(data)
 
@@ -117,12 +122,12 @@ class Subscriber:
         if self._is_running:
             self._is_running = False
 
-        if self._thread.isAlive():
-            self._thread.join()
-
         if self._connected:
             self._ws_client.close()
             self._connected = False
+
+        if self._thread.isAlive():
+            self._thread.join()
 
 
 # pylint: disable=too-many-public-methods
@@ -332,12 +337,7 @@ class ExonumClient(ProtobufProviderInterface):
         """
         ws_client = WebSocket()
         ws_client.connect(self.ws_uri)
-        data = json.dumps({
-            "type": "transaction",
-            "payload": {
-                "tx_body": message.signed_raw().hex(),
-            }
-        })
+        data = json.dumps({"type": "transaction", "payload": {"tx_body": message.signed_raw().hex()}})
         ws_client.send(data)
         response = ws_client.recv()
         ws_client.close()
