@@ -318,8 +318,8 @@ class ExonumClient(ProtobufProviderInterface):
         Sends a transaction into an Exonum node via WebSocket.
         Example:
         >>> response = client.send_websocket_transaction(message)
-        >>> json.loads(response)
-        {'tx_hash': '713de312f48fe15559c0d4f7fb3f274dfbd3893a8a80d9f4224e97248f0e314e'}
+        >>> print(response)
+        {"result":"success","response":{"tx_hash":"48b7d71d388f3c2dfa665bcf837e1fa0417ca559fb0163533ea72de6319e61ca"}}
         Parameters
         ----------
         msg: ExonumMessage
@@ -332,7 +332,13 @@ class ExonumClient(ProtobufProviderInterface):
         """
         ws_client = WebSocket()
         ws_client.connect(self.ws_uri)
-        ws_client.send(message.pack_into_json())
+        data = json.dumps({
+            "type": "transaction",
+            "payload": {
+                "tx_body": message.signed_raw().hex(),
+            }
+        })
+        ws_client.send(data)
         response = ws_client.recv()
         ws_client.close()
         return response
