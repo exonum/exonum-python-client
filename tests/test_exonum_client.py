@@ -6,7 +6,7 @@ from unittest.mock import patch
 import sys
 import os
 
-from exonum_client.client import ExonumClient
+from exonum_client.client import ExonumClient, Subscriber
 from exonum_client.module_manager import ModuleManager
 from exonum_client.protobuf_loader import ProtobufLoader
 
@@ -18,6 +18,16 @@ EXONUM_URL_BASE = "{}://{}:{}/"
 
 SYSTEM_ENDPOINT_POSTFIX = "api/system/v1/{}"
 SERVICE_ENDPOINT_POSTFIX = "api/services/{}/{}"
+EXPLORER_ENDPOINT_POSTFIX = "api/explorer/v1/{}"
+
+
+def random_alphanumeric_string(length=32):
+    from uuid import uuid4
+
+    string = str(uuid4())
+    string = string.replace('-', '')
+
+    return string[:length]
 
 
 def proto_sources_response(service):
@@ -35,12 +45,18 @@ def proto_sources_response(service):
         return response
 
 
-def ok_response():
+def mock_response(status_code, content=None):
+    import json
     from requests.models import Response
+    from requests.status_codes import _codes as status_codes
 
     response = Response()
-    response.code = "OK"
-    response.status_code = 200
+    response.code = status_codes[status_code][0]
+    response.status_code = status_code
+    if content:
+        response.headers = {"content-type": "application/json; charset=utf8"}
+        content = json.dumps(content)
+        response._content = bytes(content, "utf-8")
 
     return response
 
@@ -55,6 +71,10 @@ def mock_requests_get(url, params=None):
     stats_endpoint = exonum_public_base + SYSTEM_ENDPOINT_POSTFIX.format("stats")
     user_agent_endpoint = exonum_public_base + SYSTEM_ENDPOINT_POSTFIX.format("user_agent")
 
+    block_endpoint = exonum_public_base + EXPLORER_ENDPOINT_POSTFIX.format("block")
+    blocks_endpoint = exonum_public_base + EXPLORER_ENDPOINT_POSTFIX.format("blocks")
+    transactions_endpoint = exonum_public_base + EXPLORER_ENDPOINT_POSTFIX.format("transactions")
+
     responses = {
         # Proto sources endpoints.
         # Proto sources without params (main sources):
@@ -62,12 +82,67 @@ def mock_requests_get(url, params=None):
         # Proto sources for the supervisor service:
         (proto_sources_endpoint, "{'artifact': 'exonum-supervisor:0.11.0'}"): proto_sources_response("supervisor"),
         # System endpoints:
-        (healthcheck_endpoint, "None"): ok_response(),
-        (stats_endpoint, "None"): ok_response(),
-        (user_agent_endpoint, "None"): ok_response(),
+        (healthcheck_endpoint, "None"): mock_response(200),
+        (stats_endpoint, "None"): mock_response(200),
+        (user_agent_endpoint, "None"): mock_response(200),
     }
 
+    # Explorer endpoints
+    if url == block_endpoint:
+        content = None
+        status_code = 200
+
+        if(
+            not isinstance(params["height"], int)
+            or params["height"] < 0
+        ):
+            status_code = 400
+        else:
+            content = {
+                "height": params["height"],
+            }
+
+        responses.update({
+            (block_endpoint, str(params)): mock_response(status_code, content),
+        })
+    if url == blocks_endpoint:
+        content = None
+        status_code = 200
+
+        if(
+            not isinstance(params["count"], int)
+            or params["count"] < 0
+        ):
+            status_code = 400
+        elif (
+            "earliest" in params
+            and "latest" in params
+            and params["latest"] - params["earliest"] < 0
+        ):
+            status_code = 200
+
+        responses.update({
+            (blocks_endpoint, str(params)): mock_response(status_code, content),
+        })
+    if url == transactions_endpoint:
+        content = None
+        status_code = 200
+
+        if (
+            not isinstance(params["hash"], str)
+            or not params["hash"].isalnum()
+        ):
+            status_code = 400
+
+        responses.update({
+            (transactions_endpoint, str(params)): mock_response(status_code, content),
+        })
+
     return responses[(url, str(params))]
+
+
+def mock_requests_post(url, params=None):
+    pass
 
 
 class TestProtobufLoader(unittest.TestCase):
@@ -223,9 +298,85 @@ class TestExonumClient(unittest.TestCase):
 
     # TODO add more tests;
     # send_transaction
+    @patch("exonum_client.client._post", new=mock_requests_post)
+    def test_send_transaction(self):
+        pass
+
     # send_transactions
+    @patch("exonum_client.client._post", new=mock_requests_post)
+    def test_send_transactions(self):
+        pass
+
     # get_block
+    @patch("exonum_client.client._get", new=mock_requests_get)
+    def test_get_block(self):
+        from random import randrange
+
+        client = ExonumClient(
+            hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
+        )
+
+        height = randrange(0, 20)
+        resp = client.get_block(height)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["height"], height)
+
+        height = randrange(-10, 0)
+        resp = client.get_block(height)
+        self.assertEqual(resp.status_code, 400)
+
+        height = "not an integer"
+        resp = client.get_block(height)
+        self.assertEqual(resp.status_code, 400)
+
     # get_blocks
+    @patch("exonum_client.client._get", new=mock_requests_get)
+    def test_get_blocks(self):
+        from random import randrange
+
+        client = ExonumClient(
+            hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
+        )
+
+        count = randrange(0, 10)
+        resp = client.get_blocks(count)
+        self.assertEqual(resp.status_code, 200)
+
+        count = randrange(-10, 0)
+        resp = client.get_blocks(count)
+        self.assertEqual(resp.status_code, 400)
+
+        count = "not an integer"
+        resp = client.get_blocks(count)
+        self.assertEqual(resp.status_code, 400)
+
+        count = randrange(0, 20)
+        latest = randrange(0, 100)
+        earliest = latest + 10
+        resp = client.get_blocks(count, latest=latest, earliest=earliest)
+        self.assertEqual(resp.status_code, 200)
+
     # get_tx_info
+    @patch("exonum_client.client._get", new=mock_requests_get)
+    def test_get_tx_info(self):
+        client = ExonumClient(
+            hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
+        )
+
+        tx_hash = "-" * 64
+        resp = client.get_tx_info(tx_hash)
+        self.assertEqual(resp.status_code, 400)
+
+        tx_hash = random_alphanumeric_string()
+        print("Random string:", tx_hash)
+        resp = client.get_tx_info(tx_hash)
+        self.assertEqual(resp.status_code, 200)
+
     # get_service
-    # Subscriber tests
+    @patch("exonum_client.client._get", new=mock_requests_get)
+    def test_get_service(self):
+        pass
+
+# Subscriber tests
+class TestSubscriber(unittest.TestCase):
+    pass
