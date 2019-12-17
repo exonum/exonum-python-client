@@ -271,52 +271,45 @@ class TestProtobufLoader(unittest.TestCase):
 
 
 class TestExonumClient(unittest.TestCase):
-    # This test case replaces the get function from the Exonum client with the mock one.
+    # This test case replaces the get and post functions from the Exonum client with the mock one.
     # Thus testing of HTTP interacting could be done without actual Exonum client:
+
+    def setUp(self):
+        self.client = ExonumClient(
+            hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
+        )
 
     @patch("exonum_client.client._get", new=mock_requests_get)
     def test_helthcheck(self):
-        client = ExonumClient(
-            hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
-        )
-        resp = client.health_info()
+        resp = self.client.health_info()
         self.assertEqual(resp.status_code, 200)
 
     @patch("exonum_client.client._get", new=mock_requests_get)
     def test_stats(self):
-        client = ExonumClient(
-            hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
-        )
-        resp = client.stats()
+        resp = self.client.stats()
         self.assertEqual(resp.status_code, 200)
 
     @patch("exonum_client.client._get", new=mock_requests_get)
     def test_user_agent(self):
-        client = ExonumClient(
-            hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
-        )
-        resp = client.user_agent()
+        resp = self.client.user_agent()
         self.assertEqual(resp.status_code, 200)
 
     def test_service_endpoint(self):
         exonum_public_base = EXONUM_URL_BASE.format(EXONUM_PROTO, EXONUM_IP, EXONUM_PUBLIC_PORT)
         exonum_private_base = EXONUM_URL_BASE.format(EXONUM_PROTO, EXONUM_IP, EXONUM_PRIVATE_PORT)
 
-        client = ExonumClient(
-            hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
-        )
         service = "service"
         endpoint = "endpoint"
 
         # Test a public endpoint generation:
-        got_endpoint = client.service_endpoint(service, endpoint)
+        got_endpoint = self.client.service_endpoint(service, endpoint)
 
         expected_public_endpoint = exonum_public_base + SERVICE_ENDPOINT_POSTFIX.format(service, endpoint)
 
         self.assertEqual(got_endpoint, expected_public_endpoint)
 
         # Test a private endpoint generation:
-        got_endpoint = client.service_endpoint(service, endpoint, private=True)
+        got_endpoint = self.client.service_endpoint(service, endpoint, private=True)
 
         expected_private_endpoint = exonum_private_base + SERVICE_ENDPOINT_POSTFIX.format(service, endpoint)
 
@@ -324,135 +317,114 @@ class TestExonumClient(unittest.TestCase):
 
     @patch("exonum_client.client._post", new=mock_requests_post)
     def test_send_transaction(self):
-        client = ExonumClient(
-            hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
-        )
-
-        resp = client.send_transaction(Mock())
+        resp = self.client.send_transaction(Mock())
         self.assertEqual(resp.status_code, 200)
 
     @patch("exonum_client.client._get", new=mock_requests_get)
     def test_get_block(self):
         from random import randrange
 
-        client = ExonumClient(
-            hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
-        )
-
         height = randrange(0, 20)
-        resp = client.get_block(height)
+        resp = self.client.get_block(height)
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()["height"], height)
 
         height = randrange(-10, 0)
-        resp = client.get_block(height)
+        resp = self.client.get_block(height)
         self.assertEqual(resp.status_code, 400)
 
         height = "not an integer"
-        resp = client.get_block(height)
+        resp = self.client.get_block(height)
         self.assertEqual(resp.status_code, 400)
 
     @patch("exonum_client.client._get", new=mock_requests_get)
     def test_get_blocks(self):
         from random import randrange
 
-        client = ExonumClient(
-            hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
-        )
-
         count = randrange(0, 10)
-        resp = client.get_blocks(count)
+        resp = self.client.get_blocks(count)
         self.assertEqual(resp.status_code, 200)
 
         count = randrange(-10, 0)
-        resp = client.get_blocks(count)
+        resp = self.client.get_blocks(count)
         self.assertEqual(resp.status_code, 400)
 
         count = "not an integer"
-        resp = client.get_blocks(count)
+        resp = self.client.get_blocks(count)
         self.assertEqual(resp.status_code, 400)
 
         count = randrange(0, 20)
         latest = randrange(0, 100)
         earliest = latest + 10
-        resp = client.get_blocks(count, latest=latest, earliest=earliest)
+        resp = self.client.get_blocks(count, latest=latest, earliest=earliest)
         self.assertEqual(resp.status_code, 200)
 
     @patch("exonum_client.client._get", new=mock_requests_get)
     def test_get_tx_info(self):
-        client = ExonumClient(
-            hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
-        )
-
         tx_hash = "-" * 64
-        resp = client.get_tx_info(tx_hash)
+        resp = self.client.get_tx_info(tx_hash)
         self.assertEqual(resp.status_code, 400)
 
         tx_hash = random_alphanumeric_string()
         print("Random string:", tx_hash)
-        resp = client.get_tx_info(tx_hash)
+        resp = self.client.get_tx_info(tx_hash)
         self.assertEqual(resp.status_code, 200)
 
     @patch("exonum_client.client._get", new=mock_requests_get)
     def test_get_peers(self):
-        client = ExonumClient(
-            hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
-        )
-
-        resp = client.get_peers()
+        resp = self.client.get_peers()
         self.assertEqual(resp.status_code, 200)
 
     @patch("exonum_client.client._post", new=mock_requests_post)
     def test_add_peer(self):
-        client = ExonumClient(
-            hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
-        )
-
         address = "address"
         public_key = "public_key"
-        resp = client.add_peer(address, public_key)
+        resp = self.client.add_peer(address, public_key)
         self.assertEqual(resp.status_code, 200)
 
     @patch("exonum_client.client._get", new=mock_requests_get)
     def test_get_consensus_interaction(self):
-        client = ExonumClient(
-            hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
-        )
-
-        resp = client.get_consensus_interaction()
+        resp = self.client.get_consensus_interaction()
         self.assertEqual(resp.status_code, 200)
 
     @patch("exonum_client.client._get", new=mock_requests_get)
     def test_get_network_info(self):
-        client = ExonumClient(
-            hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
-        )
-
-        resp = client.get_network_info()
+        resp = self.client.get_network_info()
         self.assertEqual(resp.status_code, 200)
 
     @patch("exonum_client.client._post", new=mock_requests_post)
     def test_shutdown(self):
-        client = ExonumClient(
-            hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
-        )
-
-        resp = client.shutdown()
+        resp = self.client.shutdown()
         self.assertEqual(resp.status_code, 200)
 
     @patch("exonum_client.client._post", new=mock_requests_post)
     def test_set_consensus_interaction(self):
         from random import randrange
 
-        client = ExonumClient(
-            hostname=EXONUM_IP, public_api_port=EXONUM_PUBLIC_PORT, private_api_port=EXONUM_PRIVATE_PORT
-        )
-
         enabled = bool(randrange(0, 2))
-        resp = client.set_consensus_interaction(enabled)
+        resp = self.client.set_consensus_interaction(enabled)
         self.assertEqual(resp.status_code, 200)
 
 
 # Subscriber tests
 class TestSubscriber(unittest.TestCase):
-    pass
+
+    def setUp(self):
+        address = "address"
+        port = 8080
+        self.subscriber = Subscriber(address, port)
+
+    def test_set_handler(self):
+        result = "some result"
+
+        def handler(data):
+            return data
+
+        self.subscriber.set_handler(handler)
+
+        self.assertEqual(self.subscriber._handler(result), result)
+
+    def test_wait_for_new_event(self):
+        self.subscriber._ws_client = Mock()
+
+        self.assertEqual(self.subscriber.wait_for_new_event(), None)
