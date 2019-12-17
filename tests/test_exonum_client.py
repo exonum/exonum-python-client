@@ -5,6 +5,9 @@ import unittest
 from unittest.mock import patch, Mock
 import sys
 import os
+import random
+
+random.seed(0)
 
 from exonum_client.client import ExonumClient, Subscriber
 from exonum_client.module_manager import ModuleManager
@@ -22,10 +25,9 @@ EXPLORER_ENDPOINT_POSTFIX = "api/explorer/v1/{}"
 
 
 def random_alphanumeric_string(length=32):
-    from random import choices
     import string
 
-    return "".join(choices(string.ascii_lowercase + string.digits, k=length))
+    return "".join(random.choices(string.ascii_lowercase + string.digits, k=length))
 
 
 def proto_sources_response(service):
@@ -294,14 +296,12 @@ class TestExonumClient(unittest.TestCase):
 
     @patch("exonum_client.client._get", new=mock_requests_get)
     def test_get_block(self):
-        from random import randrange
-
-        height = randrange(0, 20)
+        height = random.randrange(0, 20)
         resp = self.client.get_block(height)
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()["height"], height)
 
-        height = randrange(-10, 0)
+        height = random.randrange(-10, 0)
         resp = self.client.get_block(height)
         self.assertEqual(resp.status_code, 400)
 
@@ -311,13 +311,11 @@ class TestExonumClient(unittest.TestCase):
 
     @patch("exonum_client.client._get", new=mock_requests_get)
     def test_get_blocks(self):
-        from random import randrange
-
-        count = randrange(0, 10)
+        count = random.randrange(0, 10)
         resp = self.client.get_blocks(count)
         self.assertEqual(resp.status_code, 200)
 
-        count = randrange(-10, 0)
+        count = random.randrange(-10, 0)
         resp = self.client.get_blocks(count)
         self.assertEqual(resp.status_code, 400)
 
@@ -325,8 +323,8 @@ class TestExonumClient(unittest.TestCase):
         resp = self.client.get_blocks(count)
         self.assertEqual(resp.status_code, 400)
 
-        count = randrange(0, 20)
-        latest = randrange(0, 100)
+        count = random.randrange(0, 20)
+        latest = random.randrange(0, 100)
         earliest = latest + 10
         resp = self.client.get_blocks(count, latest=latest, earliest=earliest)
         self.assertEqual(resp.status_code, 200)
@@ -370,9 +368,7 @@ class TestExonumClient(unittest.TestCase):
 
     @patch("exonum_client.client._post", new=mock_requests_post)
     def test_set_consensus_interaction(self):
-        from random import randrange
-
-        enabled = bool(randrange(0, 2))
+        enabled = bool(random.randrange(0, 2))
         resp = self.client.set_consensus_interaction(enabled)
         self.assertEqual(resp.status_code, 200)
 
