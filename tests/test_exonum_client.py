@@ -25,7 +25,7 @@ def random_alphanumeric_string(length=32):
     from uuid import uuid4
 
     string = str(uuid4())
-    string = string.replace('-', '')
+    string = string.replace("-", "")
 
     return string[:length]
 
@@ -80,7 +80,6 @@ def mock_requests_get(url, params=None):
     blocks_endpoint = exonum_public_base + EXPLORER_ENDPOINT_POSTFIX.format("blocks")
     transactions_endpoint = exonum_public_base + EXPLORER_ENDPOINT_POSTFIX.format("transactions")
 
-
     responses = {
         # Proto sources endpoints.
         # Proto sources without params (main sources):
@@ -103,51 +102,30 @@ def mock_requests_get(url, params=None):
         content = None
         status_code = 200
 
-        if(
-            not isinstance(params["height"], int)
-            or params["height"] < 0
-        ):
+        if not isinstance(params["height"], int) or params["height"] < 0:
             status_code = 400
         else:
-            content = {
-                "height": params["height"],
-            }
+            content = {"height": params["height"]}
 
-        responses.update({
-            (block_endpoint, str(params)): mock_response(status_code, content),
-        })
+        responses.update({(block_endpoint, str(params)): mock_response(status_code, content)})
     if url == blocks_endpoint:
         content = None
         status_code = 200
 
-        if(
-            not isinstance(params["count"], int)
-            or params["count"] < 0
-        ):
+        if not isinstance(params["count"], int) or params["count"] < 0:
             status_code = 400
-        elif (
-            "earliest" in params
-            and "latest" in params
-            and params["latest"] - params["earliest"] < 0
-        ):
+        elif "earliest" in params and "latest" in params and params["latest"] - params["earliest"] < 0:
             status_code = 200
 
-        responses.update({
-            (blocks_endpoint, str(params)): mock_response(status_code, content),
-        })
+        responses.update({(blocks_endpoint, str(params)): mock_response(status_code, content)})
     if url == transactions_endpoint:
         content = None
         status_code = 200
 
-        if (
-            not isinstance(params["hash"], str)
-            or not params["hash"].isalnum()
-        ):
+        if not isinstance(params["hash"], str) or not params["hash"].isalnum():
             status_code = 400
 
-        responses.update({
-            (transactions_endpoint, str(params)): mock_response(status_code, content),
-        })
+        responses.update({(transactions_endpoint, str(params)): mock_response(status_code, content)})
 
     return responses[(url, str(params))]
 
@@ -408,7 +386,6 @@ class TestExonumClient(unittest.TestCase):
 
 # Subscriber tests
 class TestSubscriber(unittest.TestCase):
-
     def setUp(self):
         address = "address"
         port = 8080
