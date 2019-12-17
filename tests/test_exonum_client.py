@@ -134,18 +134,14 @@ def mock_requests_post(url, data=None, headers=None):
     exonum_public_base = EXONUM_URL_BASE.format(EXONUM_PROTO, EXONUM_IP, EXONUM_PUBLIC_PORT)
     _exonum_private_base = EXONUM_URL_BASE.format(EXONUM_PROTO, EXONUM_IP, EXONUM_PRIVATE_PORT)
 
-    transactions_endpoint = exonum_public_base + EXPLORER_ENDPOINT_POSTFIX.format("transactions")
-    shutdown_endpoint = _exonum_private_base + SYSTEM_ENDPOINT_POSTFIX.format("shutdown")
-    consensus_endpoint = _exonum_private_base + SYSTEM_ENDPOINT_POSTFIX.format("consensus_enabled")
-    peers_endpoint = _exonum_private_base + SYSTEM_ENDPOINT_POSTFIX.format("peers")
+    endpoints = {
+        "transactions_endpoint": exonum_public_base + EXPLORER_ENDPOINT_POSTFIX.format("transactions"),
+        "shutdown_endpoint": _exonum_private_base + SYSTEM_ENDPOINT_POSTFIX.format("shutdown"),
+        "consensus_endpoint": _exonum_private_base + SYSTEM_ENDPOINT_POSTFIX.format("consensus_enabled"),
+        "peers_endpoint": _exonum_private_base + SYSTEM_ENDPOINT_POSTFIX.format("peers"),
+    }
 
-    if url == transactions_endpoint:
-        return mock_response(200)
-    elif url == shutdown_endpoint:
-        return mock_response(200)
-    elif url == consensus_endpoint:
-        return mock_response(200)
-    elif url == peers_endpoint:
+    if url in endpoints.values():
         return mock_response(200)
 
 
