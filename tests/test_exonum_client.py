@@ -22,12 +22,10 @@ EXPLORER_ENDPOINT_POSTFIX = "api/explorer/v1/{}"
 
 
 def random_alphanumeric_string(length=32):
-    from uuid import uuid4
+    from random import choices
+    import string
 
-    string = str(uuid4())
-    string = string.replace("-", "")
-
-    return string[:length]
+    return "".join(choices(string.ascii_lowercase + string.digits, k=length))
 
 
 def proto_sources_response(service):
@@ -340,7 +338,6 @@ class TestExonumClient(unittest.TestCase):
         self.assertEqual(resp.status_code, 400)
 
         tx_hash = random_alphanumeric_string()
-        print("Random string:", tx_hash)
         resp = self.client.get_tx_info(tx_hash)
         self.assertEqual(resp.status_code, 200)
 
