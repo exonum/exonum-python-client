@@ -42,5 +42,7 @@ jobs:
         - WARNINGS_COUNT=`make clean > /dev/null && make html | grep warning | wc -l`
         - if [ $WARNINGS_COUNT != 0 ]; then exit 1; fi
     - name: tests
-      install: pip install --no-binary=protobuf protobuf pysodium requests websocket-client-py3
-      script: python -m unittest
+      install: pip install --no-binary=protobuf protobuf pysodium requests websocket-client-py3 codecov
+      script: coverage run -m unittest
+      after_success:
+        - codecov
