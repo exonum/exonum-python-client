@@ -148,12 +148,18 @@ class Subscriber:
             Result of the WebSocket request.
             If a transaction is correct and it is accepted, it will contain a JSON with a hash of the transaction.
         """
+        body_raw = message.signed_raw()
+        if body_raw is None:
+            logger.critical("Attempt to send an unsigned message through websocket.")
+            raise RuntimeError("Attempt to send an unsigned message.")
+        data = json.dumps({"type": "transaction", "payload": {"tx_body": body_raw.hex()}})
+
         ws_client = WebSocket()
         ws_client.connect(self._address)
-        data = json.dumps({"type": "transaction", "payload": {"tx_body": message.signed_raw().hex()}})
         ws_client.send(data)
         response = ws_client.recv()
         ws_client.close()
+
         return response
 
 
@@ -200,12 +206,12 @@ class ExonumClient(ProtobufProviderInterface):
 
     def __repr__(self) -> str:
         """ Conversion to a string. """
-        d = dict()
-
-        d["object"] = f"<{self.__class__.__name__} instance at {id(self)}>"
-        d["host"] = self.hostname
-        d["public_port"] = self.public_api_port
-        d["private_port"] = self.private_api_port
+        d = {
+            "object": f"<{self.__class__.__name__} instance at {id(self)}>",
+            "host": self.hostname,
+            "public_port": str(self.public_api_port),
+            "private_port": str(self.private_api_port),
+        }
 
         return json.dumps(d, indent=2)
 
@@ -634,7 +640,7 @@ class ExonumClient(ProtobufProviderInterface):
         """
         return _get(self._system_private_endpoint("peers"))
 
-    def set_consensus_interaction(self, enabled: True) -> requests.Response:
+    def set_consensus_interaction(self, enabled: bool = True) -> requests.Response:
         """
         Performs a POST request to the '{system_base_path}/consensus_enabled'
         to switch consensus interaction of the node on or off.
@@ -716,7 +722,7 @@ class ExonumClient(ProtobufProviderInterface):
                 response.status_code,
                 json.dumps(response.json(), indent=2),
             )
-            raise RuntimeError("Unsuccessfully attempted to retrieve Protobuf sources: {}".format(response.content))
+            raise RuntimeError("Unsuccessfully attempted to retrieve Protobuf sources: {!r}".format(response.content))
         logger.debug("Protobuf sources retrieved successfully.")
 
         proto_files = [
