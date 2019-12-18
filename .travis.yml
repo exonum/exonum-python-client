@@ -34,7 +34,7 @@ jobs:
         - status=$((status + $?))
         - pylint exonum_client --max-line-length=120 --disable=fixme,bad-continuation,too-few-public-methods
         - status=$((status + $?))
-        - if [ $status != 0 ]; then exit 1; fi
+        - if [ $status != 0 ]; then exit 1; else exit 0; fi
     - name: docs
       install:
         - pip install sphinx
