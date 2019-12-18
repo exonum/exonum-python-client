@@ -65,7 +65,7 @@ class MalformedMapProofError(Exception):
 
     @classmethod
     def invalid_key_size(cls, key: bytes) -> "MalformedMapProofError":
-        error_msg = f"Invalid key '{key}' for raw MapProof, expected size {KEY_SIZE}, actual {len(key)}"
+        error_msg = f"Invalid key '{key!r}' for raw MapProof, expected size {KEY_SIZE}, actual {len(key)}"
 
         error_data = {"kind": cls.ErrorKind.INVALID_KEY_SIZE, "key": key}
 

@@ -35,7 +35,7 @@ def run() -> None:
 
             instance_id = start_service(client, service_name, instance_name)
 
-            # If no exception has occured during the previous calls, the service
+            # If no exception has occurred during the previous calls, the service
             # has started successfully:
             print(f"Service instance '{instance_name}' (artifact '{service_name}') started with ID {instance_id}.")
         except RuntimeError as err:
@@ -119,7 +119,7 @@ def send_request(client: ExonumClient, endpoint: str, data: bytes) -> None:
     response = client.post_service("supervisor", endpoint, json_request, private=True)
 
     if response.status_code != 200:
-        error_msg = f"Error occured during the request to the '{endpoint}' endpoint: {response.content}"
+        error_msg = f"Error occurred during the request to the '{endpoint}' endpoint: {response.content!r}"
         raise RuntimeError(error_msg)
 
     # Wait for 10 seconds.

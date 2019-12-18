@@ -154,7 +154,7 @@ def get_balance(client: ExonumClient, key: PublicKey) -> int:
 def ensure_status_code(response: requests.Response) -> None:
     """Raises an error if the status code is not 200."""
     if response.status_code != 200:
-        raise RuntimeError(f"Received non-ok response: {response.content}")
+        raise RuntimeError(f"Received non-ok response: {response.content!r}")
 
 
 def ensure_transaction_success(client: ExonumClient, tx_hash: str) -> None:
