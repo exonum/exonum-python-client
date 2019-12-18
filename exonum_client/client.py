@@ -207,7 +207,7 @@ class ExonumClient(ProtobufProviderInterface):
     def __repr__(self) -> str:
         """ Conversion to a string. """
         d = {
-            "object":  f"<{self.__class__.__name__} instance at {id(self)}>",
+            "object": f"<{self.__class__.__name__} instance at {id(self)}>",
             "host": self.hostname,
             "public_port": str(self.public_api_port),
             "private_port": str(self.private_api_port),
