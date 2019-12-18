@@ -27,14 +27,9 @@ jobs:
         - pip install mypy
         - pip install --no-binary=protobuf protobuf pysodium requests websocket-client-py3
       script:
-        - status=0
         - black --check -l 120 . --exclude=".*_pb2.py"
-        - status=$((status + $?))
         - mypy --ignore-missing-imports --disallow-untyped-defs ./exonum_client ./examples
-        - status=$((status + $?))
         - pylint exonum_client --max-line-length=120 --disable=fixme,bad-continuation,too-few-public-methods
-        - status=$((status + $?))
-        - if [ $status != 0 ]; then exit 1; else exit 0; fi
     - name: docs
       install:
         - pip install sphinx
