@@ -1,6 +1,6 @@
 # Exonum Python Light Client
 
-[![Travis Build Status](https://travis-ci.com/exonum/python-client.svg?token=DyxSqsiCaQvPg4SYLXqu&branch=master)](https://travis-ci.com/exonum/python-client)
+[![Travis Build Status](https://travis-ci.com/exonum/exonum-python-client.svg?branch=master)](https://travis-ci.com/exonum/exonum-python-client)
 [![codecov](https://codecov.io/gh/exonum/exonum-python-client/branch/master/graph/badge.svg)](https://codecov.io/gh/exonum/exonum-python-client)
 
 Python client for the [Exonum Framework][exonum].
