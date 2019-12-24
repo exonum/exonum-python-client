@@ -7,17 +7,13 @@ This module provides 4 classes classes:
   - PrivateApi: a subclass of class Api that provides methods to interact with private API of an Exonum node.
   - ServiceApi: a class that provides methods to interact with node services.
 """
-from typing import Optional, Any, Callable, Union, Iterable, List, Dict
+from typing import Optional, Any, Union, List, Dict
 
 import json
 from logging import getLogger
-from threading import Thread
-from urllib.parse import urlencode
-from websocket import WebSocket
 import requests
 
-from .protobuf_loader import ProtobufLoader, ProtobufProviderInterface, ProtoFile
-from .message import ExonumMessage
+from .protobuf_loader import ProtoFile
 
 # pylint: disable=C0103
 logger = getLogger(__name__)
@@ -60,7 +56,7 @@ class Api:
 
 
 class PublicApi(Api):
-    # TODO: Add class description
+    """PublicApi class provides methods to interact with the public API of an Exonum node."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -111,7 +107,8 @@ class PublicApi(Api):
 
         Example:
 
-        >>> block = client.get_block(2).json()
+        >>> public_api = PublicApi("127.0.0.1", 80)
+        >>> block = public_api.get_block(2).json()
         >>> print(json.dumps(block, indent=2))
         {
           "proposer_id": 0,
@@ -202,7 +199,8 @@ class PublicApi(Api):
 
         Example:
 
-        >>> tx_info = client.get_tx_info(tx_hash).json()
+        >>> public_api = PublicApi("127.0.0.1", 80)
+        >>> tx_info = public_api.get_tx_info(tx_hash).json()
         >>> print(json.dumps(tx_info, indent=2))
         {
           'type': 'committed',
@@ -249,7 +247,8 @@ class PublicApi(Api):
 
         Example:
 
-        >>> available_services = client.available_services().json()
+        >>> public_api = PublicApi("127.0.0.1", 80)
+        >>> available_services = public_api.available_services().json()
         >>> print(json.dumps(available_services, indent=2))
         {
           "artifacts": [
@@ -289,7 +288,7 @@ class PublicApi(Api):
 
 
 class PrivateApi(Api):
-    # TODO: Add class description
+    """PrivateApi class provides methods to interact with the private API of an Exonum node."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -322,7 +321,8 @@ class PrivateApi(Api):
 
         Example:
 
-        >>> peers = client.get_peers().json()
+        >>> private_api = PrivateApi("127.0.0.1", 81)
+        >>> peers = private_api.get_peers().json()
         >>> print(json.dumps(peers, indent=2))
         {
           "incoming_connections": [{
@@ -393,7 +393,8 @@ class PrivateApi(Api):
 
         Example:
 
-        >>> client.get_consensus_interaction().json()
+        >>> private_api = PrivateApi("127.0.0.1", 81)
+        >>> private_api.get_consensus_interaction().json()
         True
 
         Returns
@@ -410,7 +411,8 @@ class PrivateApi(Api):
 
         Example:
 
-        >>> network_info = client.get_network_info().json()
+        >>> private_api = PrivateApi("127.0.0.1", 81)
+        >>> network_info = private_api.get_network_info().json()
         >>> print(json.dumps(network_info, indent=2))
         {
           "core_version": "0.10.2"
@@ -439,7 +441,7 @@ class PrivateApi(Api):
 
 
 class ServiceApi:
-    # TODO: Add class description
+    """ServiceApi class provides methods to interact with service API."""
 
     def __init__(self, service_name: str, hostname: str, public_api_port: int = 80, private_api_port: int = 81, ssl: bool = False):
         """
@@ -447,6 +449,8 @@ class ServiceApi:
 
         Parameters
         ----------
+        service_name: str
+            Name of a service.
         hostname: str
             Examples: '127.0.0.1', 'www.some_node.com'.
         public_api_port: int
@@ -471,7 +475,8 @@ class ServiceApi:
 
         Example:
 
-        >>> client.service_endpoint("supervisor", "deploy-artifact", private=True)
+        >>> service_api = ServiceApi("supervisor", "127.0.0.1")
+        >>> service_api.service_endpoint("deploy-artifact", private=True)
         http://127.0.0.1:8081/api/services/supervisor/deploy-artifact
 
         Parameters
