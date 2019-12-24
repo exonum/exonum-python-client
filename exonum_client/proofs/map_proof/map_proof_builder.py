@@ -49,13 +49,14 @@ class MapProofBuilder:
         structure_name: str,
         main_module: Optional[str] = None,
         service_name: Optional[str] = None,
+        service_version: Optional[str] = None,
         service_module: Optional[str] = None,
     ) -> type:
         try:
             if main_module:
                 module = ModuleManager.import_main_module(main_module)
-            elif service_name and service_module:
-                module = ModuleManager.import_service_module(service_name, service_module)
+            elif service_name and service_module and service_version:
+                module = ModuleManager.import_service_module(service_name, service_version, service_module)
             else:
                 err = MapProofBuilderError("Module data not provided")
                 logger.warning(str(err))
@@ -77,11 +78,13 @@ class MapProofBuilder:
             logger.warning("%s: %s", str(err), error_data)
             raise err
 
+    # pylint: disable=too-many-arguments
     def set_key_encoder(
         self,
         structure_name: str,
         main_module: Optional[str] = None,
         service_name: Optional[str] = None,
+        service_version: Optional[str] = None,
         service_module: Optional[str] = None,
     ) -> "MapProofBuilder":
         """
@@ -99,6 +102,8 @@ class MapProofBuilder:
             Name of the main module.
         service_name: Optional[str]
             Name of the service.
+        service_version: Optional[str]
+            Version of the service.
         service_module: Optional[str]
             Name of the service module.
 
@@ -107,14 +112,18 @@ class MapProofBuilder:
         MapProofBuilderError
             If the provided data is incorrect, this exception rises.
         """
-        self._key_encoder = self._get_encoder(structure_name, main_module, service_name, service_module)
+        self._key_encoder = self._get_encoder(
+            structure_name, main_module, service_name, service_version, service_module
+        )
         return self
 
+    # pylint: disable=too-many-arguments
     def set_value_encoder(
         self,
         structure_name: str,
         main_module: Optional[str] = None,
         service_name: Optional[str] = None,
+        service_version: Optional[str] = None,
         service_module: Optional[str] = None,
     ) -> "MapProofBuilder":
         """
@@ -132,6 +141,8 @@ class MapProofBuilder:
             Name of the main module.
         service_name: Optional[str]
             Name of the service.
+        service_version: Optional[str]
+            Version of the service.
         service_module: Optional[str]
             Name of the service module.
 
@@ -140,7 +151,9 @@ class MapProofBuilder:
         MapProofBuilderError
             If the provided data is incorrect, this exception rises.
         """
-        self._value_encoder = self._get_encoder(structure_name, main_module, service_name, service_module)
+        self._value_encoder = self._get_encoder(
+            structure_name, main_module, service_name, service_version, service_module
+        )
 
         return self
 
