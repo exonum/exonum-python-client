@@ -32,7 +32,7 @@ class MessageGenerator:
     >>> client.send_transaction(create_wallet_alice_tx)
     """
 
-    def __init__(self, instance_id: int, artifact_name: str):
+    def __init__(self, instance_id: int, artifact_name: str, artifact_version: str):
         """MessageGenerator constructor.
 
         Parameters
@@ -48,7 +48,7 @@ class MessageGenerator:
         self._artifact_name = artifact_name
         self._message_ids: Dict[str, int] = dict()
 
-        service_module = ModuleManager.import_service_module(artifact_name, "service")
+        service_module = ModuleManager.import_service_module(artifact_name, artifact_version, "service")
         for i, message in enumerate(service_module.DESCRIPTOR.message_types_by_name):
             self._message_ids[message] = i
 
@@ -132,7 +132,9 @@ class ExonumMessage:
             self._any_tx_raw = prebuilt
 
     @classmethod
-    def from_hex(cls, message_hex: str, artifact_name: str, tx_name: str) -> Optional["ExonumMessage"]:
+    def from_hex(
+        cls, message_hex: str, artifact_name: str, artifact_version: str, tx_name: str
+    ) -> Optional["ExonumMessage"]:
         """Attempts to parse an Exonum message from a serialized hexadecimal string.
 
         Parameters
@@ -140,8 +142,10 @@ class ExonumMessage:
         message_hex: str
             Serialized message as a hexadecimal string.
         artifact_name: str
-            The name of the service artifact you want to communicate with.
-            The name should be in the format provided by Exonum, like 'exonum-cryptocurrency-advanced:0.13.0-rc.2'.
+            The name of the service artifact you want to communicate with,
+            e.g. 'exonum-cryptocurrency-advanced'.
+        artifact_version: str
+            Version of artifact as string, e.g. '0.13.0-rc.2'.
         tx_name: str
             The name of the transaction to be parsed, e.g. 'CreateWallet'.
 
@@ -152,7 +156,9 @@ class ExonumMessage:
             Otherwise the returned value is None.
         """
         try:
-            signed_msg, exonum_msg, decoded_msg = cls._deserialize_message(message_hex, artifact_name, tx_name)
+            signed_msg, exonum_msg, decoded_msg = cls._deserialize_message(
+                message_hex, artifact_name, artifact_version, tx_name
+            )
 
             service_id = exonum_msg.any_tx.call_info.instance_id
             message_id = exonum_msg.any_tx.call_info.method_id
@@ -308,13 +314,15 @@ class ExonumMessage:
         return exonum_message.SerializeToString()
 
     @staticmethod
-    def _deserialize_message(message_hex: str, artifact_name: str, tx_name: str) -> Tuple[Any, Any, Any]:
+    def _deserialize_message(
+        message_hex: str, artifact_name: str, artifact_version: str, tx_name: str
+    ) -> Tuple[Any, Any, Any]:
         """Takes a serialized message as an argument and returns a tuple
         [SignedMessage, ExonumMessage,DecodedMessage]."""
 
         # Load modules and prepare an expected message class for parsing.
         consensus_mod = ModuleManager.import_main_module("consensus")
-        service_mod = ModuleManager.import_service_module(artifact_name, "service")
+        service_mod = ModuleManager.import_service_module(artifact_name, artifact_version, "service")
         transaction_class = getattr(service_mod, tx_name)
 
         # Convert a message from hex to bytes.

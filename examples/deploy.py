@@ -4,8 +4,10 @@ import json
 from exonum_client import ExonumClient, ModuleManager
 
 RUST_RUNTIME_ID = 0
-SUPERVISOR_ARTIFACT_NAME = "exonum-supervisor:0.13.0-rc.2"
-CRYPTOCURRENCY_ARTIFACT_NAME = "exonum-cryptocurrency-advanced:0.13.0-rc.2"
+SUPERVISOR_ARTIFACT_NAME = "exonum-supervisor"
+SUPERVISOR_ARTIFACT_VERSION = "0.13.0-rc.2"
+CRYPTOCURRENCY_ARTIFACT_NAME = "exonum-cryptocurrency-advanced"
+CRYPTOCURRENCY_ARTIFACT_VERSION = "0.13.0-rc.2"
 CRYPTOCURRENCY_INSTANCE_NAME = "XNM"
 
 
@@ -18,22 +20,23 @@ def run() -> None:
 
     # Create better-looking aliases for constants.
     service_name = CRYPTOCURRENCY_ARTIFACT_NAME
+    service_version = CRYPTOCURRENCY_ARTIFACT_VERSION
     instance_name = CRYPTOCURRENCY_INSTANCE_NAME
 
     with client.protobuf_loader() as loader:
         # Load and compile proto files:
         loader.load_main_proto_files()
-        loader.load_service_proto_files(RUST_RUNTIME_ID, SUPERVISOR_ARTIFACT_NAME)
+        loader.load_service_proto_files(RUST_RUNTIME_ID, SUPERVISOR_ARTIFACT_NAME, SUPERVISOR_ARTIFACT_VERSION)
 
         try:
             print(f"Started deploying `{service_name}` artifact.")
-            deploy_service(client, service_name)
+            deploy_service(client, service_name, service_version)
 
             print(f"Artifact `{service_name}` successfully deployed.")
 
             print(f"Started enablind `{instance_name}` instance.")
 
-            instance_id = start_service(client, service_name, instance_name)
+            instance_id = start_service(client, service_name, service_version, instance_name)
 
             # If no exception has occurred during the previous calls, the service
             # has started successfully:
@@ -42,16 +45,19 @@ def run() -> None:
             print(f"Service instance '{instance_name}' (artifact '{service_name}') deployment failed with error {err}")
 
 
-def deploy_service(client: ExonumClient, service_name: str) -> None:
+def deploy_service(client: ExonumClient, service_name: str, service_version: str) -> None:
     """This function sends a deploy request for the desired service
     and waits until it is deployed."""
 
     # Create a deploy request message:
-    service_module = ModuleManager.import_service_module(SUPERVISOR_ARTIFACT_NAME, "service")
+    service_module = ModuleManager.import_service_module(
+        SUPERVISOR_ARTIFACT_NAME, SUPERVISOR_ARTIFACT_VERSION, "service"
+    )
 
     deploy_request = service_module.DeployRequest()
     deploy_request.artifact.runtime_id = 0  # Rust runtime ID.
     deploy_request.artifact.name = service_name
+    deploy_request.artifact.version = service_version
     deploy_request.deadline_height = 1000000  # Some big number (we won't have to wait that long, it's just a deadline).
 
     # Convert the request from a Protobuf message to bytes:
@@ -68,14 +74,17 @@ def deploy_service(client: ExonumClient, service_name: str) -> None:
     # Service is deployed.
 
 
-def start_service(client: ExonumClient, service_name: str, instance_name: str) -> int:
+def start_service(client: ExonumClient, service_name: str, service_version: str, instance_name: str) -> int:
     """This function starts the previously deployed service instance."""
 
     # Create a start request:
-    service_module = ModuleManager.import_service_module(SUPERVISOR_ARTIFACT_NAME, "service")
+    service_module = ModuleManager.import_service_module(
+        SUPERVISOR_ARTIFACT_NAME, SUPERVISOR_ARTIFACT_VERSION, "service"
+    )
     start_request = service_module.StartService()
     start_request.artifact.runtime_id = 0  # Rust runtime ID.
     start_request.artifact.name = service_name
+    start_request.artifact.version = service_version
     start_request.name = instance_name
 
     # Create a config change object:

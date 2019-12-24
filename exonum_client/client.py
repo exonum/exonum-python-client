@@ -292,7 +292,8 @@ class ExonumClient(ProtobufProviderInterface):
           "artifacts": [
             {
               "runtime_id": 0,
-              "name": "exonum-supervisor:0.13.0-rc.2"
+              "name": "exonum-supervisor",
+              "version": "0.13.0-rc.2"
             }
           ],
           "services": [
@@ -302,7 +303,8 @@ class ExonumClient(ProtobufProviderInterface):
                 "name": "supervisor",
                 "artifact": {
                   "runtime_id": 0,
-                  "name": "exonum-supervisor:0.13.0-rc.2"
+                  "name": "exonum-supervisor",
+                  "version": "0.13.0-rc.2"
                 }
               },
               "status": "Active"
@@ -736,17 +738,16 @@ class ExonumClient(ProtobufProviderInterface):
         params = {"type": "core"}
         return self._get_proto_sources(params)
 
-    def get_proto_sources_for_artifact(self, runtime_id: int, artifact_name: str) -> List[ProtoFile]:
+    def get_proto_sources_for_artifact(
+        self, runtime_id: int, artifact_name: str, artifact_version: str
+    ) -> List[ProtoFile]:
         # Raise an exception if runtime ID is not equal to the rust runtime ID
         if runtime_id != RUST_RUNTIME_ID:
             err_msg = f"Provided runtime ID: {runtime_id} is not equal to Rust runtime ID: {RUST_RUNTIME_ID}."
             logger.critical(err_msg)
             raise RuntimeError(err_msg)
         # Performs a GET request to the `proto-sources` Exonum endpoint with a provided artifact name:
-        name_version = artifact_name.split(":")
-        if len(name_version) != 2:
-            raise RuntimeError(f"Incorrect artifact '{artifact_name}', expected format 'name:version'")
-        params = {"type": "artifact", "name": name_version[0], "version": name_version[1]}
+        params = {"type": "artifact", "name": artifact_name, "version": artifact_version}
 
         return self._get_proto_sources(params)
 

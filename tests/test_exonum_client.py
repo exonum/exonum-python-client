@@ -242,9 +242,9 @@ class TestProtobufLoader(unittest.TestCase):
         )
         with client.protobuf_loader() as loader:
             loader.load_main_proto_files()
-            loader.load_service_proto_files(0, "exonum-supervisor:0.11.0")
+            loader.load_service_proto_files(0, "exonum-supervisor", "0.11.0")
 
-            _service_module = ModuleManager.import_service_module("exonum-supervisor:0.11.0", "service")
+            _service_module = ModuleManager.import_service_module("exonum-supervisor", "0.11.0", "service")
 
 
 class TestExonumClient(unittest.TestCase):

@@ -21,11 +21,12 @@ class TestTxParse(unittest.TestCase):
         keys = KeyPair.generate()
 
         # Prepare an original message:
-        cryptocurrency_service_name = "exonum-cryptocurrency-advanced:0.11.0"
+        cryptocurrency_service_name = "exonum-cryptocurrency-advanced"
+        version = "0.11.0"
 
-        cryptocurrency_module = ModuleManager.import_service_module(cryptocurrency_service_name, "service")
+        cryptocurrency_module = ModuleManager.import_service_module(cryptocurrency_service_name, version, "service")
 
-        cryptocurrency_message_generator = MessageGenerator(1024, cryptocurrency_service_name)
+        cryptocurrency_message_generator = MessageGenerator(1024, cryptocurrency_service_name, version)
 
         create_wallet_alice = cryptocurrency_module.CreateWallet()
         create_wallet_alice.name = "Alice"
@@ -48,7 +49,10 @@ class TestTxParse(unittest.TestCase):
         service_name = self.cryptocurrency_service_name
 
         # Parse the message:
-        parsed_message = ExonumMessage.from_hex(exonum_message.signed_raw().hex(), service_name, "CreateWallet")
+        version = "0.11.0"
+        parsed_message = ExonumMessage.from_hex(
+            exonum_message.signed_raw().hex(), service_name, version, "CreateWallet"
+        )
 
         self.assertEqual(parsed_message.author(), TestTxParse.keys.public_key)
         self.assertEqual(parsed_message._instance_id, exonum_message._instance_id)
@@ -61,7 +65,8 @@ class TestTxParse(unittest.TestCase):
 
         # Parse the message:
         corrupted_message = "1a" + exonum_message.signed_raw().hex()
-        parsed_message = ExonumMessage.from_hex(corrupted_message, service_name, "CreateWallet")
+        version = "0.11.0"
+        parsed_message = ExonumMessage.from_hex(corrupted_message, service_name, version, "CreateWallet")
 
         self.assertIsNone(parsed_message)
 
