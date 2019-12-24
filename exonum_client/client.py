@@ -720,7 +720,7 @@ class ExonumClient(ProtobufProviderInterface):
             logger.critical(
                 "Unsuccessfully attempted to retrieve Protobuf sources.\n" "Status code: %s,\n" "body:\n%s",
                 response.status_code,
-                json.dumps(response.json(), indent=2),
+                response.content,
             )
             raise RuntimeError("Unsuccessfully attempted to retrieve Protobuf sources: {!r}".format(response.content))
         logger.debug("Protobuf sources retrieved successfully.")
@@ -733,7 +733,8 @@ class ExonumClient(ProtobufProviderInterface):
 
     def get_main_proto_sources(self) -> List[ProtoFile]:
         # Performs a GET request to the `proto-sources` Exonum endpoint:
-        return self._get_proto_sources()
+        params = {"type": "core"}
+        return self._get_proto_sources(params)
 
     def get_proto_sources_for_artifact(self, runtime_id: int, artifact_name: str) -> List[ProtoFile]:
         # Raise an exception if runtime ID is not equal to the rust runtime ID
@@ -742,9 +743,12 @@ class ExonumClient(ProtobufProviderInterface):
             logger.critical(err_msg)
             raise RuntimeError(err_msg)
         # Performs a GET request to the `proto-sources` Exonum endpoint with a provided artifact name:
-        params = {"artifact": "{}".format(artifact_name)}
+        name_version = artifact_name.split(":")
+        if len(name_version) != 2:
+            raise RuntimeError(f"Incorrect artifact '{artifact_name}', expected format 'name:version'")
+        params = {"type": "artifact", "name": name_version[0], "version": name_version[1]}
 
-        return self._get_proto_sources(params=params)
+        return self._get_proto_sources(params)
 
     def _system_public_endpoint(self, endpoint: str) -> str:
         return _SYSTEM_URL.format(self.schema, self.hostname, self.public_api_port, endpoint)
