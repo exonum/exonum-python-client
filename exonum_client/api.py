@@ -75,7 +75,7 @@ class PublicApi(Api):
             logger.critical(
                 "Unsuccessfully attempted to retrieve Protobuf sources.\n" "Status code: %s,\n" "body:\n%s",
                 response.status_code,
-                json.dumps(response.json(), indent=2),
+                response.content
             )
             raise RuntimeError("Unsuccessfully attempted to retrieve Protobuf sources: {!r}".format(response.content))
         logger.debug("Protobuf sources retrieved successfully.")
@@ -88,18 +88,21 @@ class PublicApi(Api):
 
     def get_main_proto_sources(self) -> List[ProtoFile]:
         # Performs a GET request to the `proto-sources` Exonum endpoint:
-        return self._get_proto_sources()
+        params = {"type": "core"}
+        return self._get_proto_sources(params)
 
-    def get_proto_sources_for_artifact(self, runtime_id: int, artifact_name: str) -> List[ProtoFile]:
+    def get_proto_sources_for_artifact(
+            self, runtime_id: int, artifact_name: str, artifact_version: str
+    ) -> List[ProtoFile]:
         # Raise an exception if runtime ID is not equal to the rust runtime ID
         if runtime_id != Api.RUST_RUNTIME_ID:
             err_msg = f"Provided runtime ID: {runtime_id} is not equal to Rust runtime ID: {Api.RUST_RUNTIME_ID}."
             logger.critical(err_msg)
             raise RuntimeError(err_msg)
         # Performs a GET request to the `proto-sources` Exonum endpoint with a provided artifact name:
-        params = {"artifact": "{}".format(artifact_name)}
+        params = {"type": "artifact", "name": artifact_name, "version": artifact_version}
 
-        return self._get_proto_sources(params=params)
+        return self._get_proto_sources(params)
 
     def get_block(self, height: int) -> requests.Response:
         """
@@ -254,7 +257,8 @@ class PublicApi(Api):
           "artifacts": [
             {
               "runtime_id": 0,
-              "name": "exonum-supervisor:0.13.0-rc.2"
+              "name": "exonum-supervisor",
+              "version": "0.13.0-rc.2"
             }
           ],
           "services": [
@@ -264,7 +268,8 @@ class PublicApi(Api):
                 "name": "supervisor",
                 "artifact": {
                   "runtime_id": 0,
-                  "name": "exonum-supervisor:0.13.0-rc.2"
+                  "name": "exonum-supervisor",
+                  "version": "0.13.0-rc.2"
                 }
               },
               "status": "Active"
