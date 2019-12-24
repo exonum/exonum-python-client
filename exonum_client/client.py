@@ -14,6 +14,7 @@ from urllib.parse import urlencode
 from websocket import WebSocket
 import requests
 
+from .api import ServiceApi
 from .protobuf_loader import ProtobufLoader, ProtobufProviderInterface, ProtoFile
 from .message import ExonumMessage
 
@@ -214,6 +215,51 @@ class ExonumClient(ProtobufProviderInterface):
         }
 
         return json.dumps(d, indent=2)
+
+    def service_private_api(self, service_name: str):
+        """Creates an instances of ServiceApi to interact with private API of a service.
+
+        Parameters
+        ----------
+        service_name: str
+            Name of a service.
+
+        Returns
+        -------
+        service_api: ServiceApi
+            An instance of ServiceApi for private API.
+        """
+        return ServiceApi(service_name, self.hostname, self.public_api_port, self.schema)
+
+    def service_public_api(self, service_name: str):
+        """Creates an instances of ServiceApi to interact with public API of a service.
+
+        Parameters
+        ----------
+        service_name: str
+            Name of a service.
+
+        Returns
+        -------
+        service_api: ServiceApi
+            An instance of ServiceApi for public API.
+        """
+        return ServiceApi(service_name, self.hostname, self.public_api_port, self.schema)
+
+    def service_apis(self, service_name: str):
+        """Creates a tuple of ServiceApi instances to interact with public and private API of a service.
+
+        Parameters
+        ----------
+        service_name: str
+            Name of a service.
+
+        Returns
+        -------
+        service_apis: (ServiceApi, ServiceApi)
+            Tuple of ServiceApi instances: one for public API and the other for private.
+        """
+        return self.service_public_api(service_name), self.service_private_api(service_name)
 
     def protobuf_loader(self) -> ProtobufLoader:
         """
