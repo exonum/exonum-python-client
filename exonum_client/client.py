@@ -128,7 +128,7 @@ class Subscriber:
             self._ws_client.close()
             self._connected = False
 
-        if self._thread.isAlive():
+        if self._thread.is_alive():
             self._thread.join()
 
     def send_transaction(self, message: ExonumMessage) -> str:
