@@ -9,7 +9,12 @@ import requests
 from exonum_client import ExonumClient, ModuleManager, MessageGenerator
 from exonum_client.crypto import KeyPair, PublicKey
 
-from examples.deploy import RUST_RUNTIME_ID, CRYPTOCURRENCY_ARTIFACT_NAME, CRYPTOCURRENCY_INSTANCE_NAME
+from examples.deploy import (
+    RUST_RUNTIME_ID,
+    CRYPTOCURRENCY_ARTIFACT_NAME,
+    CRYPTOCURRENCY_ARTIFACT_VERSION,
+    CRYPTOCURRENCY_INSTANCE_NAME,
+)
 
 
 def run() -> None:
@@ -20,11 +25,13 @@ def run() -> None:
     with client.protobuf_loader() as loader:
         # Load and compile proto files:
         loader.load_main_proto_files()
-        loader.load_service_proto_files(RUST_RUNTIME_ID, CRYPTOCURRENCY_ARTIFACT_NAME)
+        loader.load_service_proto_files(RUST_RUNTIME_ID, CRYPTOCURRENCY_ARTIFACT_NAME, CRYPTOCURRENCY_ARTIFACT_VERSION)
 
         instance_id = get_cryptocurrency_instance_id(client)
 
-        cryptocurrency_message_generator = MessageGenerator(instance_id, CRYPTOCURRENCY_ARTIFACT_NAME)
+        cryptocurrency_message_generator = MessageGenerator(
+            instance_id, CRYPTOCURRENCY_ARTIFACT_NAME, CRYPTOCURRENCY_ARTIFACT_VERSION
+        )
 
         alice_keypair = create_wallet(client, cryptocurrency_message_generator, "Alice")
         bob_keypair = create_wallet(client, cryptocurrency_message_generator, "Bob")
@@ -76,7 +83,9 @@ def create_wallet(client: ExonumClient, message_generator: MessageGenerator, nam
     key_pair = KeyPair.generate()
 
     # Load the "service.proto" from the Cryptocurrency service:
-    cryptocurrency_module = ModuleManager.import_service_module(CRYPTOCURRENCY_ARTIFACT_NAME, "service")
+    cryptocurrency_module = ModuleManager.import_service_module(
+        CRYPTOCURRENCY_ARTIFACT_NAME, CRYPTOCURRENCY_ARTIFACT_VERSION, "service"
+    )
 
     # Create a Protobuf message:
     create_wallet_message = cryptocurrency_module.CreateWallet()
@@ -109,10 +118,14 @@ def transfer(
     """This example transfers tokens from one wallet to the other one and
     returns the balances of these wallets."""
 
-    cryptocurrency_module = ModuleManager.import_service_module(CRYPTOCURRENCY_ARTIFACT_NAME, "service")
+    cryptocurrency_module = ModuleManager.import_service_module(
+        CRYPTOCURRENCY_ARTIFACT_NAME, CRYPTOCURRENCY_ARTIFACT_VERSION, "service"
+    )
     # Note that since we are using the Cryptocurrency module,
     # we need to load types from this module and not from the main module:
-    types_module = ModuleManager.import_service_module(CRYPTOCURRENCY_ARTIFACT_NAME, "types")
+    types_module = ModuleManager.import_service_module(
+        CRYPTOCURRENCY_ARTIFACT_NAME, CRYPTOCURRENCY_ARTIFACT_VERSION, "types"
+    )
 
     transfer_message = cryptocurrency_module.Transfer()
     transfer_message.to.CopyFrom(types_module.PublicKey(data=to_key.value))

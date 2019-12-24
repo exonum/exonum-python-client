@@ -31,7 +31,9 @@ class ProtobufProviderInterface:
         """Gets the Exonum core proto sources."""
         raise NotImplementedError
 
-    def get_proto_sources_for_artifact(self, runtime_id: int, artifact_name: str) -> List[ProtoFile]:
+    def get_proto_sources_for_artifact(
+        self, runtime_id: int, artifact_name: str, artifact_version: str
+    ) -> List[ProtoFile]:
         """Gets the Exonum core proto sources."""
         raise NotImplementedError
 
@@ -217,7 +219,7 @@ class ProtobufLoader:
         proto_dir = os.path.join(self._proto_dir, "exonum_modules", "main")
         self.protoc.compile(main_dir, proto_dir)
 
-    def load_service_proto_files(self, runtime_id: int, service_name: str) -> None:
+    def load_service_proto_files(self, runtime_id: int, artifact_name: str, artifact_version: str) -> None:
         """Loads and compiles proto files for a service."""
         if self._proto_dir is None:
             logger.critical("Attempt to use unititialized ProtobufLoader.")
@@ -225,10 +227,11 @@ class ProtobufLoader:
 
         # This method is not intended to be used by end users, but it is OK to call it here.
         # pylint: disable=protected-access
-        proto_contents = self.client.get_proto_sources_for_artifact(runtime_id, service_name)
+        proto_contents = self.client.get_proto_sources_for_artifact(runtime_id, artifact_name, artifact_version)
 
-        # Save proto_sources in proto/service_name directory:
-        service_module_name = re.sub(r"[-. :/]", "_", service_name)
+        # Save proto_sources in proto/artifact_name directory:
+        artifact_name_and_version = f"{artifact_name}:{artifact_version}"
+        service_module_name = re.sub(r"[-. :/]", "_", artifact_name_and_version)
         service_dir = os.path.join(self._proto_dir, "proto", service_module_name)
         self._save_files(service_dir, proto_contents)
 

@@ -11,7 +11,12 @@ from exonum_client.proofs import (
     ListProofVerificationError,
     MalformedListProofError,
 )
-from examples.deploy import RUST_RUNTIME_ID, CRYPTOCURRENCY_ARTIFACT_NAME, CRYPTOCURRENCY_INSTANCE_NAME
+from examples.deploy import (
+    RUST_RUNTIME_ID,
+    CRYPTOCURRENCY_ARTIFACT_NAME,
+    CRYPTOCURRENCY_ARTIFACT_VERSION,
+    CRYPTOCURRENCY_INSTANCE_NAME,
+)
 from examples.transactions import create_wallet, get_cryptocurrency_instance_id, ensure_status_code
 
 
@@ -25,11 +30,13 @@ def run() -> None:
     with client.protobuf_loader() as loader:
         # Load and compile proto files:
         loader.load_main_proto_files()
-        loader.load_service_proto_files(RUST_RUNTIME_ID, CRYPTOCURRENCY_ARTIFACT_NAME)
+        loader.load_service_proto_files(RUST_RUNTIME_ID, CRYPTOCURRENCY_ARTIFACT_NAME, CRYPTOCURRENCY_ARTIFACT_VERSION)
 
         instance_id = get_cryptocurrency_instance_id(client)
 
-        cryptocurrency_message_generator = MessageGenerator(instance_id, CRYPTOCURRENCY_ARTIFACT_NAME)
+        cryptocurrency_message_generator = MessageGenerator(
+            instance_id, CRYPTOCURRENCY_ARTIFACT_NAME, CRYPTOCURRENCY_ARTIFACT_VERSION
+        )
 
         alice_keypair = create_wallet(client, cryptocurrency_message_generator, "Alice")
 
@@ -74,12 +81,8 @@ def verify_proof_to_table(proof: Dict[Any, Any], expected_hash: Hash) -> None:
 
     # Keys in the proof to the table are encoded as a byte sequence (tag,
     # group_id, index_id):
-    def key_encoder(data: Dict[str, int]) -> bytes:
-        import struct
-
-        format_str = ">HIH"
-        res = struct.pack(format_str, data["origin_label"], data["local_schema_id"], data["index_id"])
-        return res
+    def key_encoder(data: str) -> bytes:
+        return bytes(data, "utf-8")
 
     # Values in the proof to the table are encoded as a byte sequence parsed
     # from a hexadecimal string:
@@ -109,7 +112,9 @@ def verify_proof_to_wallet(proof: Dict[Any, Any], expected_hash: Hash) -> None:
 
     # Values in the proof to the wallet are encoded as a Protobuf binary
     # representation of the `Wallet` structure:
-    cryptocurrency_module = ModuleManager.import_service_module(CRYPTOCURRENCY_ARTIFACT_NAME, "service")
+    cryptocurrency_module = ModuleManager.import_service_module(
+        CRYPTOCURRENCY_ARTIFACT_NAME, CRYPTOCURRENCY_ARTIFACT_VERSION, "service"
+    )
     value_encoder = build_encoder_function(cryptocurrency_module.Wallet)
 
     try:

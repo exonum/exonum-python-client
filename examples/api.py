@@ -13,7 +13,7 @@ def run() -> None:
         available_services = available_services_response.json()
         print(" Artifacts:")
         for artifact in available_services["artifacts"]:
-            print(f"  - {artifact['name']} (runtime ID {artifact['runtime_id']})")
+            print(f"  - {artifact['name']}:{artifact['version']} (runtime ID {artifact['runtime_id']})")
         print(" Instances:")
         for state in available_services["services"]:
             instance = state["spec"]

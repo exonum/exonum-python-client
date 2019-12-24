@@ -1,7 +1,7 @@
 """Protobuf Example"""
 from exonum_client import ExonumClient, ModuleManager
 
-from examples.deploy import RUST_RUNTIME_ID, SUPERVISOR_ARTIFACT_NAME
+from examples.deploy import RUST_RUNTIME_ID, SUPERVISOR_ARTIFACT_NAME, SUPERVISOR_ARTIFACT_VERSION
 
 
 def run() -> None:
@@ -15,7 +15,7 @@ def run() -> None:
         # Load core proto files:
         loader.load_main_proto_files()
         # Load proto files for the Exonum supervisor service:
-        loader.load_service_proto_files(RUST_RUNTIME_ID, SUPERVISOR_ARTIFACT_NAME)
+        loader.load_service_proto_files(RUST_RUNTIME_ID, SUPERVISOR_ARTIFACT_NAME, SUPERVISOR_ARTIFACT_VERSION)
 
         # Load the main module (runtime.proto):
         main_module = ModuleManager.import_main_module("runtime")
@@ -31,7 +31,9 @@ def run() -> None:
         instance_spec.artifact.CopyFrom(artifact_id)
 
         # Load the service module (service.proto from the supervisor service):
-        service_module = ModuleManager.import_service_module(SUPERVISOR_ARTIFACT_NAME, "service")
+        service_module = ModuleManager.import_service_module(
+            SUPERVISOR_ARTIFACT_NAME, SUPERVISOR_ARTIFACT_VERSION, "service"
+        )
 
         # Workflow is the same as for the main modules:
         _deploy_request = service_module.DeployRequest()
