@@ -29,7 +29,7 @@ class MessageGenerator:
 
     >>> create_wallet_alice_tx = cryptocurrency_message_generator.create_message(create_wallet_alice)
     >>> create_wallet_alice_tx.sign(keypair) # You should sign the message before sending.
-    >>> client.send_transaction(create_wallet_alice_tx)
+    >>> client.public_api.send_transaction(create_wallet_alice_tx)
     """
 
     def __init__(self, instance_id: int, artifact_name: str, artifact_version: str):
@@ -88,7 +88,7 @@ class ExonumMessage:
     >>> create_wallet_alice.name = "Alice1" # Fill the Protobuf message manually.
     >>> create_wallet_alice_tx = cryptocurrency_message_generator.create_message(create_wallet_alice)
     >>> create_wallet_alice_tx.sign(keypair) # You should sign the message before sending.
-    >>> client.send_transaction(create_wallet_alice_tx)
+    >>> client.public_api.send_transaction(create_wallet_alice_tx)
 
     Parsing a message:
 

@@ -65,7 +65,7 @@ def get_cryptocurrency_instance_id(client: ExonumClient) -> int:
     """Ensures that the service is added to the running instances list and gets
     the ID of the instance."""
     instance_name = CRYPTOCURRENCY_INSTANCE_NAME
-    available_services = client.available_services().json()
+    available_services = client.public_api.available_services().json()
     if instance_name not in map(lambda x: x["spec"]["name"], available_services["services"]):
         raise RuntimeError(f"{instance_name} is not listed in the running instances after the start")
 
@@ -96,7 +96,7 @@ def create_wallet(client: ExonumClient, message_generator: MessageGenerator, nam
     create_wallet_tx.sign(key_pair)
 
     # Send the transaction to Exonum:
-    response = client.send_transaction(create_wallet_tx)
+    response = client.public_api.send_transaction(create_wallet_tx)
     ensure_status_code(response)
     tx_hash = response.json()["tx_hash"]
 
@@ -135,7 +135,7 @@ def transfer(
     transfer_tx = message_generator.create_message(transfer_message)
     transfer_tx.sign(from_keypair)
 
-    response = client.send_transaction(transfer_tx)
+    response = client.public_api.send_transaction(transfer_tx)
     ensure_status_code(response)
     tx_hash = response.json()["tx_hash"]
 
@@ -157,7 +157,8 @@ def get_balance(client: ExonumClient, key: PublicKey) -> int:
     """The example returns the balance of the wallet."""
 
     # Call the /wallets/info endpoint to retrieve the balance:
-    wallet_info = client.get_service(CRYPTOCURRENCY_INSTANCE_NAME, "v1/wallets/info?pub_key={}".format(key.hex()))
+    service_public_api = client.service_public_api(CRYPTOCURRENCY_INSTANCE_NAME)
+    wallet_info = service_public_api.get("v1/wallets/info?pub_key={}".format(key.hex()))
     ensure_status_code(wallet_info)
     balance = wallet_info.json()["wallet_proof"]["to_wallet"]["entries"][0]["value"]["balance"]
 
@@ -172,7 +173,7 @@ def ensure_status_code(response: requests.Response) -> None:
 
 def ensure_transaction_success(client: ExonumClient, tx_hash: str) -> None:
     """Checks that the transaction is committed and the status is success."""
-    tx_info_response = client.get_tx_info(tx_hash)
+    tx_info_response = client.public_api.get_tx_info(tx_hash)
     ensure_status_code(tx_info_response)
 
     tx_info = tx_info_response.json()

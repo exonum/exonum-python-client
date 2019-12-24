@@ -126,7 +126,7 @@ After successfully sending the message, we'll get a response which will
 contain a hash of the transaction:
 
 ```python
-response = client.send_transaction(create_wallet_alice_tx)
+response = client.public_api.send_transaction(create_wallet_alice_tx)
 ```
 
 ```json
@@ -161,7 +161,7 @@ errors when you try to use Exonum API.
 ### Getting Data on the Available Services
 
 ```python
-client.available_services().json()
+client.public_api.available_services().json()
 ```
 
 The code will show a list of the artifacts available for the start and a list of

@@ -8,13 +8,14 @@ This module provides 4 classes classes:
   - PrivateApi: a subclass of class Api that provides methods to interact with private API of an Exonum node.
   - ServiceApi: a class that provides methods to interact with node services.
 """
-from typing import Optional, Any, Union, List, Dict
+from typing import Optional, Any, Union, List, Dict, Iterable
 
 import json
 from logging import getLogger
 import requests
 
 from .protobuf_loader import ProtoFile, ProtobufProviderInterface
+from .message import ExonumMessage
 
 # pylint: disable=C0103
 logger = getLogger(__name__)
@@ -288,6 +289,86 @@ class PublicApi(Api):
         }
         """
         return self.get(self._system_url.format("services"))
+
+    def get_instance_id_by_name(self, name: str) -> Optional[int]:
+        """
+        Gets an ID of the service instance with the provided name.
+
+        Example:
+
+        >>> public_api = PublicApi("127.0.0.1", 80)
+        >>> id = public_api.get_instance_id_by_name("cryptocurrency")
+        >>> id
+        42
+
+        Parameters
+        ----------
+        name: Name of the service.
+
+        Returns
+        -------
+        result: int
+            ID of the instance.
+
+        Raises
+        ------
+        RuntimeError
+            An error will be raised if a response code is not 200.
+        """
+        response = self.available_services()
+
+        if response.status_code != 200:
+            raise RuntimeError("Couldn't get info about available services")
+
+        available_services = response.json()
+
+        for state in available_services["services"]:
+            service = state["spec"]
+            if service["name"] == name:
+                return service["id"]
+
+        return None
+
+    def send_transaction(self, message: ExonumMessage) -> requests.Response:
+        """
+        Sends a transaction into an Exonum node via REST API.
+
+        Example:
+
+        >>> public_api = PublicApi("127.0.0.1", 80)
+        >>> response = public_api.send_transaction(message)
+        >>> response.json()
+        {'tx_hash': '713de312f48fe15559c0d4f7fb3f274dfbd3893a8a80d9f4224e97248f0e314e'}
+
+        Parameters
+        ----------
+        message: ExonumMessage
+            Prepared and signed an Exonum message.
+
+        Returns
+        -------
+        result: requests.Response
+            Result of the POST request.
+            If a transaction is correct and it is accepted, it will contain a JSON with a hash of the transaction.
+        """
+        response = self.post(self.tx_url, data=message.pack_into_json(), headers={"content-type": "application/json"})
+        return response
+
+    def send_transactions(self, messages: Iterable[ExonumMessage]) -> List[requests.Response]:
+        """
+        Same as send_transaction, but for any iterable object over ExonumMessage.
+
+        Parameters
+        ----------
+        messages: Iterable[ExonumMessage]
+            A sequence of messages to send.
+
+        Returns
+        -------
+        results: List[requests.Response]
+            A list of responses for each sent transaction.
+        """
+        return [self.send_transaction(message) for message in messages]
 
     def health_info(self) -> requests.Response:
         """ Performs a GET request to the healthcheck Exonum endpoint. """
