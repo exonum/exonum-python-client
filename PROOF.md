@@ -32,7 +32,7 @@ Obtain the wallet and check if the balance has been increased:
 
 ```python
 service_public_api = client.service_public_api(instance_name)
-alice_wallet = service_public_api.get("v1/wallets/info?pub_key=" + alice_keys.public_key.hex()).json()
+alice_wallet = service_public_api.get_service("v1/wallets/info?pub_key=" + alice_keys.public_key.hex()).json()
 ```
 
 ## Transfer Funds

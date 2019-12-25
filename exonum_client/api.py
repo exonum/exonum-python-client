@@ -60,7 +60,7 @@ class Api:
 class ProtobufApi(Api, ProtobufProviderInterface):
     """ProtobufApi class implements ProtobufProviderInterface interface."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
 
         self._rust_runtime_url = self.endpoint_prefix + "/runtimes/rust/{}"
@@ -73,10 +73,9 @@ class ProtobufApi(Api, ProtobufProviderInterface):
             logger.critical(
                 "Unsuccessfully attempted to retrieve Protobuf sources.\n" "Status code: %s,\n" "body:\n%s",
                 response.status_code,
-                response.content
+                response.content,
             )
-            raise RuntimeError(
-                "Unsuccessfully attempted to retrieve Protobuf sources: {!r}".format(response.content))
+            raise RuntimeError("Unsuccessfully attempted to retrieve Protobuf sources: {!r}".format(response.content))
         logger.debug("Protobuf sources retrieved successfully.")
 
         proto_files = [
@@ -91,11 +90,11 @@ class ProtobufApi(Api, ProtobufProviderInterface):
         return self._get_proto_sources(params)
 
     def get_proto_sources_for_artifact(
-            self, runtime_id: int, artifact_name: str, artifact_version: str
+        self, runtime_id: int, artifact_name: str, artifact_version: str
     ) -> List[ProtoFile]:
         """Raise an exception if runtime ID is not equal to the rust runtime ID."""
-        if runtime_id != Api.RUST_RUNTIME_ID:
-            err_msg = f"Provided runtime ID: {runtime_id} is not equal to Rust runtime ID: {Api.RUST_RUNTIME_ID}."
+        if runtime_id != self.RUST_RUNTIME_ID:
+            err_msg = f"Provided runtime ID: {runtime_id} is not equal to Rust runtime ID: {self.RUST_RUNTIME_ID}."
             logger.critical(err_msg)
             raise RuntimeError(err_msg)
         # Performs a GET request to the `proto-sources` Exonum endpoint with a provided artifact name:
@@ -107,7 +106,7 @@ class ProtobufApi(Api, ProtobufProviderInterface):
 class PublicApi(Api):
     """PublicApi class provides methods to interact with the public API of an Exonum node."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
 
         self._tx_url = self.endpoint_prefix + "/explorer/v1/transactions"
@@ -153,13 +152,13 @@ class PublicApi(Api):
 
     # pylint: disable=too-many-arguments
     def get_blocks(
-            self,
-            count: int,
-            earliest: Optional[int] = None,
-            latest: Optional[int] = None,
-            add_precommits: bool = False,
-            skip_empty_blocks: bool = False,
-            add_blocks_time: bool = False,
+        self,
+        count: int,
+        earliest: Optional[int] = None,
+        latest: Optional[int] = None,
+        add_precommits: bool = False,
+        skip_empty_blocks: bool = False,
+        add_blocks_time: bool = False,
     ) -> requests.Response:
         """
         Gets a range of blocks.
@@ -351,7 +350,7 @@ class PublicApi(Api):
             Result of the POST request.
             If a transaction is correct and it is accepted, it will contain a JSON with a hash of the transaction.
         """
-        response = self.post(self.tx_url, data=message.pack_into_json(), headers={"content-type": "application/json"})
+        response = self.post(self._tx_url, data=message.pack_into_json(), headers={"content-type": "application/json"})
         return response
 
     def send_transactions(self, messages: Iterable[ExonumMessage]) -> List[requests.Response]:
@@ -386,7 +385,7 @@ class PublicApi(Api):
 class PrivateApi(Api):
     """PrivateApi class provides methods to interact with the private API of an Exonum node."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
 
         self._system_url = self.endpoint_prefix + "/system/v1/{}"
@@ -406,9 +405,7 @@ class PrivateApi(Api):
             Result of an API call.
         """
         data = json.dumps({"address": address, "public_key": public_key})
-        response = self.post(
-            self._system_url.format("peers"), data=data, headers={"content-type": "application/json"}
-        )
+        response = self.post(self._system_url.format("peers"), data=data, headers={"content-type": "application/json"})
         return response
 
     def get_peers(self) -> requests.Response:
@@ -539,7 +536,7 @@ class PrivateApi(Api):
 class ServiceApi(Api):
     """ServiceApi class provides methods to interact with service API."""
 
-    def __init__(self, service_name: str, *args, **kwargs):
+    def __init__(self, service_name: str, *args: Any, **kwargs: Any):
         """
         Constructor of ServiceApi.
 
@@ -578,7 +575,7 @@ class ServiceApi(Api):
         """
         return self._api_url + sub_uri
 
-    def get(self, sub_uri: str) -> requests.Response:
+    def get_service(self, sub_uri: str) -> requests.Response:
         """
         Performs a GET request to the endpoint generated by the `service_endpoint` method.
 
@@ -589,9 +586,9 @@ class ServiceApi(Api):
         response: requests.Response
             Result of an API call.
         """
-        return super().get(self.service_endpoint(sub_uri))
+        return self.get(self.service_endpoint(sub_uri))
 
-    def post(self, sub_uri: str, data: str) -> requests.Response:
+    def post_service(self, sub_uri: str, data: str) -> requests.Response:
         """
         Performs a POST request to the endpoint generated by the `service_endpoint` method.
 
@@ -604,4 +601,4 @@ class ServiceApi(Api):
             Result of an API call.
         """
         json_headers = {"content-type": "application/json"}
-        return super().post(self.service_endpoint(sub_uri), data=data, headers=json_headers)
+        return self.post(self.service_endpoint(sub_uri), data=data, headers=json_headers)

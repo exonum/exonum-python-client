@@ -5,7 +5,7 @@ This module provides you with two handy classes:
   - ExonumClient: The main entity to interact with the Exonum blockchain.
   - Subscriber: An entity that can be used to receive signals on creation of a new block.
 """
-from typing import Optional, Any, Callable, Union, Iterable, List, Dict
+from typing import Optional, Any, Callable, Union, Dict, Tuple
 
 import json
 from logging import getLogger
@@ -13,31 +13,21 @@ from threading import Thread
 from urllib.parse import urlencode
 from websocket import WebSocket
 
-from .api import ServiceApi, PublicApi, PrivateApi
+from .api import ServiceApi, PublicApi, PrivateApi, ProtobufApi
 from .protobuf_loader import ProtobufLoader
 from .message import ExonumMessage
 
 # pylint: disable=C0103
 logger = getLogger(__name__)
 
-RUST_RUNTIME_ID = 0
-
-# Example of a formatted prefix: "https://127.0.0.1:8000"
-_ENDPOINT_PREFIX = "{}://{}:{}"
-
-_RUST_RUNTIME_URL = _ENDPOINT_PREFIX + "/api/runtimes/rust/{}"
-_TX_URL = _ENDPOINT_PREFIX + "/api/explorer/v1/transactions"
-_BLOCK_URL = _ENDPOINT_PREFIX + "/api/explorer/v1/block"
-_BLOCKS_URL = _ENDPOINT_PREFIX + "/api/explorer/v1/blocks"
-_SYSTEM_URL = _ENDPOINT_PREFIX + "/api/system/v1/{}"
-_SERVICE_URL = _ENDPOINT_PREFIX + "/api/services/{}/"
-_SUBSCRIPTION_WEBSOCKET_URI = "ws://{}:{}/api/explorer/v1/{}/subscribe"
-_SENDING_WEBSOCKET_URI = "ws://{}:{}/api/explorer/v1/ws"
-_SUBSCRIPTION_TYPES = ["blocks", "transactions"]
-
 
 class Subscriber:
     """ Subscriber objects are used to subscribe to Exonum blocks via websockets. """
+
+    # constants
+    SUBSCRIPTION_WEBSOCKET_URI = "ws://{}:{}/api/explorer/v1/{}/subscribe"
+    SENDING_WEBSOCKET_URI = "ws://{}:{}/api/explorer/v1/ws"
+    SUBSCRIPTION_TYPES = ["blocks", "transactions"]
 
     # Type of the received data (it can be either bytes or a string).
     ReceiveType = Union[bytes, str]
@@ -62,17 +52,17 @@ class Subscriber:
             Dictionary of filters, such as 'service_id' and 'tx_id' for transactions.
         """
         if not subscription_type:
-            self._address = _SENDING_WEBSOCKET_URI.format(address, port)
+            self._address = self.SENDING_WEBSOCKET_URI.format(address, port)
         else:
-            if subscription_type not in _SUBSCRIPTION_TYPES:
+            if subscription_type not in Subscriber.SUBSCRIPTION_TYPES:
                 err = ValueError(
-                    f"Subscription type must be one of these: {_SUBSCRIPTION_TYPES}, "
+                    f"Subscription type must be one of these: {self.SUBSCRIPTION_TYPES}, "
                     f"while {subscription_type} is given."
                 )
                 logger.error("Error occurred during subscriber initialization: %s", err)
                 raise err
             parameters = "?" + urlencode(filters) if filters else ""
-            self._address = _SUBSCRIPTION_WEBSOCKET_URI.format(address, port, subscription_type) + parameters
+            self._address = self.SUBSCRIPTION_WEBSOCKET_URI.format(address, port, subscription_type) + parameters
         self._is_running = False
         self._connected = False
         self._ws_client = WebSocket()
@@ -201,10 +191,10 @@ class ExonumClient:
         self.hostname = hostname
         self.public_api_port = public_api_port
         self.private_api_port = private_api_port
-        self.tx_url = _TX_URL.format(self.schema, hostname, public_api_port)
 
         self.public_api = PublicApi(hostname, public_api_port, self.schema)
         self.private_api = PrivateApi(hostname, private_api_port, self.schema)
+        self.protobuf_api = ProtobufApi(hostname, public_api_port, self.schema)
 
     def __repr__(self) -> str:
         """ Conversion to a string. """
@@ -217,7 +207,7 @@ class ExonumClient:
 
         return json.dumps(d, indent=2)
 
-    def service_private_api(self, service_name: str):
+    def service_private_api(self, service_name: str) -> ServiceApi:
         """Creates an instances of ServiceApi to interact with private API of a service.
 
         Parameters
@@ -232,7 +222,7 @@ class ExonumClient:
         """
         return ServiceApi(service_name, self.hostname, self.public_api_port, self.schema)
 
-    def service_public_api(self, service_name: str):
+    def service_public_api(self, service_name: str) -> ServiceApi:
         """Creates an instances of ServiceApi to interact with public API of a service.
 
         Parameters
@@ -247,7 +237,7 @@ class ExonumClient:
         """
         return ServiceApi(service_name, self.hostname, self.public_api_port, self.schema)
 
-    def service_apis(self, service_name: str):
+    def service_apis(self, service_name: str) -> Tuple[ServiceApi, ServiceApi]:
         """Creates a tuple of ServiceApi instances to interact with public and private API of a service.
 
         Parameters
@@ -274,7 +264,7 @@ class ExonumClient:
         >>>     loader.load_main_proto_files()
         >>>     loader.load_service_proto_files(0, "exonum-supervisor:0.13.0-rc.2")
         """
-        return ProtobufLoader(self)
+        return ProtobufLoader(self.protobuf_api)
 
     def create_subscriber(self, subscription_type: str) -> Subscriber:
         """

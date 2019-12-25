@@ -41,7 +41,7 @@ def run() -> None:
         alice_keypair = create_wallet(client, cryptocurrency_message_generator, "Alice")
 
         service_public_api = client.service_public_api(CRYPTOCURRENCY_INSTANCE_NAME)
-        wallet_info_response = service_public_api.get(
+        wallet_info_response = service_public_api.get_service(
             "v1/wallets/info?pub_key={}".format(alice_keypair.public_key.hex())
         )
         ensure_status_code(wallet_info_response)

@@ -126,7 +126,7 @@ def send_request(client: ExonumClient, endpoint: str, data: bytes) -> None:
 
     # Post the request to Exonum:
     supervisor_private_api = client.service_private_api("supervisor")
-    response = supervisor_private_api.post(endpoint, json_request)
+    response = supervisor_private_api.post_service(endpoint, json_request)
 
     if response.status_code != 200:
         error_msg = f"Error occurred during the request to the '{endpoint}' endpoint: {response.content!r}"
