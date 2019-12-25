@@ -158,7 +158,7 @@ def get_balance(client: ExonumClient, key: PublicKey) -> int:
 
     # Call the /wallets/info endpoint to retrieve the balance:
     service_public_api = client.service_public_api(CRYPTOCURRENCY_INSTANCE_NAME)
-    wallet_info = service_public_api.get("v1/wallets/info?pub_key={}".format(key.hex()))
+    wallet_info = service_public_api.get_service("v1/wallets/info?pub_key={}".format(key.hex()))
     ensure_status_code(wallet_info)
     balance = wallet_info.json()["wallet_proof"]["to_wallet"]["entries"][0]["value"]["balance"]
 
