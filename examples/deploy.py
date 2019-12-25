@@ -28,21 +28,21 @@ def run() -> None:
         loader.load_main_proto_files()
         loader.load_service_proto_files(RUST_RUNTIME_ID, SUPERVISOR_ARTIFACT_NAME, SUPERVISOR_ARTIFACT_VERSION)
 
-        try:
-            print(f"Started deploying `{service_name}` artifact.")
-            deploy_service(client, service_name, service_version)
+        # try:
+        print(f"Started deploying `{service_name}` artifact.")
+        deploy_service(client, service_name, service_version)
 
-            print(f"Artifact `{service_name}` successfully deployed.")
+        print(f"Artifact `{service_name}` successfully deployed.")
 
-            print(f"Started enablind `{instance_name}` instance.")
+        print(f"Started enablind `{instance_name}` instance.")
 
-            instance_id = start_service(client, service_name, service_version, instance_name)
+        instance_id = start_service(client, service_name, service_version, instance_name)
 
-            # If no exception has occurred during the previous calls, the service
-            # has started successfully:
-            print(f"Service instance '{instance_name}' (artifact '{service_name}') started with ID {instance_id}.")
-        except RuntimeError as err:
-            print(f"Service instance '{instance_name}' (artifact '{service_name}') deployment failed with error {err}")
+        # If no exception has occurred during the previous calls, the service
+        # has started successfully:
+        print(f"Service instance '{instance_name}' (artifact '{service_name}') started with ID {instance_id}.")
+        # except RuntimeError as err:
+        #     print(f"Service instance '{instance_name}' (artifact '{service_name}') deployment failed with error {err}")
 
 
 def deploy_service(client: ExonumClient, service_name: str, service_version: str) -> None:

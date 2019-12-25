@@ -220,7 +220,7 @@ class ExonumClient:
         service_api: ServiceApi
             An instance of ServiceApi for private API.
         """
-        return ServiceApi(service_name, self.hostname, self.public_api_port, self.schema)
+        return ServiceApi(service_name, self.hostname, self.private_api_port, self.schema)
 
     def service_public_api(self, service_name: str) -> ServiceApi:
         """Creates an instances of ServiceApi to interact with public API of a service.
@@ -248,7 +248,7 @@ class ExonumClient:
         Returns
         -------
         service_apis: (ServiceApi, ServiceApi)
-            Tuple of ServiceApi instances: one for public API and the other for private.
+            Tuple of ServiceApi instances: first for public API and second for private.
         """
         return self.service_public_api(service_name), self.service_private_api(service_name)
 
