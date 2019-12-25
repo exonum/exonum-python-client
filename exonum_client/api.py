@@ -120,7 +120,7 @@ class PublicApi(Api):
 
         Example:
 
-        >>> public_api = PublicApi("127.0.0.1", 80)
+        >>> public_api = PublicApi("127.0.0.1", 80, "http")
         >>> block = public_api.get_block(2).json()
         >>> print(json.dumps(block, indent=2))
         {
@@ -212,7 +212,7 @@ class PublicApi(Api):
 
         Example:
 
-        >>> public_api = PublicApi("127.0.0.1", 80)
+        >>> public_api = PublicApi("127.0.0.1", 80, "http")
         >>> tx_info = public_api.get_tx_info(tx_hash).json()
         >>> print(json.dumps(tx_info, indent=2))
         {
@@ -260,7 +260,7 @@ class PublicApi(Api):
 
         Example:
 
-        >>> public_api = PublicApi("127.0.0.1", 80)
+        >>> public_api = PublicApi("127.0.0.1", 80, "http")
         >>> available_services = public_api.available_services().json()
         >>> print(json.dumps(available_services, indent=2))
         {
@@ -295,7 +295,7 @@ class PublicApi(Api):
 
         Example:
 
-        >>> public_api = PublicApi("127.0.0.1", 80)
+        >>> public_api = PublicApi("127.0.0.1", 80, "http")
         >>> id = public_api.get_instance_id_by_name("cryptocurrency")
         >>> id
         42
@@ -306,8 +306,8 @@ class PublicApi(Api):
 
         Returns
         -------
-        result: int
-            ID of the instance.
+        result: Optional[int]
+            ID of the instance (int) if the instance with given ID exists, otherwise it returns None.
 
         Raises
         ------
@@ -334,7 +334,7 @@ class PublicApi(Api):
 
         Example:
 
-        >>> public_api = PublicApi("127.0.0.1", 80)
+        >>> public_api = PublicApi("127.0.0.1", 80, "http")
         >>> response = public_api.send_transaction(message)
         >>> response.json()
         {'tx_hash': '713de312f48fe15559c0d4f7fb3f274dfbd3893a8a80d9f4224e97248f0e314e'}
@@ -414,7 +414,7 @@ class PrivateApi(Api):
 
         Example:
 
-        >>> private_api = PrivateApi("127.0.0.1", 81)
+        >>> private_api = PrivateApi("127.0.0.1", 81, "http")
         >>> peers = private_api.get_peers().json()
         >>> print(json.dumps(peers, indent=2))
         {
@@ -486,7 +486,7 @@ class PrivateApi(Api):
 
         Example:
 
-        >>> private_api = PrivateApi("127.0.0.1", 81)
+        >>> private_api = PrivateApi("127.0.0.1", 81, "http")
         >>> private_api.get_consensus_interaction().json()
         True
 
@@ -504,7 +504,7 @@ class PrivateApi(Api):
 
         Example:
 
-        >>> private_api = PrivateApi("127.0.0.1", 81)
+        >>> private_api = PrivateApi("127.0.0.1", 81, "http")
         >>> network_info = private_api.get_network_info().json()
         >>> print(json.dumps(network_info, indent=2))
         {
@@ -557,7 +557,7 @@ class ServiceApi(Api):
 
         Example:
 
-        >>> service_api = ServiceApi("supervisor", "127.0.0.1")
+        >>> service_api = ServiceApi("supervisor", "127.0.0.1", "8080", "http")
         >>> service_api.service_endpoint("deploy-artifact")
         http://127.0.0.1:8081/api/services/supervisor/deploy-artifact
 
