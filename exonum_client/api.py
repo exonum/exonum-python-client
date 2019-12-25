@@ -307,7 +307,7 @@ class PublicApi(Api):
         Returns
         -------
         result: Optional[int]
-            ID of the instance (int) if the instance with given ID exists, otherwise it returns None.
+            ID of the instance (int) if the instance with given name exists, otherwise None is returned.
 
         Raises
         ------
