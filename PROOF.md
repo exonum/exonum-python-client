@@ -25,13 +25,14 @@ issue_alice_tx.sign(alice_keys)
 Send a transaction:
 
 ```python
-client.send_transaction(issue_alice_tx)
+client.public_api.send_transaction(issue_alice_tx)
 ```
 
 Obtain the wallet and check if the balance has been increased:
 
 ```python
-alice_wallet = client.get_service(instance_name, "v1/wallets/info?pub_key=" + alice_keys.public_key.hex()).json()
+service_public_api = client.service_public_api(instance_name)
+alice_wallet = service_public_api.get_service("v1/wallets/info?pub_key=" + alice_keys.public_key.hex()).json()
 ```
 
 ## Transfer Funds
@@ -45,7 +46,7 @@ create_wallet_bob.name = 'Bob'
 
 create_wallet_bob_tx = cryptocurrency_message_generator.create_message(create_wallet_bob)  
 create_wallet_bob_tx.sign(bob_keys)  
-client.send_transaction(create_wallet_bob_tx)
+client.public_api.send_transaction(create_wallet_bob_tx)
 ```
 
 Import the **Types** module:
@@ -68,7 +69,7 @@ Send a **Transfer** transaction. Use Alice's keys to sign the transaction:
 ```python
 transfer_tx = cryptocurrency_message_generator.create_message(transfer)  
 transfer_tx.sign(alice_keys)  
-client.send_transaction(transfer_tx)
+client.public_api.send_transaction(transfer_tx)
 ```
 
 ## Verifying MapProof to a Table

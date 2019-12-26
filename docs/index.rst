@@ -116,7 +116,7 @@ Sending Transaction to the Exonum Node
 After successfully sending the message, we'll get a response which will
 contain a hash of the transaction:
 
->>> response = client.send_transaction(create_wallet_alice_tx)
+>>> response = client.public_api.send_transaction(create_wallet_alice_tx)
 {
     "tx_hash": "3541201bb7f367b802d089d8765cc7de3b7dfc253b12330b8974268572c54c01"
 }
@@ -149,34 +149,44 @@ Getting Data on the Available Services
 The code below will show a list of the artifacts available for the start and a
 list of working services:
 
->>> client.available_services().json()
+>>> client.public_api.available_services().json()
 {
   'artifacts': [
     {
       'runtime_id': 0,
-      'name': 'exonum-cryptocurrency-advanced:0.12.0'
+      'name': 'exonum-cryptocurrency-advanced',
+      'version': '0.12.0'
     },
     {
       'runtime_id': 0,
-      'name': 'exonum-supervisor:0.12.0'
+      'name': 'exonum-supervisor',
+      'version': '0.12.0'
     }
   ],
   'services': [
     {
-      'id': 1024,
-      'name': 'XNM',
-      'artifact': {
-        'runtime_id': 0,
-        'name': 'exonum-cryptocurrency-advanced:0.12.0'
-      }
+      'spec': {
+        'id': 1024,
+        'name': 'XNM',
+        'artifact': {
+          'runtime_id': 0,
+          'name': 'exonum-cryptocurrency-advanced',
+          'version': '0.12.0'
+        }
+      },
+      'status': 'Active'
     },
     {
-      'id': 0,
-      'name': 'supervisor',
-      'artifact': {
-        'runtime_id': 0,
-        'name': 'exonum-supervisor:0.12.0'
-      }
+      'spec': {
+        'id': 0,
+        'name': 'supervisor',
+        'artifact': {
+          'runtime_id': 0,
+          'name': 'exonum-supervisor',
+          'version': '0.12.0'
+        }
+      },
+      'status': 'Active'
     }
   ]
 }

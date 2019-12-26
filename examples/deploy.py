@@ -67,7 +67,7 @@ def deploy_service(client: ExonumClient, service_name: str, service_version: str
     send_request(client, "deploy-artifact", request_bytes)
 
     # Ensure that the service is added to the available modules:
-    available_services = client.available_services().json()
+    available_services = client.public_api.available_services().json()
     if service_name not in map(lambda x: x["name"], available_services["artifacts"]):
         raise RuntimeError(f"{service_name} is not listed in available services after deployment")
 
@@ -102,7 +102,7 @@ def start_service(client: ExonumClient, service_name: str, service_version: str,
     send_request(client, "propose-config", request_bytes)
 
     # Ensure that the service is added to the running instances list:
-    available_services = client.available_services().json()
+    available_services = client.public_api.available_services().json()
     if instance_name not in map(lambda x: x["spec"]["name"], available_services["services"]):
         raise RuntimeError(f"{instance_name} is not listed in running instances after starting")
 
@@ -125,7 +125,8 @@ def send_request(client: ExonumClient, endpoint: str, data: bytes) -> None:
     json_request = json.dumps(hex_request)
 
     # Post the request to Exonum:
-    response = client.post_service("supervisor", endpoint, json_request, private=True)
+    supervisor_private_api = client.service_private_api("supervisor")
+    response = supervisor_private_api.post_service(endpoint, json_request)
 
     if response.status_code != 200:
         error_msg = f"Error occurred during the request to the '{endpoint}' endpoint: {response.content!r}"

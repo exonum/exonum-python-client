@@ -8,7 +8,7 @@ def run() -> None:
 
     # Get the available services:
     print("Available services:")
-    available_services_response = client.available_services()
+    available_services_response = client.public_api.available_services()
     if available_services_response.status_code == 200:
         available_services = available_services_response.json()
         print(" Artifacts:")
@@ -24,7 +24,7 @@ def run() -> None:
 
     # Get the health info:
     print("Health info:")
-    health_info_response = client.health_info()
+    health_info_response = client.public_api.health_info()
     if health_info_response.status_code == 200:
         health_info = health_info_response.json()
         print(f"Consensus status: {health_info['consensus_status']}")
@@ -35,7 +35,7 @@ def run() -> None:
 
     # Get the Exonum stats:
     print("Exonum stats:")
-    stats_response = client.stats()
+    stats_response = client.public_api.stats()
     if stats_response.status_code == 200:
         stats = stats_response.json()
         print(f"Tx pool size: {stats['tx_pool_size']}")
@@ -47,7 +47,7 @@ def run() -> None:
 
     # Get the user agent:
     print("Exonum user agent:")
-    user_agent_response = client.user_agent()
+    user_agent_response = client.public_api.user_agent()
     if user_agent_response.status_code == 200:
         user_agent = user_agent_response.json()
         print(f"User agent: {user_agent}")
