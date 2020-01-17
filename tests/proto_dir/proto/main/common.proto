@@ -1,4 +1,4 @@
-// Copyright 2019 The Exonum Team
+// Copyright 2020 The Exonum Team
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,33 +14,11 @@
 
 syntax = "proto3";
 
-import "types.proto";
+package exonum.common;
 
-package exonum.crypto.doc_tests;
+option java_package = "com.exonum.core.messages";
 
-message CreateWallet { string name = 1; }
-
-message Point {
-  int32 x = 1;
-  int32 y = 2;
-}
-
-message TxA {
-  // Transaction fields
-}
-
-message TxB {
-  /// ...
-}
-
-message MyTransaction { exonum.crypto.PublicKey public_key = 1; }
-
-message MyStructSmall {
-  exonum.crypto.PublicKey key = 1;
-  uint32 num_field = 2;
-  string string_field = 3;
-}
-message MyStructBig {
-  exonum.crypto.Hash hash = 1;
-  MyStructSmall my_struct_small = 2;
+message BitVec {
+    bytes data = 1;
+    uint64 len = 2;
 }
