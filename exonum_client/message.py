@@ -296,7 +296,7 @@ class ExonumMessage:
     def _build_message(self) -> bytes:
         """Builds a raw AnyTx message."""
         runtime_mod = ModuleManager.import_main_module("runtime")
-        consensus_mod = ModuleManager.import_main_module("consensus")
+        messages_mod = ModuleManager.import_main_module("messages")
 
         serialized_msg = self._msg.SerializeToString()
 
@@ -308,7 +308,7 @@ class ExonumMessage:
         any_tx.call_info.CopyFrom(call_info)
         any_tx.arguments = serialized_msg
 
-        exonum_message = consensus_mod.ExonumMessage()
+        exonum_message = messages_mod.CoreMessage()
         exonum_message.any_tx.CopyFrom(any_tx)
 
         return exonum_message.SerializeToString()
@@ -321,7 +321,6 @@ class ExonumMessage:
         [SignedMessage, ExonumMessage,DecodedMessage]."""
 
         # Load modules and prepare an expected message class for parsing.
-        consensus_mod = ModuleManager.import_main_module("consensus")
         messages_mod = ModuleManager.import_main_module("messages")
         service_mod = ModuleManager.import_service_module(artifact_name, artifact_version, "service")
         transaction_class = getattr(service_mod, tx_name)
@@ -334,7 +333,7 @@ class ExonumMessage:
         signed_msg.ParseFromString(tx_raw)
 
         # Parse ExonumMessage from the SignedMessage's payload.
-        exonum_msg = consensus_mod.ExonumMessage()
+        exonum_msg = messages_mod.CoreMessage()
         exonum_msg.ParseFromString(signed_msg.payload)
 
         # Parse an expected message from ExonumMessage's AnyTx arguments.
