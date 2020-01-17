@@ -198,10 +198,10 @@ class ExonumMessage:
         public_key, secret_key = keys.public_key, keys.secret_key
         self._author = public_key
 
-        consensus_mod = ModuleManager.import_main_module("consensus")
+        messages_mod = ModuleManager.import_main_module("messages")
         types_mod = ModuleManager.import_main_module("types")
 
-        signed_message = consensus_mod.SignedMessage()
+        signed_message = messages_mod.SignedMessage()
         signed_message.payload = self._any_tx_raw
         signed_message.author.CopyFrom(types_mod.PublicKey(data=public_key.value))
 
@@ -230,9 +230,9 @@ class ExonumMessage:
             return False
 
         try:
-            consensus_mod = ModuleManager.import_main_module("consensus")
+            messages_mod = ModuleManager.import_main_module("messages")
 
-            signed_msg = consensus_mod.SignedMessage()
+            signed_msg = messages_mod.SignedMessage()
             signed_msg.ParseFromString(self._signed_tx_raw)
 
             return self._signature.verify(signed_msg.payload, self._author)
@@ -322,6 +322,7 @@ class ExonumMessage:
 
         # Load modules and prepare an expected message class for parsing.
         consensus_mod = ModuleManager.import_main_module("consensus")
+        messages_mod = ModuleManager.import_main_module("messages")
         service_mod = ModuleManager.import_service_module(artifact_name, artifact_version, "service")
         transaction_class = getattr(service_mod, tx_name)
 
@@ -329,7 +330,7 @@ class ExonumMessage:
         tx_raw = bytes.fromhex(message_hex)
 
         # Parse SignedMessage.
-        signed_msg = consensus_mod.SignedMessage()
+        signed_msg = messages_mod.SignedMessage()
         signed_msg.ParseFromString(tx_raw)
 
         # Parse ExonumMessage from the SignedMessage's payload.
