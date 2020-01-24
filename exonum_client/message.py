@@ -69,6 +69,19 @@ class MessageGenerator:
         tx_name = type(message).__name__
         return ExonumMessage(self._instance_id, self._message_ids[tx_name], message)
 
+    @staticmethod
+    def pk_to_caller_address(public_key: PublicKey):
+        """Converts `PublicKey` into a caller address, which is a uniform
+        presentation of any transaction authorization supported by Exonum."""
+        types_module = ModuleManager.import_main_module("types")
+        runtime_module = ModuleManager.import_main_module("runtime")
+
+        caller = runtime_module.Caller()
+        caller.transaction_author.CopyFrom(types_module.PublicKey(data=public_key.value))
+        caller_address = types_module.Hash(data=Hash.hash_data(caller.SerializeToString()).value)
+
+        return caller_address
+
 
 class ExonumMessage:
     """Generic Exonum transaction class.

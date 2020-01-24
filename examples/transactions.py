@@ -128,7 +128,9 @@ def transfer(
     )
 
     transfer_message = cryptocurrency_module.Transfer()
-    transfer_message.to.CopyFrom(types_module.PublicKey(data=to_key.value))
+    public_key = types_module.PublicKey(data=to_key.value)
+    caller_address = message_generator.pk_to_caller_address(public_key)
+    transfer_message.to.data = caller_address.data
     transfer_message.amount = amount
     transfer_message.seed = Seed.get_seed()
 

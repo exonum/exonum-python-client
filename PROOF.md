@@ -60,8 +60,10 @@ Create a **Transfer** object:
 ```python
 transfer = cryptocurrency_module.Transfer()  
 transfer.amount = 100  
-transfer.seed = random.getrandbits(64)  
-transfer.to.CopyFrom(types_module.PublicKey(data=bob_keys.public_key.value))
+transfer.seed = random.getrandbits(64)
+public_key = types_module.PublicKey(data=bob_keys.public_key.value)
+caller_address = cryptocurrency_message_generator.pk_to_caller_address(public_key)
+transfer.to.data = caller_address.data
 ```
 
 Send a **Transfer** transaction. Use Alice's keys to sign the transaction:
