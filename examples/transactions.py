@@ -128,7 +128,11 @@ def transfer(
     )
 
     transfer_message = cryptocurrency_module.Transfer()
-    transfer_message.to.CopyFrom(types_module.PublicKey(data=to_key.value))
+    # The address is a hash of a `Caller` protobuf message.
+    hash_address = message_generator.pk_to_hash_address(to_key)
+    if hash_address is None:
+        raise Exception
+    transfer_message.to.CopyFrom(types_module.Hash(data=hash_address.value))
     transfer_message.amount = amount
     transfer_message.seed = Seed.get_seed()
 

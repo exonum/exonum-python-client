@@ -22,7 +22,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='exonum.runtime',
   syntax='proto3',
   serialized_options=b'\n\030com.exonum.core.messages',
-  serialized_pb=b'\n\rruntime.proto\x12\x0e\x65xonum.runtime\x1a\x10\x62lockchain.proto\x1a\x0btypes.proto\x1a\x1bgoogle/protobuf/empty.proto\"2\n\x08\x43\x61llInfo\x12\x13\n\x0binstance_id\x18\x01 \x01(\r\x12\x11\n\tmethod_id\x18\x02 \x01(\r\"G\n\x05\x41nyTx\x12+\n\tcall_info\x18\x01 \x01(\x0b\x32\x18.exonum.runtime.CallInfo\x12\x11\n\targuments\x18\x02 \x01(\x0c\"?\n\nArtifactId\x12\x12\n\nruntime_id\x18\x01 \x01(\r\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x0f\n\x07version\x18\x03 \x01(\t\"M\n\x0c\x41rtifactSpec\x12,\n\x08\x61rtifact\x18\x01 \x01(\x0b\x32\x1a.exonum.runtime.ArtifactId\x12\x0f\n\x07payload\x18\x02 \x01(\x0c\"V\n\x0cInstanceSpec\x12\n\n\x02id\x18\x01 \x01(\r\x12\x0c\n\x04name\x18\x02 \x01(\t\x12,\n\x08\x61rtifact\x18\x03 \x01(\x0b\x32\x1a.exonum.runtime.ArtifactId\"^\n\x12InstanceInitParams\x12\x33\n\rinstance_spec\x18\x01 \x01(\x0b\x32\x1c.exonum.runtime.InstanceSpec\x12\x13\n\x0b\x63onstructor\x18\x02 \x01(\x0c\"\xa9\x01\n\rGenesisConfig\x12(\n\x10\x63onsensus_config\x18\x01 \x01(\x0b\x32\x0e.exonum.Config\x12/\n\tartifacts\x18\x02 \x03(\x0b\x32\x1c.exonum.runtime.ArtifactSpec\x12=\n\x11\x62uiltin_instances\x18\x03 \x03(\x0b\x32\".exonum.runtime.InstanceInitParams\"\x9a\x02\n\x0e\x45xecutionError\x12\'\n\x04kind\x18\x01 \x01(\x0e\x32\x19.exonum.runtime.ErrorKind\x12\x0c\n\x04\x63ode\x18\x02 \x01(\r\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12\x14\n\nruntime_id\x18\x04 \x01(\rH\x00\x12/\n\rno_runtime_id\x18\x05 \x01(\x0b\x32\x16.google.protobuf.EmptyH\x00\x12-\n\tcall_site\x18\x06 \x01(\x0b\x32\x18.exonum.runtime.CallSiteH\x01\x12.\n\x0cno_call_site\x18\x07 \x01(\x0b\x32\x16.google.protobuf.EmptyH\x01\x42\t\n\x07runtimeB\x0b\n\tcall_info\"\xcd\x01\n\x08\x43\x61llSite\x12\x30\n\tcall_type\x18\x01 \x01(\x0e\x32\x1d.exonum.runtime.CallSite.Type\x12\x13\n\x0binstance_id\x18\x02 \x01(\r\x12\x11\n\tmethod_id\x18\x03 \x01(\r\x12\x11\n\tinterface\x18\x04 \x01(\t\"T\n\x04Type\x12\n\n\x06METHOD\x10\x00\x12\x0f\n\x0b\x43ONSTRUCTOR\x10\x01\x12\x17\n\x13\x42\x45\x46ORE_TRANSACTIONS\x10\x02\x12\x16\n\x12\x41\x46TER_TRANSACTIONS\x10\x03\"r\n\x0f\x45xecutionStatus\x12$\n\x02ok\x18\x01 \x01(\x0b\x32\x16.google.protobuf.EmptyH\x00\x12/\n\x05\x65rror\x18\x02 \x01(\x0b\x32\x1e.exonum.runtime.ExecutionErrorH\x00\x42\x08\n\x06result\"\x87\x01\n\rArtifactState\x12\x13\n\x0b\x64\x65ploy_spec\x18\x01 \x01(\x0c\x12\x34\n\x06status\x18\x02 \x01(\x0e\x32$.exonum.runtime.ArtifactState.Status\"+\n\x06Status\x12\x08\n\x04NONE\x10\x00\x12\x0b\n\x07PENDING\x10\x01\x12\n\n\x06\x41\x43TIVE\x10\x02\"\xb8\x01\n\x0eInstanceStatus\x12\x37\n\x06simple\x18\x01 \x01(\x0e\x32%.exonum.runtime.InstanceStatus.SimpleH\x00\x12\x36\n\tmigration\x18\x02 \x01(\x0b\x32!.exonum.runtime.InstanceMigrationH\x00\"+\n\x06Simple\x12\x08\n\x04NONE\x10\x00\x12\n\n\x06\x41\x43TIVE\x10\x01\x12\x0b\n\x07STOPPED\x10\x02\x42\x08\n\x06status\"\x81\x01\n\x11InstanceMigration\x12*\n\x06target\x18\x01 \x01(\x0b\x32\x1a.exonum.runtime.ArtifactId\x12\x13\n\x0b\x65nd_version\x18\x02 \x01(\t\x12+\n\x0e\x63ompleted_hash\x18\x03 \x01(\x0b\x32\x13.exonum.crypto.Hash\"\xb9\x01\n\rInstanceState\x12*\n\x04spec\x18\x01 \x01(\x0b\x32\x1c.exonum.runtime.InstanceSpec\x12.\n\x06status\x18\x02 \x01(\x0b\x32\x1e.exonum.runtime.InstanceStatus\x12\x36\n\x0epending_status\x18\x03 \x01(\x0b\x32\x1e.exonum.runtime.InstanceStatus\x12\x14\n\x0c\x64\x61ta_version\x18\x04 \x01(\t\"Q\n\x0fMigrationStatus\x12#\n\x04hash\x18\x01 \x01(\x0b\x32\x13.exonum.crypto.HashH\x00\x12\x0f\n\x05\x65rror\x18\x02 \x01(\tH\x00\x42\x08\n\x06result\"\xb4\x01\n\x14ModifiedInstanceInfo\x12V\n\x14migration_transition\x18\x01 \x01(\x0e\x32\x38.exonum.runtime.ModifiedInstanceInfo.MigrationTransition\"D\n\x13MigrationTransition\x12\x08\n\x04NONE\x10\x00\x12\t\n\x05START\x10\x01\x12\n\n\x06\x43OMMIT\x10\x02\x12\x0c\n\x08ROLLBACK\x10\x03*K\n\tErrorKind\x12\x0e\n\nUNEXPECTED\x10\x00\x12\x08\n\x04\x43ORE\x10\x01\x12\x0b\n\x07RUNTIME\x10\x02\x12\x0b\n\x07SERVICE\x10\x03\x12\n\n\x06\x43OMMON\x10\x04\x42\x1a\n\x18\x63om.exonum.core.messagesb\x06proto3'
+  serialized_pb=b'\n\rruntime.proto\x12\x0e\x65xonum.runtime\x1a\x10\x62lockchain.proto\x1a\x0btypes.proto\x1a\x1bgoogle/protobuf/empty.proto\"2\n\x08\x43\x61llInfo\x12\x13\n\x0binstance_id\x18\x01 \x01(\r\x12\x11\n\tmethod_id\x18\x02 \x01(\r\"G\n\x05\x41nyTx\x12+\n\tcall_info\x18\x01 \x01(\x0b\x32\x18.exonum.runtime.CallInfo\x12\x11\n\targuments\x18\x02 \x01(\x0c\"?\n\nArtifactId\x12\x12\n\nruntime_id\x18\x01 \x01(\r\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x0f\n\x07version\x18\x03 \x01(\t\"M\n\x0c\x41rtifactSpec\x12,\n\x08\x61rtifact\x18\x01 \x01(\x0b\x32\x1a.exonum.runtime.ArtifactId\x12\x0f\n\x07payload\x18\x02 \x01(\x0c\"V\n\x0cInstanceSpec\x12\n\n\x02id\x18\x01 \x01(\r\x12\x0c\n\x04name\x18\x02 \x01(\t\x12,\n\x08\x61rtifact\x18\x03 \x01(\x0b\x32\x1a.exonum.runtime.ArtifactId\"^\n\x12InstanceInitParams\x12\x33\n\rinstance_spec\x18\x01 \x01(\x0b\x32\x1c.exonum.runtime.InstanceSpec\x12\x13\n\x0b\x63onstructor\x18\x02 \x01(\x0c\"\xa9\x01\n\rGenesisConfig\x12(\n\x10\x63onsensus_config\x18\x01 \x01(\x0b\x32\x0e.exonum.Config\x12/\n\tartifacts\x18\x02 \x03(\x0b\x32\x1c.exonum.runtime.ArtifactSpec\x12=\n\x11\x62uiltin_instances\x18\x03 \x03(\x0b\x32\".exonum.runtime.InstanceInitParams\"\x9a\x02\n\x0e\x45xecutionError\x12\'\n\x04kind\x18\x01 \x01(\x0e\x32\x19.exonum.runtime.ErrorKind\x12\x0c\n\x04\x63ode\x18\x02 \x01(\r\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12\x14\n\nruntime_id\x18\x04 \x01(\rH\x00\x12/\n\rno_runtime_id\x18\x05 \x01(\x0b\x32\x16.google.protobuf.EmptyH\x00\x12-\n\tcall_site\x18\x06 \x01(\x0b\x32\x18.exonum.runtime.CallSiteH\x01\x12.\n\x0cno_call_site\x18\x07 \x01(\x0b\x32\x16.google.protobuf.EmptyH\x01\x42\t\n\x07runtimeB\x0b\n\tcall_info\"\xd9\x01\n\x08\x43\x61llSite\x12\x30\n\tcall_type\x18\x01 \x01(\x0e\x32\x1d.exonum.runtime.CallSite.Type\x12\x13\n\x0binstance_id\x18\x02 \x01(\r\x12\x11\n\tmethod_id\x18\x03 \x01(\r\x12\x11\n\tinterface\x18\x04 \x01(\t\"`\n\x04Type\x12\n\n\x06METHOD\x10\x00\x12\x0f\n\x0b\x43ONSTRUCTOR\x10\x01\x12\x17\n\x13\x42\x45\x46ORE_TRANSACTIONS\x10\x02\x12\x16\n\x12\x41\x46TER_TRANSACTIONS\x10\x03\x12\n\n\x06RESUME\x10\x04\"r\n\x0f\x45xecutionStatus\x12$\n\x02ok\x18\x01 \x01(\x0b\x32\x16.google.protobuf.EmptyH\x00\x12/\n\x05\x65rror\x18\x02 \x01(\x0b\x32\x1e.exonum.runtime.ExecutionErrorH\x00\x42\x08\n\x06result\"\x87\x01\n\rArtifactState\x12\x13\n\x0b\x64\x65ploy_spec\x18\x01 \x01(\x0c\x12\x34\n\x06status\x18\x02 \x01(\x0e\x32$.exonum.runtime.ArtifactState.Status\"+\n\x06Status\x12\x08\n\x04NONE\x10\x00\x12\x0b\n\x07PENDING\x10\x01\x12\n\n\x06\x41\x43TIVE\x10\x02\"\xb8\x01\n\x0eInstanceStatus\x12\x37\n\x06simple\x18\x01 \x01(\x0e\x32%.exonum.runtime.InstanceStatus.SimpleH\x00\x12\x36\n\tmigration\x18\x02 \x01(\x0b\x32!.exonum.runtime.InstanceMigrationH\x00\"+\n\x06Simple\x12\x08\n\x04NONE\x10\x00\x12\n\n\x06\x41\x43TIVE\x10\x01\x12\x0b\n\x07STOPPED\x10\x02\x42\x08\n\x06status\"\x81\x01\n\x11InstanceMigration\x12*\n\x06target\x18\x01 \x01(\x0b\x32\x1a.exonum.runtime.ArtifactId\x12\x13\n\x0b\x65nd_version\x18\x02 \x01(\t\x12+\n\x0e\x63ompleted_hash\x18\x03 \x01(\x0b\x32\x13.exonum.crypto.Hash\"\xb9\x01\n\rInstanceState\x12*\n\x04spec\x18\x01 \x01(\x0b\x32\x1c.exonum.runtime.InstanceSpec\x12.\n\x06status\x18\x02 \x01(\x0b\x32\x1e.exonum.runtime.InstanceStatus\x12\x36\n\x0epending_status\x18\x03 \x01(\x0b\x32\x1e.exonum.runtime.InstanceStatus\x12\x14\n\x0c\x64\x61ta_version\x18\x04 \x01(\t\"Q\n\x0fMigrationStatus\x12#\n\x04hash\x18\x01 \x01(\x0b\x32\x13.exonum.crypto.HashH\x00\x12\x0f\n\x05\x65rror\x18\x02 \x01(\tH\x00\x42\x08\n\x06result\"\xb4\x01\n\x14ModifiedInstanceInfo\x12V\n\x14migration_transition\x18\x01 \x01(\x0e\x32\x38.exonum.runtime.ModifiedInstanceInfo.MigrationTransition\"D\n\x13MigrationTransition\x12\x08\n\x04NONE\x10\x00\x12\t\n\x05START\x10\x01\x12\n\n\x06\x43OMMIT\x10\x02\x12\x0c\n\x08ROLLBACK\x10\x03\"\x8f\x01\n\x06\x43\x61ller\x12\x36\n\x12transaction_author\x18\x01 \x01(\x0b\x32\x18.exonum.crypto.PublicKeyH\x00\x12\x15\n\x0binstance_id\x18\x02 \x01(\rH\x00\x12,\n\nblockchain\x18\x03 \x01(\x0b\x32\x16.google.protobuf.EmptyH\x00\x42\x08\n\x06\x63\x61ller*K\n\tErrorKind\x12\x0e\n\nUNEXPECTED\x10\x00\x12\x08\n\x04\x43ORE\x10\x01\x12\x0b\n\x07RUNTIME\x10\x02\x12\x0b\n\x07SERVICE\x10\x03\x12\n\n\x06\x43OMMON\x10\x04\x42\x1a\n\x18\x63om.exonum.core.messagesb\x06proto3'
   ,
   dependencies=[blockchain__pb2.DESCRIPTOR,types__pb2.DESCRIPTOR,google_dot_protobuf_dot_empty__pb2.DESCRIPTOR,])
 
@@ -55,8 +55,8 @@ _ERRORKIND = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=2238,
-  serialized_end=2313,
+  serialized_start=2396,
+  serialized_end=2471,
 )
 _sym_db.RegisterEnumDescriptor(_ERRORKIND)
 
@@ -90,11 +90,15 @@ _CALLSITE_TYPE = _descriptor.EnumDescriptor(
       name='AFTER_TRANSACTIONS', index=3, number=3,
       serialized_options=None,
       type=None),
+    _descriptor.EnumValueDescriptor(
+      name='RESUME', index=4, number=4,
+      serialized_options=None,
+      type=None),
   ],
   containing_type=None,
   serialized_options=None,
   serialized_start=1125,
-  serialized_end=1209,
+  serialized_end=1221,
 )
 _sym_db.RegisterEnumDescriptor(_CALLSITE_TYPE)
 
@@ -119,8 +123,8 @@ _ARTIFACTSTATE_STATUS = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=1420,
-  serialized_end=1463,
+  serialized_start=1432,
+  serialized_end=1475,
 )
 _sym_db.RegisterEnumDescriptor(_ARTIFACTSTATE_STATUS)
 
@@ -145,8 +149,8 @@ _INSTANCESTATUS_SIMPLE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=1597,
-  serialized_end=1640,
+  serialized_start=1609,
+  serialized_end=1652,
 )
 _sym_db.RegisterEnumDescriptor(_INSTANCESTATUS_SIMPLE)
 
@@ -175,8 +179,8 @@ _MODIFIEDINSTANCEINFO_MIGRATIONTRANSITION = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=2168,
-  serialized_end=2236,
+  serialized_start=2180,
+  serialized_end=2248,
 )
 _sym_db.RegisterEnumDescriptor(_MODIFIEDINSTANCEINFO_MIGRATIONTRANSITION)
 
@@ -596,7 +600,7 @@ _CALLSITE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=1004,
-  serialized_end=1209,
+  serialized_end=1221,
 )
 
 
@@ -636,8 +640,8 @@ _EXECUTIONSTATUS = _descriptor.Descriptor(
       name='result', full_name='exonum.runtime.ExecutionStatus.result',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=1211,
-  serialized_end=1325,
+  serialized_start=1223,
+  serialized_end=1337,
 )
 
 
@@ -675,8 +679,8 @@ _ARTIFACTSTATE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1328,
-  serialized_end=1463,
+  serialized_start=1340,
+  serialized_end=1475,
 )
 
 
@@ -717,8 +721,8 @@ _INSTANCESTATUS = _descriptor.Descriptor(
       name='status', full_name='exonum.runtime.InstanceStatus.status',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=1466,
-  serialized_end=1650,
+  serialized_start=1478,
+  serialized_end=1662,
 )
 
 
@@ -762,8 +766,8 @@ _INSTANCEMIGRATION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1653,
-  serialized_end=1782,
+  serialized_start=1665,
+  serialized_end=1794,
 )
 
 
@@ -814,8 +818,8 @@ _INSTANCESTATE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1785,
-  serialized_end=1970,
+  serialized_start=1797,
+  serialized_end=1982,
 )
 
 
@@ -855,8 +859,8 @@ _MIGRATIONSTATUS = _descriptor.Descriptor(
       name='result', full_name='exonum.runtime.MigrationStatus.result',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=1972,
-  serialized_end=2053,
+  serialized_start=1984,
+  serialized_end=2065,
 )
 
 
@@ -887,8 +891,56 @@ _MODIFIEDINSTANCEINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2056,
-  serialized_end=2236,
+  serialized_start=2068,
+  serialized_end=2248,
+)
+
+
+_CALLER = _descriptor.Descriptor(
+  name='Caller',
+  full_name='exonum.runtime.Caller',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='transaction_author', full_name='exonum.runtime.Caller.transaction_author', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='instance_id', full_name='exonum.runtime.Caller.instance_id', index=1,
+      number=2, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='blockchain', full_name='exonum.runtime.Caller.blockchain', index=2,
+      number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+    _descriptor.OneofDescriptor(
+      name='caller', full_name='exonum.runtime.Caller.caller',
+      index=0, containing_type=None, fields=[]),
+  ],
+  serialized_start=2251,
+  serialized_end=2394,
 )
 
 _ANYTX.fields_by_name['call_info'].message_type = _CALLINFO
@@ -949,6 +1001,17 @@ _MIGRATIONSTATUS.oneofs_by_name['result'].fields.append(
 _MIGRATIONSTATUS.fields_by_name['error'].containing_oneof = _MIGRATIONSTATUS.oneofs_by_name['result']
 _MODIFIEDINSTANCEINFO.fields_by_name['migration_transition'].enum_type = _MODIFIEDINSTANCEINFO_MIGRATIONTRANSITION
 _MODIFIEDINSTANCEINFO_MIGRATIONTRANSITION.containing_type = _MODIFIEDINSTANCEINFO
+_CALLER.fields_by_name['transaction_author'].message_type = types__pb2._PUBLICKEY
+_CALLER.fields_by_name['blockchain'].message_type = google_dot_protobuf_dot_empty__pb2._EMPTY
+_CALLER.oneofs_by_name['caller'].fields.append(
+  _CALLER.fields_by_name['transaction_author'])
+_CALLER.fields_by_name['transaction_author'].containing_oneof = _CALLER.oneofs_by_name['caller']
+_CALLER.oneofs_by_name['caller'].fields.append(
+  _CALLER.fields_by_name['instance_id'])
+_CALLER.fields_by_name['instance_id'].containing_oneof = _CALLER.oneofs_by_name['caller']
+_CALLER.oneofs_by_name['caller'].fields.append(
+  _CALLER.fields_by_name['blockchain'])
+_CALLER.fields_by_name['blockchain'].containing_oneof = _CALLER.oneofs_by_name['caller']
 DESCRIPTOR.message_types_by_name['CallInfo'] = _CALLINFO
 DESCRIPTOR.message_types_by_name['AnyTx'] = _ANYTX
 DESCRIPTOR.message_types_by_name['ArtifactId'] = _ARTIFACTID
@@ -965,6 +1028,7 @@ DESCRIPTOR.message_types_by_name['InstanceMigration'] = _INSTANCEMIGRATION
 DESCRIPTOR.message_types_by_name['InstanceState'] = _INSTANCESTATE
 DESCRIPTOR.message_types_by_name['MigrationStatus'] = _MIGRATIONSTATUS
 DESCRIPTOR.message_types_by_name['ModifiedInstanceInfo'] = _MODIFIEDINSTANCEINFO
+DESCRIPTOR.message_types_by_name['Caller'] = _CALLER
 DESCRIPTOR.enum_types_by_name['ErrorKind'] = _ERRORKIND
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -1079,6 +1143,13 @@ ModifiedInstanceInfo = _reflection.GeneratedProtocolMessageType('ModifiedInstanc
   # @@protoc_insertion_point(class_scope:exonum.runtime.ModifiedInstanceInfo)
   })
 _sym_db.RegisterMessage(ModifiedInstanceInfo)
+
+Caller = _reflection.GeneratedProtocolMessageType('Caller', (_message.Message,), {
+  'DESCRIPTOR' : _CALLER,
+  '__module__' : 'runtime_pb2'
+  # @@protoc_insertion_point(class_scope:exonum.runtime.Caller)
+  })
+_sym_db.RegisterMessage(Caller)
 
 
 DESCRIPTOR._options = None

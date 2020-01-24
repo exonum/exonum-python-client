@@ -1,7 +1,9 @@
 # pylint: disable=missing-docstring, protected-access
 # type: ignore
 
+from exonum_client.crypto import Hash, PublicKey, PUBLIC_KEY_BYTES_LEN
 from exonum_client.module_manager import ModuleManager
+from exonum_client.message import MessageGenerator
 
 from .module_user import PrecompiledModuleUserTestCase
 
@@ -34,3 +36,9 @@ class TestModuleManager(PrecompiledModuleUserTestCase):
         # Check that module import for an incorrect service raises an exception:
         with self.assertRaises(ModuleNotFoundError):
             ModuleManager.import_service_module("no_service", version, "service")
+
+    def test_to_caller_address(self) -> None:
+        """Tests converting PublicKey to caller address."""
+        public_key = PublicKey(bytes([i for i in range(PUBLIC_KEY_BYTES_LEN)]))
+        hash_address = MessageGenerator.pk_to_hash_address(public_key)
+        self.assertEqual(hash_address.hex(), "fc608d4bd40aee124e73a8036d38db51788b79a18bb51d80ea15ca5fddaace69")
