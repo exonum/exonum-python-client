@@ -39,10 +39,6 @@ class TestModuleManager(PrecompiledModuleUserTestCase):
 
     def test_to_caller_address(self) -> None:
         """Tests converting PublicKey to caller address."""
-        types_module = ModuleManager.import_main_module("types")
         public_key = PublicKey(bytes([i for i in range(PUBLIC_KEY_BYTES_LEN)]))
-        actual_address = types_module.Hash(
-            data=bytes.fromhex("fc608d4bd40aee124e73a8036d38db51788b79a18bb51d80ea15ca5fddaace69")
-        )
-        expected_address = MessageGenerator.pk_to_caller_address(public_key)
-        self.assertEqual(expected_address, actual_address)
+        hash_address = MessageGenerator.pk_to_hash_address(public_key)
+        self.assertEqual(hash_address.hex(), "fc608d4bd40aee124e73a8036d38db51788b79a18bb51d80ea15ca5fddaace69")

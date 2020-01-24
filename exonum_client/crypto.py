@@ -99,7 +99,7 @@ class KeyPair:
 
 
 class Signature(_FixedByteArray):
-    """Representation of a Curve25519 signature"""
+    """Representation of a Ed25519 signature"""
 
     def __init__(self, signature: bytes):
         super().__init__(signature, SIGNATURE_BYTES_LEN)
