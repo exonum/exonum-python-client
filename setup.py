@@ -11,7 +11,7 @@ with open("README.md", "r") as readme:
 
 setuptools.setup(
     name="exonum-python-client",
-    version="0.4.0.dev4",
+    version="1.0.0",
     author="The Exonum team",
     author_email="contact@exonum.com",
     description="Exonum Python Light Client",

@@ -31,8 +31,9 @@ The following table shows versions compatibility:
 |--------------|-------------------------|
 | 0.1          | 0.9.*                   |
 | 0.2          | 0.10.*                  |
-| 0.3.x        | 0.12.*                  |
-| master       | dynamic_services branch |
+| 0.3.1        | 0.12.*                  |
+| 1.0.x        | 1.0.*                   |
+| master       | `exonum` master branch  |
 
 ## System Dependencies
 
