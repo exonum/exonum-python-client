@@ -67,21 +67,21 @@ class Hash(_FixedByteArray):
 
 
 class PublicKey(_FixedByteArray):
-    """Representation of a Curve25519 Public Key."""
+    """Representation of a Ed25519 Public Key."""
 
     def __init__(self, key: bytes):
         super().__init__(key, _PUBLIC_KEY_BYTES_LEN)
 
 
 class SecretKey(_FixedByteArray):
-    """Representation of a Curve25519 Secret Key."""
+    """Representation of a Ed25519 Secret Key."""
 
     def __init__(self, key: bytes):
         super().__init__(key, _SECRET_KEY_BYTES_LEN)
 
 
 class KeyPair:
-    """Representation of a Curve25519 keypair."""
+    """Representation of a Ed25519 keypair."""
 
     def __init__(self, public_key: PublicKey, secret_key: SecretKey):
         # Check that public_key corresponds to the secret_key.
@@ -102,7 +102,7 @@ class KeyPair:
 
 
 class Signature(_FixedByteArray):
-    """Representation of a Curve25519 signature"""
+    """Representation of a Ed25519 signature"""
 
     def __init__(self, signature: bytes):
         super().__init__(signature, _SIGNATURE_BYTES_LEN)
