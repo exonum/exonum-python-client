@@ -14,17 +14,17 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath("../exonum"))
+sys.path.insert(0, os.path.abspath("../exonum_client"))
 
 
 # -- Project Information -----------------------------------------------------
 
 project = "Exonum Python light client"
-copyright = "2019, The Exonum team"
+copyright = "2020, The Exonum team"
 author = "The Exonum team"
 
 # The full version, including alpha/beta/rc tags:
-release = "0.3.0"
+release = "1.0.0"
 
 
 # -- General Configuration ---------------------------------------------------
@@ -64,6 +64,9 @@ pygments_style = None
 # If true, the current module name will be prepended to all description
 # unit titles (such as .. function::):
 add_module_names = False
+
+# Mock pysodium so there will be no need in libsodium for building docs
+autodoc_mock_imports = ["pysodium"]
 
 # -- Options for HTML Output -------------------------------------------------
 

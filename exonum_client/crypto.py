@@ -14,10 +14,13 @@ from pysodium import (
     crypto_sign_BYTES,
 )
 
-HASH_BYTES_LEN = crypto_hash_sha256_BYTES
-PUBLIC_KEY_BYTES_LEN = crypto_sign_PUBLICKEYBYTES
-SECRET_KEY_BYTES_LEN = crypto_sign_SECRETKEYBYTES
-SIGNATURE_BYTES_LEN = crypto_sign_BYTES
+_HASH_BYTES_LEN = crypto_hash_sha256_BYTES
+_PUBLIC_KEY_BYTES_LEN = crypto_sign_PUBLICKEYBYTES
+_SECRET_KEY_BYTES_LEN = crypto_sign_SECRETKEYBYTES
+_SIGNATURE_BYTES_LEN = crypto_sign_BYTES
+
+# Hack for generating documentation:
+# Autodoc replaces "pysodium" with a mock dependency, and constans above are becoming mock objects.
 
 # In this module classes are used as a storage and also contain verification.
 # pylint: disable=too-few-public-methods
@@ -49,7 +52,7 @@ class Hash(_FixedByteArray):
     """Representation of a SHA-256 hash."""
 
     def __init__(self, hash_bytes: bytes):
-        super().__init__(hash_bytes, HASH_BYTES_LEN)
+        super().__init__(hash_bytes, _HASH_BYTES_LEN)
 
     @classmethod
     def hash_data(cls, data: Optional[bytes]) -> "Hash":
@@ -67,14 +70,14 @@ class PublicKey(_FixedByteArray):
     """Representation of a Curve25519 Public Key."""
 
     def __init__(self, key: bytes):
-        super().__init__(key, PUBLIC_KEY_BYTES_LEN)
+        super().__init__(key, _PUBLIC_KEY_BYTES_LEN)
 
 
 class SecretKey(_FixedByteArray):
     """Representation of a Curve25519 Secret Key."""
 
     def __init__(self, key: bytes):
-        super().__init__(key, SECRET_KEY_BYTES_LEN)
+        super().__init__(key, _SECRET_KEY_BYTES_LEN)
 
 
 class KeyPair:
@@ -85,7 +88,7 @@ class KeyPair:
         # Since we use only the libsodium backend, it is normal to make this
         # check as presented.
         # libsodium secret key contains a public key inside.
-        if secret_key.value[PUBLIC_KEY_BYTES_LEN:] != public_key.value:
+        if secret_key.value[_PUBLIC_KEY_BYTES_LEN:] != public_key.value:
             raise ValueError("Public key doesn't correspond to the secret key.")
 
         self.public_key = public_key
@@ -102,7 +105,7 @@ class Signature(_FixedByteArray):
     """Representation of a Curve25519 signature"""
 
     def __init__(self, signature: bytes):
-        super().__init__(signature, SIGNATURE_BYTES_LEN)
+        super().__init__(signature, _SIGNATURE_BYTES_LEN)
 
     @classmethod
     def sign(cls, data: bytes, key: SecretKey) -> "Signature":
