@@ -170,32 +170,44 @@ working services:
 
 ```python
 {
-  'artifacts': [
+  "artifacts": [
     {
-      'runtime_id': 0,
-      'name': 'exonum-cryptocurrency-advanced:0.12.0'
+      "runtime_id": 0,
+      "name": "exonum-supervisor",
+      "version": "1.0.0"
     },
     {
-      'runtime_id': 0,
-      'name': 'exonum-supervisor:0.12.0'
+      "runtime_id": 0,
+      "name": "exonum-explorer-service",
+      "version": "1.0.0"
     }
   ],
-  'services': [
+  "services": [
     {
-      'id': 1024,
-      'name': 'XNM',
-      'artifact': {
-        'runtime_id': 0,
-        'name': 'exonum-cryptocurrency-advanced:0.12.0'
-      }
+      "spec": {
+        "id": 2,
+        "name": "explorer",
+        "artifact": {
+          "runtime_id": 0,
+          "name": "exonum-explorer-service",
+          "version": "1.0.0"
+        }
+      },
+      "status": "Active",
+      "pending_status": null
     },
     {
-      'id': 0,
-      'name': 'supervisor',
-      'artifact': {
-        'runtime_id': 0,
-        'name': 'exonum-supervisor:0.12.0'
-      }
+      "spec": {
+        "id": 0,
+        "name": "supervisor",
+        "artifact": {
+          "runtime_id": 0,
+          "name": "exonum-supervisor",
+          "version": "1.0.0"
+        }
+      },
+      "status": "Active",
+      "pending_status": null
     }
   ]
 }
