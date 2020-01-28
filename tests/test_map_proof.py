@@ -3,12 +3,15 @@
 
 import unittest
 import random
+import struct
 
 from exonum_client.proofs.encoder import build_encoder_function
 from exonum_client.proofs.map_proof import MapProof
 from exonum_client.proofs.map_proof.proof_path import ProofPath
 from exonum_client.proofs.map_proof.constants import KEY_SIZE
+from exonum_client.proofs.hasher import Hasher
 from exonum_client.module_manager import ModuleManager
+from exonum_client.crypto import Hash
 
 from .module_user import PrecompiledModuleUserTestCase
 
@@ -238,7 +241,7 @@ class TestMapProof(PrecompiledModuleUserTestCase):
 
         self.assertEqual(result.root_hash().hex(), expected_hash)
 
-    def test_map_proof_validate_one_node(self):
+    def test_map_proof_validate_one_proof_entry(self):
         proof = {
             "entries": [
                 {
@@ -385,5 +388,34 @@ class TestMapProof(PrecompiledModuleUserTestCase):
         result = parsed_proof.check()
 
         expected_hash = "d3de42248cfa078d94861defe11e39176b2e91fa2ad24be96d44977457691e19"
+
+        self.assertEqual(result.root_hash().hex(), expected_hash)
+
+    def test_hash_single_entry(self):
+        path_bytes = bytearray([0] * KEY_SIZE)
+        path = ProofPath.from_bytes(path_bytes)
+
+        child_hash = Hash(bytearray([0] * KEY_SIZE))
+
+        actual_hash = Hasher.hash_single_entry_map(path.as_bytes_compressed(), child_hash)
+
+        raw_data = struct.pack("<B", Hasher.HashTag.MAP_BRANCH_NODE) + path.as_bytes_compressed() + child_hash.value
+        expected_hash = Hash.hash_data(raw_data)
+
+        self.assertEqual(actual_hash, expected_hash)
+
+    def test_map_proof_validate_one_entry(self):
+        """Here we check proof with one entry overall.
+        It should calculate hashes using compressed path representation."""
+        proof = {
+            "entries": [{"key": "e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6", "value": "01"}],
+            "proof": [],
+        }
+        parsed_proof = MapProof.parse(proof, bytes.fromhex, bytes.fromhex)
+
+        result = parsed_proof.check()
+
+        # Reference value obtained from `merkledb`.
+        expected_hash = "80df2b41d23bc02804f2c43af95f01594c3e2c6e4d87430c5938f428467bea18"
 
         self.assertEqual(result.root_hash().hex(), expected_hash)
