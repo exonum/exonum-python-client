@@ -89,7 +89,7 @@ def collect(entries: List[_MapProofEntry]) -> Hash:
             logger.warning(str(err))
             raise err
 
-        return Hasher.hash_single_entry_map(entries[0].path.as_bytes(), entries[0].hash)
+        return Hasher.hash_single_entry_map(entries[0].path.as_bytes_compressed(), entries[0].hash)
 
     # There is more than 1 entry.
 
