@@ -33,7 +33,7 @@ class _FixedByteArray:
         if len(data) != expected_len:
             raise ValueError(f"Incorrect data length: expected {expected_len}, got {len(data)}.")
 
-        self.value = data
+        self.value: bytes = bytes(data)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, _FixedByteArray):
