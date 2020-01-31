@@ -204,7 +204,7 @@ class ExonumClient:
     >>> client.protobuf_provider.add_service_source(service_sources_url, "some-service", "0.1.0")
 
     Here we tell the client to lookup sources for service named "some-service" with version 0.1.0
-    on GitHub. Path should lead to the folder that contains "*.proto" files.
+    on GitHub. Path should lead to the folder that contains "\*.proto" files.
 
     Also we can use the local filesystem instead of GitHub:
 
