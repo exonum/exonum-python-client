@@ -13,9 +13,10 @@ from threading import Thread
 from urllib.parse import urlencode
 from websocket import WebSocket
 
-from .api import ServiceApi, PublicApi, PrivateApi, ProtobufApi
+from .api import ServiceApi, PublicApi, PrivateApi
 from .protobuf_loader import ProtobufLoader
 from .message import ExonumMessage
+from .protobuf_provider import ProtobufProvider, ExonumApiProvider
 
 # pylint: disable=C0103
 logger = getLogger(__name__)
@@ -194,7 +195,12 @@ class ExonumClient:
 
         self.public_api = PublicApi(hostname, public_api_port, self.schema)
         self.private_api = PrivateApi(hostname, private_api_port, self.schema)
-        self.protobuf_api = ProtobufApi(hostname, public_api_port, self.schema)
+
+        # Initialize protobuf provider.
+        rust_runtime_id = 0
+        exonum_api_protobuf_provider = ExonumApiProvider(hostname, public_api_port, self.schema)
+        self.protobuf_provider = ProtobufProvider()
+        self.protobuf_provider.add_fallback_provider(rust_runtime_id, exonum_api_protobuf_provider)
 
     def __repr__(self) -> str:
         """ Conversion to a string. """
@@ -264,7 +270,7 @@ class ExonumClient:
         >>>     loader.load_main_proto_files()
         >>>     loader.load_service_proto_files(0, "exonum-supervisor:0.13.0-rc.2")
         """
-        return ProtobufLoader(self.protobuf_api)
+        return ProtobufLoader(self.protobuf_provider)
 
     def create_subscriber(self, subscription_type: str) -> Subscriber:
         """
