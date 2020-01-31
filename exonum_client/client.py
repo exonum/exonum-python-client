@@ -157,7 +157,7 @@ class Subscriber:
 class ExonumClient:
     """ExonumClient class is capable of interaction with ExonumBlockchain.
 
-    This class provides functionality to interact with Exonum node via either
+    This class provides functionality to interact with the Exonum node via either
     HTTP API or websockets.
 
     # API Interaction
@@ -192,8 +192,8 @@ class ExonumClient:
 
     # Obtaining Protobuf Sources
 
-    By default, ExonumClient tries to obtain protobuf files required to interact with service
-    using the REST API of Exonum node. This works for Rust runtime services only though.
+    By default, ExonumClient tries to obtain protobuf files required to interact with a service
+    using the REST API of the Exonum node. This works for the Rust runtime services only though.
 
     To be able to interact with other runtimes, one can add either sources for certain services,
     or add a generic protobuf provider for a runtime.
@@ -220,7 +220,7 @@ class ExonumClient:
 
     # More Usage Examples
 
-    To see more examples of ExonumClient class usage, visit the project GitHub page:
+    To see more examples of the ExonumClient class usage, visit the project GitHub page:
     https://github.com/exonum/exonum-python-client
     """
 

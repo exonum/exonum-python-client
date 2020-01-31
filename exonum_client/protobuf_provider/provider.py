@@ -23,7 +23,7 @@ class ProtobufProvider(ProtobufProviderInterface):
     If for some request there will be no source set, `ProtobufProvider` will try to use
     a "fallback" provider, specific to the runtime.
 
-    E.g., for Rust runtime, sources will be obtained from the REST API provided by Exonum Rust
+    E.g., for the Rust runtime, sources will be obtained from the REST API provided by the Exonum Rust
     runtime API.
 
     If there is no fallback provider for the request's runtime, an exception will be raised.
@@ -46,7 +46,7 @@ class ProtobufProvider(ProtobufProviderInterface):
     def add_main_source(self, source_path: str) -> None:
         """Adds a main source for common Exonum protobuf files.
 
-        Note that currently there is no need to provide "main" source separately, as Exonum
+        Note that currently there is no need to provide "main" source separately, since Exonum
         node can provide them via API.
         """
 
@@ -56,7 +56,7 @@ class ProtobufProvider(ProtobufProviderInterface):
     def add_service_source(self, source_path: str, service_name: str, service_version: str) -> None:
         """Adds a source for Exonum service into ProtobufProvider.
 
-        Source must be either a filesystem path, or a GitHub url.
+        A source must be either a filesystem path, or a GitHub url.
 
         Examples:
 
