@@ -216,6 +216,8 @@ class ExonumClient:
 
     >>> client.protobuf_provider.add_fallback_provider(your_runtime_id, your_protobuf_provider)
 
+    "your_protobuf_provider" should be an object of class that derives ProtobufProviderInterface.
+
     # More Usage Examples
 
     To see more examples of ExonumClient class usage, visit the project GitHub page:

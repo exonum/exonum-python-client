@@ -1,3 +1,9 @@
+"""This module introduces an ExonumApiProvider class, which is capable
+of loading core protobuf files and protobuf files for Rust runtime via
+Exonum node REST API.
+
+This provider is enabled by default.
+"""
 from typing import Optional, Any, List, Dict
 
 from logging import getLogger

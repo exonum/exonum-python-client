@@ -1,6 +1,6 @@
 """Protobuf provider which loads .proto files from the filesystem."""
 
-from typing import List, Optional
+from typing import List
 import os
 
 from exonum_client.protobuf_loader import ProtobufProviderInterface, ProtoFile
