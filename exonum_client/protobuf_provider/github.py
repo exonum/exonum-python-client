@@ -1,6 +1,6 @@
 """Protobuf provider which loads .proto files from GitHub."""
 
-from typing import List, Optional
+from typing import List
 import re
 
 import requests
