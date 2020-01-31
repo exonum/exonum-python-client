@@ -31,6 +31,8 @@ class ProtobufProvider(ProtobufProviderInterface):
     # TODO explain more.
     """
 
+    RUST_RUNTIME_ID = 0
+
     def __init__(self) -> None:
         """Constructor of the ProtobufProvider class."""
         self._lookup: Dict[str, ProtobufProviderInterface] = dict()
@@ -82,8 +84,7 @@ class ProtobufProvider(ProtobufProviderInterface):
         """Gets the Exonum core proto sources."""
         provider = self._lookup.get("_main_")
         if provider is None:
-            rust_runtime_id = 0
-            rust_runtime_provider = self._fallback.get(rust_runtime_id)
+            rust_runtime_provider = self._fallback.get(self.RUST_RUNTIME_ID)
             if rust_runtime_provider is None:
                 raise RuntimeError(
                     "Main sources provider is not set and \
