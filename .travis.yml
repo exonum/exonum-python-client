@@ -25,7 +25,7 @@ jobs:
       script:
         - black --check -l 120 . --exclude=".*_pb2.py"
         - mypy --ignore-missing-imports --disallow-untyped-defs ./exonum_client ./examples
-        - pylint exonum_client --max-line-length=120 --disable=fixme,bad-continuation,too-few-public-methods
+        - pylint exonum_client --max-line-length=120 --disable=fixme,bad-continuation,too-few-public-methods,R0801
     - name: docs
       install:
         - pip install sphinx

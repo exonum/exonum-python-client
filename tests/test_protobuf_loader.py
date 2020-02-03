@@ -77,14 +77,14 @@ class TestProtobufLoader(unittest.TestCase):
             with self.assertRaises(ValueError):
                 client_2.protobuf_loader()
 
-    @patch("exonum_client.api.ProtobufApi.get", new=mock_requests_get)
+    @patch("exonum_client.protobuf_provider.ExonumApiProvider.get", new=mock_requests_get)
     def test_main_sources_download(self):
         with self.client.protobuf_loader() as loader:
             loader.load_main_proto_files()
 
             _runtime_mod = ModuleManager.import_main_module("runtime")
 
-    @patch("exonum_client.api.ProtobufApi.get", new=mock_requests_get)
+    @patch("exonum_client.protobuf_provider.ExonumApiProvider.get", new=mock_requests_get)
     def test_service_sources_download(self):
         with self.client.protobuf_loader() as loader:
             loader.load_main_proto_files()
