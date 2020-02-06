@@ -112,7 +112,7 @@ cryptocurrency_module = ModuleManager.import_service_module(
 )
 
 cryptocurrency_message_generator = MessageGenerator(
-    instancPe_id=1024, 
+    instance_id=1024, 
     artifact_name=cryptocurrency_artifact_name, 
     artifact_version=cryptocurrency_artifact_version
 )
