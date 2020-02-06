@@ -195,9 +195,9 @@ class ProtobufLoader:
             file_out.write(file_content)
 
     def _save_files(self, path: str, files: List[ProtoFile]) -> None:
-        os.makedirs(path)
         for proto_file in files:
             file_path = os.path.join(path, proto_file.name)
+            os.makedirs(os.path.split(file_path)[0], exist_ok=True)
             self._save_proto_file(file_path, proto_file.content)
 
     def load_main_proto_files(self) -> None:

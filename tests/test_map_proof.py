@@ -290,7 +290,7 @@ class TestMapProof(PrecompiledModuleUserTestCase):
         self.assertEqual(entries[0].key, proof["entries"][0]["key"])
         self.assertEqual(entries[0].value, proof["entries"][0]["value"])
 
-        expected_hash = "7adcdfe51855dc073681b7f9274a414d4d9f378e94e02c39e04819c6f9ed27e7"
+        expected_hash = "685bf951edfc58a075dbd77d376649d86d6f494889524de327e6915d1f3f0d23"
 
         self.assertEqual(result.root_hash().hex(), expected_hash)
 
@@ -387,7 +387,7 @@ class TestMapProof(PrecompiledModuleUserTestCase):
 
         result = parsed_proof.check()
 
-        expected_hash = "d3de42248cfa078d94861defe11e39176b2e91fa2ad24be96d44977457691e19"
+        expected_hash = "cf27b230acfbee7ce21c6a0bddc1cfaf6317c587828244685e13989a87616834"
 
         self.assertEqual(result.root_hash().hex(), expected_hash)
 

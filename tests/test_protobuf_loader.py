@@ -82,7 +82,7 @@ class TestProtobufLoader(unittest.TestCase):
         with self.client.protobuf_loader() as loader:
             loader.load_main_proto_files()
 
-            _runtime_mod = ModuleManager.import_main_module("runtime")
+            _blockchain_mod = ModuleManager.import_main_module("exonum.blockchain")
 
     @patch("exonum_client.protobuf_provider.ExonumApiProvider.get", new=mock_requests_get)
     def test_service_sources_download(self):

@@ -1,6 +1,7 @@
 """Module with the Bindings to Protoc."""
 from typing import List, Optional
 from logging import getLogger
+import glob
 import os
 import re
 import shutil
@@ -21,7 +22,7 @@ def _find_protoc() -> Optional[str]:
 
 
 def _find_proto_files(path: str) -> List[str]:
-    return [file for file in os.listdir(path) if file.endswith(".proto")]
+    return glob.glob(path + "/**/*.proto", recursive=True)
 
 
 class Protoc:
@@ -45,9 +46,28 @@ class Protoc:
             file_content = file_in.readlines()
 
         with open(path, "wt") as file_out:
+            if "/exonum/proof/" in path or "/exonum/runtime/" in path:
+                for line in file_content:
+                    line = line.replace("from exonum import ", "from .. import ")
+                    line = line.replace("from exonum.crypto import ", "from ..crypto import ")
+                    line = line.replace("from exonum.runtime import ", "from . import ")
+                    file_out.write(line)
+                return
+
+            if "/exonum/" in path:
+                for line in file_content:
+                    line = line.replace("from exonum import ", "from . import ")
+                    line = line.replace("from exonum.crypto import ", "from .crypto import ")
+                    line = line.replace("from exonum.runtime import ", "from .runtime import ")
+                    line = line.replace("from exonum.proof import ", "from .proof import ")
+                    file_out.write(line)
+                return
+
             for line in file_content:
                 for module in modules:
-                    line = line.replace("import {}_pb2 ".format(module), "from . import {}_pb2 ".format(module))
+                    line = line.replace("from exonum", "from .exonum")
+                    if line.startswith("import {}_pb2 ".format(module)):
+                        line = line.replace("import {}_pb2 ".format(module), "from . import {}_pb2 ".format(module))
                 file_out.write(line)
 
     def _ensure_protoc_version(self) -> None:
@@ -109,6 +129,7 @@ class Protoc:
         else:
             logger.error("Error acquired while compiling files: %s. Files: %s.", stderr.decode("utf-8"), proto_files)
 
-        modules = [proto_path.replace(".proto", "") for proto_path in proto_files]
-        for file in filter(lambda f: f.endswith(".py"), os.listdir(path_out)):
-            self._modify_file("{}/{}".format(path_out, file), modules)
+        modules = [proto_path.split("/")[-1].replace(".proto", "") for proto_path in proto_files]
+        for file in glob.glob(path_out + "/**/*.py", recursive=True):
+            open(os.path.join(os.path.split(file)[0], "__init__.py"), "a").close()
+            self._modify_file(file, modules)

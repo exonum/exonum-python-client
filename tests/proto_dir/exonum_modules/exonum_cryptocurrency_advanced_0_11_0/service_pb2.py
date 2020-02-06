@@ -11,7 +11,7 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
-from . import types_pb2 as types__pb2
+from .exonum.crypto import types_pb2 as exonum_dot_crypto_dot_types__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
@@ -19,9 +19,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='exonum.examples.cryptocurrency_advanced',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=b'\n\rservice.proto\x12\'exonum.examples.cryptocurrency_advanced\x1a\x0btypes.proto\"N\n\x08Transfer\x12$\n\x02to\x18\x01 \x01(\x0b\x32\x18.exonum.crypto.PublicKey\x12\x0e\n\x06\x61mount\x18\x02 \x01(\x04\x12\x0c\n\x04seed\x18\x03 \x01(\x04\"%\n\x05Issue\x12\x0e\n\x06\x61mount\x18\x01 \x01(\x04\x12\x0c\n\x04seed\x18\x02 \x01(\x04\"\x1c\n\x0c\x43reateWallet\x12\x0c\n\x04name\x18\x01 \x01(\t\"\x92\x01\n\x06Wallet\x12)\n\x07pub_key\x18\x01 \x01(\x0b\x32\x18.exonum.crypto.PublicKey\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x0f\n\x07\x62\x61lance\x18\x03 \x01(\x04\x12\x13\n\x0bhistory_len\x18\x04 \x01(\x04\x12)\n\x0chistory_hash\x18\x05 \x01(\x0b\x32\x13.exonum.crypto.Hash\"\x08\n\x06\x43onfigb\x06proto3'
+  serialized_pb=b'\n\rservice.proto\x12\'exonum.examples.cryptocurrency_advanced\x1a\x19\x65xonum/crypto/types.proto\"I\n\x08Transfer\x12\x1f\n\x02to\x18\x01 \x01(\x0b\x32\x13.exonum.crypto.Hash\x12\x0e\n\x06\x61mount\x18\x02 \x01(\x04\x12\x0c\n\x04seed\x18\x03 \x01(\x04\"%\n\x05Issue\x12\x0e\n\x06\x61mount\x18\x01 \x01(\x04\x12\x0c\n\x04seed\x18\x02 \x01(\x04\"\x1c\n\x0c\x43reateWallet\x12\x0c\n\x04name\x18\x01 \x01(\t\"\x8b\x01\n\x06Wallet\x12\"\n\x05owner\x18\x01 \x01(\x0b\x32\x13.exonum.crypto.Hash\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x0f\n\x07\x62\x61lance\x18\x03 \x01(\x04\x12\x13\n\x0bhistory_len\x18\x04 \x01(\x04\x12)\n\x0chistory_hash\x18\x05 \x01(\x0b\x32\x13.exonum.crypto.Hash\"\x08\n\x06\x43onfigb\x06proto3'
   ,
-  dependencies=[types__pb2.DESCRIPTOR,])
+  dependencies=[exonum_dot_crypto_dot_types__pb2.DESCRIPTOR,])
 
 
 
@@ -66,8 +66,8 @@ _TRANSFER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=71,
-  serialized_end=149,
+  serialized_start=85,
+  serialized_end=158,
 )
 
 
@@ -104,8 +104,8 @@ _ISSUE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=151,
-  serialized_end=188,
+  serialized_start=160,
+  serialized_end=197,
 )
 
 
@@ -135,8 +135,8 @@ _CREATEWALLET = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=190,
-  serialized_end=218,
+  serialized_start=199,
+  serialized_end=227,
 )
 
 
@@ -148,7 +148,7 @@ _WALLET = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='pub_key', full_name='exonum.examples.cryptocurrency_advanced.Wallet.pub_key', index=0,
+      name='owner', full_name='exonum.examples.cryptocurrency_advanced.Wallet.owner', index=0,
       number=1, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -194,8 +194,8 @@ _WALLET = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=221,
-  serialized_end=367,
+  serialized_start=230,
+  serialized_end=369,
 )
 
 
@@ -218,13 +218,13 @@ _CONFIG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=369,
-  serialized_end=377,
+  serialized_start=371,
+  serialized_end=379,
 )
 
-_TRANSFER.fields_by_name['to'].message_type = types__pb2._PUBLICKEY
-_WALLET.fields_by_name['pub_key'].message_type = types__pb2._PUBLICKEY
-_WALLET.fields_by_name['history_hash'].message_type = types__pb2._HASH
+_TRANSFER.fields_by_name['to'].message_type = exonum_dot_crypto_dot_types__pb2._HASH
+_WALLET.fields_by_name['owner'].message_type = exonum_dot_crypto_dot_types__pb2._HASH
+_WALLET.fields_by_name['history_hash'].message_type = exonum_dot_crypto_dot_types__pb2._HASH
 DESCRIPTOR.message_types_by_name['Transfer'] = _TRANSFER
 DESCRIPTOR.message_types_by_name['Issue'] = _ISSUE
 DESCRIPTOR.message_types_by_name['CreateWallet'] = _CREATEWALLET

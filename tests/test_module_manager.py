@@ -11,7 +11,7 @@ from .module_user import PrecompiledModuleUserTestCase
 class TestModuleManager(PrecompiledModuleUserTestCase):
     def test_load_main(self):
         # Check that the main module is loaded correctly:
-        main_module = ModuleManager.import_main_module("runtime")
+        main_module = ModuleManager.import_main_module("exonum.runtime.base")
         main_module.AnyTx()
 
     def test_load_fail_main(self):
