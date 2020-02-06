@@ -319,7 +319,7 @@ class ExonumClient:
 
         >>> with client.protobuf_loader("blocks") as loader:
         >>>     loader.load_main_proto_files()
-        >>>     loader.load_service_proto_files(0, "exonum-supervisor:0.13.0-rc.2")
+        >>>     loader.load_service_proto_files(0, "exonum-supervisor", "0.13.0-rc.2")
         """
         return ProtobufLoader(self.protobuf_provider)
 

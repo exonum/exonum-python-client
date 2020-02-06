@@ -99,12 +99,23 @@ The following example shows how to create a transaction message:
 ```python
 alice_keys = KeyPair.generate()
 
-cryptocurrency_service_name = 'exonum-cryptocurrency-advanced:0.12.0'
-loader.load_service_proto_files(runtime_id=0, service_name=cryptocurrency_service_name)
+cryptocurrency_artifact_name = "exonum-cryptocurrency-advanced"
+cryptocurrency_artifact_version = "0.12.0"
+loader.load_service_proto_files(
+    runtime_id=0, 
+    artifact_name=cryptocurrency_artifact_name, 
+    artifact_version=cryptocurrency_artifact_version
+)
 
-cryptocurrency_module = ModuleManager.import_service_module(cryptocurrency_service_name, 'service')
+cryptocurrency_module = ModuleManager.import_service_module(
+    cryptocurrency_artifact_name, cryptocurrency_artifact_version, "service"
+)
 
-cryptocurrency_message_generator = MessageGenerator(instance_id=1024, artifact_name=cryptocurrency_service_name)
+cryptocurrency_message_generator = MessageGenerator(
+    instancPe_id=1024, 
+    artifact_name=cryptocurrency_artifact_name, 
+    artifact_version=cryptocurrency_artifact_version
+)
 
 create_wallet_alice = cryptocurrency_module.CreateWallet()
 create_wallet_alice.name = 'Alice'

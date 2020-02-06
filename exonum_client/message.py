@@ -21,8 +21,9 @@ class MessageGenerator:
     Example of usage:
     >>> instance_id = ... # Get the ID of the desired service instance.
     >>> artifact_name = ... # Get the name of the artifact (not the instance).
-    >>> cryptocurrency_message_generator = MessageGenerator(instance_id, artifact_name) # Create a message generator.
-    >>> create_wallet_alice = cryptocurrency_module.CreateWallet() # Create a Protobuf message.
+    >>> artifact_version = ... # Get the version of the artifact (not the instance).
+    >>> cryptocurrency_message_generator = MessageGenerator(instance_id, artifact_name, artifact_version)
+    >>> create_wallet_alice = cryptocurrency_message_generator.CreateWallet() # Create a Protobuf message.
     >>> create_wallet_alice.name = "Alice1" # Fill the Protobuf message manually.
 
     Then you can transform the Protobuf message into an Exonum transaction.
