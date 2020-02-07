@@ -22,7 +22,7 @@ class TestTxParse(unittest.TestCase):
 
         # Prepare an original message:
         cryptocurrency_service_name = "exonum-cryptocurrency-advanced"
-        version = "0.11.0"
+        version = "1.0.0"
 
         cryptocurrency_module = ModuleManager.import_service_module(cryptocurrency_service_name, version, "service")
 
@@ -49,7 +49,7 @@ class TestTxParse(unittest.TestCase):
         service_name = self.cryptocurrency_service_name
 
         # Parse the message:
-        version = "0.11.0"
+        version = "1.0.0"
         parsed_message = ExonumMessage.from_hex(
             exonum_message.signed_raw().hex(), service_name, version, "CreateWallet"
         )
@@ -65,7 +65,7 @@ class TestTxParse(unittest.TestCase):
 
         # Parse the message:
         corrupted_message = "1a" + exonum_message.signed_raw().hex()
-        version = "0.11.0"
+        version = "1.0.0"
         parsed_message = ExonumMessage.from_hex(corrupted_message, service_name, version, "CreateWallet")
 
         self.assertIsNone(parsed_message)

@@ -88,7 +88,7 @@ Then we need to run the following code:
 
 ```python
 loader.load_main_proto_files()  # Load and compile main proto files, such as `runtime.proto`, `consensus.proto`, etc.
-loader.load_service_proto_files(runtime_id=0, service_name='exonum-supervisor:0.12.0')  # Same for specific service.
+loader.load_service_proto_files(runtime_id=0, service_name='exonum-supervisor:1.0.0')  # Same for specific service.
 ```
 
 - runtime_id=0 here means, that service works in Rust runtime.
@@ -100,12 +100,23 @@ The following example shows how to create a transaction message:
 ```python
 alice_keys = KeyPair.generate()
 
-cryptocurrency_service_name = 'exonum-cryptocurrency-advanced:0.12.0'
-loader.load_service_proto_files(runtime_id=0, service_name=cryptocurrency_service_name)
+cryptocurrency_artifact_name = "exonum-cryptocurrency-advanced"
+cryptocurrency_artifact_version = "1.0.0"
+loader.load_service_proto_files(
+    runtime_id=0, 
+    artifact_name=cryptocurrency_artifact_name, 
+    artifact_version=cryptocurrency_artifact_version
+)
 
-cryptocurrency_module = ModuleManager.import_service_module(cryptocurrency_service_name, 'service')
+cryptocurrency_module = ModuleManager.import_service_module(
+    cryptocurrency_artifact_name, cryptocurrency_artifact_version, "service"
+)
 
-cryptocurrency_message_generator = MessageGenerator(instance_id=1024, artifact_name=cryptocurrency_service_name)
+cryptocurrency_message_generator = MessageGenerator(
+    instance_id=1024, 
+    artifact_name=cryptocurrency_artifact_name, 
+    artifact_version=cryptocurrency_artifact_version
+)
 
 create_wallet_alice = cryptocurrency_module.CreateWallet()
 create_wallet_alice.name = 'Alice'

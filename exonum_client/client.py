@@ -13,9 +13,10 @@ from threading import Thread
 from urllib.parse import urlencode
 from websocket import WebSocket
 
-from .api import ServiceApi, PublicApi, PrivateApi, ProtobufApi
+from .api import ServiceApi, PublicApi, PrivateApi
 from .protobuf_loader import ProtobufLoader
 from .message import ExonumMessage
+from .protobuf_provider import ProtobufProvider, ExonumApiProvider
 
 # pylint: disable=C0103
 logger = getLogger(__name__)
@@ -156,6 +157,11 @@ class Subscriber:
 class ExonumClient:
     """ExonumClient class is capable of interaction with ExonumBlockchain.
 
+    This class provides functionality to interact with the Exonum node via either
+    HTTP API or websockets.
+
+    # API Interaction
+
     All the methods that perform requests to the Exonum REST API return a requests.Response object.
     So a user should manually verify that the status code of the request is correct and get the contents
     of the request via `response.json()`.
@@ -170,6 +176,52 @@ class ExonumClient:
     {'consensus_status': 'Enabled', 'connected_peers': 0}
     >>> user_agent = client.public_api.user_agent().json()
     exonum 0.13.0-rc.2/rustc 1.37.0 (eae3437df 2019-08-13)
+
+    # Websocket interaction
+
+    To interact with the Exonum node via webscokets, one should create a Subscriber object.
+    Subscriber objects are managed via context managers, so the connection is correctly opened
+    and closed on exit. User can subscribe to either block or transactions events.
+
+    Example:
+
+    >>> with client.create_subscriber("blocks") as subscriber:
+    >>>     subscriber.wait_for_new_event()
+
+    For more information, see the Subscriber class documentation.
+
+    # Obtaining Protobuf Sources
+
+    By default, ExonumClient tries to obtain protobuf files required to interact with a service
+    using the REST API of the Exonum node. This works for the Rust runtime services only though.
+
+    To be able to interact with other runtimes, one can add either sources for certain services,
+    or add a generic protobuf provider for a runtime.
+
+    Adding sources for a service will look as follows:
+
+    >>> service_sources_url = "https://github.com/organization/project/path/to/sources"
+    >>> client.protobuf_provider.add_service_source(service_sources_url, "some-service", "0.1.0")
+
+    Here we tell the client to lookup sources for service named "some-service" with version 0.1.0
+    on GitHub. Path should lead to the folder that contains "\\*.proto" files.
+
+    Also we can use the local filesystem instead of GitHub:
+
+    >>> service_sources_path = "/path/on/local/filesystem"
+    >>> client.protobuf_provider.add_service_source(service_sources_path, "some-service", "0.1.0")
+
+    Other way to interact with non-Rust services is to specify a "fallback" provider which will be
+    used if service runtime is not Rust, and there is no separate source configured for the service:
+
+    >>> client.protobuf_provider.add_fallback_provider(your_runtime_id, your_protobuf_provider)
+
+    "your_protobuf_provider" should be an object of class that derives ProtobufProviderInterface.
+
+    # More Usage Examples
+
+    To see more examples of the ExonumClient class usage, visit the project GitHub page:
+    https://github.com/exonum/exonum-python-client
     """
 
     def __init__(self, hostname: str, public_api_port: int = 80, private_api_port: int = 81, ssl: bool = False):
@@ -194,7 +246,12 @@ class ExonumClient:
 
         self.public_api = PublicApi(hostname, public_api_port, self.schema)
         self.private_api = PrivateApi(hostname, private_api_port, self.schema)
-        self.protobuf_api = ProtobufApi(hostname, public_api_port, self.schema)
+
+        # Initialize protobuf provider.
+        rust_runtime_id = 0
+        exonum_api_protobuf_provider = ExonumApiProvider(hostname, public_api_port, self.schema)
+        self.protobuf_provider = ProtobufProvider()
+        self.protobuf_provider.add_fallback_provider(rust_runtime_id, exonum_api_protobuf_provider)
 
     def __repr__(self) -> str:
         """ Conversion to a string. """
@@ -262,9 +319,9 @@ class ExonumClient:
 
         >>> with client.protobuf_loader("blocks") as loader:
         >>>     loader.load_main_proto_files()
-        >>>     loader.load_service_proto_files(0, "exonum-supervisor:0.13.0-rc.2")
+        >>>     loader.load_service_proto_files(0, "exonum-supervisor", "0.13.0-rc.2")
         """
-        return ProtobufLoader(self.protobuf_api)
+        return ProtobufLoader(self.protobuf_provider)
 
     def create_subscriber(self, subscription_type: str) -> Subscriber:
         """
