@@ -77,7 +77,7 @@ def mock_requests_get(cls_obj, url, params=None):
         # Proto sources for the supervisor service:
         (
             proto_sources_endpoint,
-            "{'type': 'artifact', 'name': 'exonum-supervisor', 'version': '0.11.0'}",
+            "{'type': 'artifact', 'name': 'exonum-supervisor', 'version': '1.0.0'}",
         ): proto_sources_response("supervisor"),
         # System endpoints:
         # public

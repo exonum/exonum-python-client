@@ -22,14 +22,14 @@ class TestModuleManager(PrecompiledModuleUserTestCase):
     def test_load_service(self):
         # Check that the Cryptocurrency service is loaded correctly:
         cryptocurrency_service_name = "exonum-cryptocurrency-advanced"
-        version = "0.11.0"
+        version = "1.0.0"
         cryptocurrency_module = ModuleManager.import_service_module(cryptocurrency_service_name, version, "service")
         cryptocurrency_module.CreateWallet()
 
     def test_load_fail_service(self):
         # Check that import of an incorrect module for the correct service raises an exception:
-        cryptocurrency_service_name = "exonum-cryptocurrency-advanced:0.11.0"
-        version = "0.11.0"
+        cryptocurrency_service_name = "exonum-cryptocurrency-advanced:1.0.0"
+        version = "1.0.0"
         with self.assertRaises(ModuleNotFoundError):
             ModuleManager.import_service_module(cryptocurrency_service_name, version, "no_module")
 

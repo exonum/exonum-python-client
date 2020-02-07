@@ -163,7 +163,7 @@ class MapProof:
 
     >>> proof = get_proof_somehow()
     >>> # Assuming that the Protobuf files for the service are already loaded and compiled.
-    >>> cryptocurrency_service_name = 'exonum-cryptocurrency-advanced:0.11.0'
+    >>> cryptocurrency_service_name = 'exonum-cryptocurrency-advanced:1.0.0'
     >>> cryptocurrency_module = ModuleManager.import_service_module(cryptocurrency_service_name, 'service')
     >>> cryptocurrency_decoder = MapProofBuilder.build_encoder_function(cryptocurrency_module.Wallet)
     >>> # Keys will be encoded to bytes using "bytes.fromhex",

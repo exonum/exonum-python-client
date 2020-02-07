@@ -224,7 +224,7 @@ class TestMapProof(PrecompiledModuleUserTestCase):
         proof = {"entries": [], "proof": []}
 
         cryptocurrency_service_name = "exonum-cryptocurrency-advanced"
-        version = "0.11.0"
+        version = "1.0.0"
         cryptocurrency_module = ModuleManager.import_service_module(cryptocurrency_service_name, version, "service")
 
         cryptocurrency_decoder = build_encoder_function(cryptocurrency_module.Wallet)
@@ -274,7 +274,7 @@ class TestMapProof(PrecompiledModuleUserTestCase):
         }
 
         cryptocurrency_service_name = "exonum-cryptocurrency-advanced"
-        version = "0.11.0"
+        version = "1.0.0"
         cryptocurrency_module = ModuleManager.import_service_module(cryptocurrency_service_name, version, "service")
 
         cryptocurrency_decoder = build_encoder_function(cryptocurrency_module.Wallet)
@@ -378,7 +378,7 @@ class TestMapProof(PrecompiledModuleUserTestCase):
         }
 
         cryptocurrency_service_name = "exonum-cryptocurrency-advanced"
-        version = "0.11.0"
+        version = "1.0.0"
         cryptocurrency_module = ModuleManager.import_service_module(cryptocurrency_service_name, version, "service")
 
         cryptocurrency_decoder = build_encoder_function(cryptocurrency_module.Wallet)

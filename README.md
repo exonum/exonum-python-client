@@ -87,7 +87,7 @@ Then we need to run the following code:
 
 ```python
 loader.load_main_proto_files()  # Load and compile main proto files, such as `runtime.proto`, `consensus.proto`, etc.
-loader.load_service_proto_files(runtime_id=0, service_name='exonum-supervisor:0.12.0')  # Same for specific service.
+loader.load_service_proto_files(runtime_id=0, service_name='exonum-supervisor:1.0.0')  # Same for specific service.
 ```
 
 - runtime_id=0 here means, that service works in Rust runtime.
@@ -100,7 +100,7 @@ The following example shows how to create a transaction message:
 alice_keys = KeyPair.generate()
 
 cryptocurrency_artifact_name = "exonum-cryptocurrency-advanced"
-cryptocurrency_artifact_version = "0.12.0"
+cryptocurrency_artifact_version = "1.0.0"
 loader.load_service_proto_files(
     runtime_id=0, 
     artifact_name=cryptocurrency_artifact_name, 
@@ -183,11 +183,11 @@ working services:
   'artifacts': [
     {
       'runtime_id': 0,
-      'name': 'exonum-cryptocurrency-advanced:0.12.0'
+      'name': 'exonum-cryptocurrency-advanced:1.0.0'
     },
     {
       'runtime_id': 0,
-      'name': 'exonum-supervisor:0.12.0'
+      'name': 'exonum-supervisor:1.0.0'
     }
   ],
   'services': [
@@ -196,7 +196,7 @@ working services:
       'name': 'XNM',
       'artifact': {
         'runtime_id': 0,
-        'name': 'exonum-cryptocurrency-advanced:0.12.0'
+        'name': 'exonum-cryptocurrency-advanced:1.0.0'
       }
     },
     {
@@ -204,7 +204,7 @@ working services:
       'name': 'supervisor',
       'artifact': {
         'runtime_id': 0,
-        'name': 'exonum-supervisor:0.12.0'
+        'name': 'exonum-supervisor:1.0.0'
       }
     }
   ]

@@ -14,7 +14,7 @@ class TestProtoc(unittest.TestCase):
         self.temp_dir = tempfile.mkdtemp(prefix="exonum_client_test_")
         self.out_dir = os.path.join(self.temp_dir, "python")
         self.main_proto_dir = os.path.abspath("tests/proto_dir/proto/main")
-        self.service_proto_dir = os.path.abspath("tests/proto_dir/proto/exonum_cryptocurrency_advanced_0_11_0")
+        self.service_proto_dir = os.path.abspath("tests/proto_dir/proto/exonum_cryptocurrency_advanced_1_0_0")
 
     def tearDown(self):
         shutil.rmtree(self.out_dir)
