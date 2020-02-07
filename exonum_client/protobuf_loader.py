@@ -47,7 +47,7 @@ class ProtobufLoader:
 
     >>> with client.protobuf_loader() as loader:
     >>>    loader.load_main_proto_files()
-    >>>    loader.load_service_proto_files(0, "exonum-supervisor:0.13.0-rc.2")
+    >>>    loader.load_service_proto_files(0, "exonum-supervisor", "0.13.0-rc.2")
 
     Code above will initialize loader, download core Exonum proto files and proto files for the Supervisor service.
     The code will compile the files into the Python modules. After that you will be able to load those modules
@@ -81,11 +81,11 @@ class ProtobufLoader:
 
     >>> # module_a.py
     >>> loader = ProtobufLoader() # Since loader is already initialized with the client, you do not have to provide it.
-    >>> loader.load_service_proto_files(runtime_a, service_a)
+    >>> loader.load_service_proto_files(runtime_a, service_a, service_a_version)
 
     >>> # module_b.py
     >>> loader = ProtobufLoader()
-    >>> loader.load_service_proto_files(runtime_b, service_b)
+    >>> loader.load_service_proto_files(runtime_b, service_b, service_b_version)
 
     However, if you try to create the second loader, different from the first one, from the client,
     ValueError will be raised.
@@ -195,9 +195,9 @@ class ProtobufLoader:
             file_out.write(file_content)
 
     def _save_files(self, path: str, files: List[ProtoFile]) -> None:
-        os.makedirs(path)
         for proto_file in files:
             file_path = os.path.join(path, proto_file.name)
+            os.makedirs(os.path.split(file_path)[0], exist_ok=True)
             self._save_proto_file(file_path, proto_file.content)
 
     def load_main_proto_files(self) -> None:

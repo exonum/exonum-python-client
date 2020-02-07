@@ -21,8 +21,9 @@ class MessageGenerator:
     Example of usage:
     >>> instance_id = ... # Get the ID of the desired service instance.
     >>> artifact_name = ... # Get the name of the artifact (not the instance).
-    >>> cryptocurrency_message_generator = MessageGenerator(instance_id, artifact_name) # Create a message generator.
-    >>> create_wallet_alice = cryptocurrency_module.CreateWallet() # Create a Protobuf message.
+    >>> artifact_version = ... # Get the version of the artifact (not the instance).
+    >>> cryptocurrency_message_generator = MessageGenerator(instance_id, artifact_name, artifact_version)
+    >>> create_wallet_alice = cryptocurrency_message_generator.CreateWallet() # Create a Protobuf message.
     >>> create_wallet_alice.name = "Alice1" # Fill the Protobuf message manually.
 
     Then you can transform the Protobuf message into an Exonum transaction.
@@ -73,10 +74,10 @@ class MessageGenerator:
     def pk_to_hash_address(public_key: PublicKey) -> Optional[Hash]:
         """Converts `PublicKey` into a `Hash`, which is a uniform
         presentation of any transaction authorization supported by Exonum."""
-        types_module = ModuleManager.import_main_module("types")
-        runtime_module = ModuleManager.import_main_module("runtime")
+        types_module = ModuleManager.import_main_module("exonum.crypto.types")
+        auth_module = ModuleManager.import_main_module("exonum.runtime.auth")
 
-        caller = runtime_module.Caller()
+        caller = auth_module.Caller()
         caller.transaction_author.CopyFrom(types_module.PublicKey(data=public_key.value))
         hash_address = Hash.hash_data(caller.SerializeToString())
         return hash_address
@@ -210,8 +211,8 @@ class ExonumMessage:
         public_key, secret_key = keys.public_key, keys.secret_key
         self._author = public_key
 
-        messages_mod = ModuleManager.import_main_module("messages")
-        types_mod = ModuleManager.import_main_module("types")
+        messages_mod = ModuleManager.import_main_module("exonum.messages")
+        types_mod = ModuleManager.import_main_module("exonum.crypto.types")
 
         signed_message = messages_mod.SignedMessage()
         signed_message.payload = self._any_tx_raw
@@ -242,7 +243,7 @@ class ExonumMessage:
             return False
 
         try:
-            messages_mod = ModuleManager.import_main_module("messages")
+            messages_mod = ModuleManager.import_main_module("exonum.messages")
 
             signed_msg = messages_mod.SignedMessage()
             signed_msg.ParseFromString(self._signed_tx_raw)
@@ -307,16 +308,16 @@ class ExonumMessage:
 
     def _build_message(self) -> bytes:
         """Builds a raw AnyTx message."""
-        runtime_mod = ModuleManager.import_main_module("runtime")
-        messages_mod = ModuleManager.import_main_module("messages")
+        base_mod = ModuleManager.import_main_module("exonum.runtime.base")
+        messages_mod = ModuleManager.import_main_module("exonum.messages")
 
         serialized_msg = self._msg.SerializeToString()
 
-        call_info = runtime_mod.CallInfo()
+        call_info = base_mod.CallInfo()
         call_info.instance_id = self._instance_id
         call_info.method_id = self._message_id
 
-        any_tx = runtime_mod.AnyTx()
+        any_tx = base_mod.AnyTx()
         any_tx.call_info.CopyFrom(call_info)
         any_tx.arguments = serialized_msg
 
@@ -333,7 +334,7 @@ class ExonumMessage:
         [SignedMessage, ExonumMessage,DecodedMessage]."""
 
         # Load modules and prepare an expected message class for parsing.
-        messages_mod = ModuleManager.import_main_module("messages")
+        messages_mod = ModuleManager.import_main_module("exonum.messages")
         service_mod = ModuleManager.import_service_module(artifact_name, artifact_version, "service")
         transaction_class = getattr(service_mod, tx_name)
 
