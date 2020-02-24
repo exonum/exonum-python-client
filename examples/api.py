@@ -23,36 +23,28 @@ def run() -> None:
     print("")
 
     # Get the health info:
-    print("Health info:")
-    health_info_response = client.public_api.health_info()
-    if health_info_response.status_code == 200:
-        health_info = health_info_response.json()
-        print(f"Consensus status: {health_info['consensus_status']}")
-        print(f"Connected peers: {health_info['connected_peers']}")
+    print("Node info:")
+    node_info_response = client.private_api.get_info()
+    if node_info_response.status_code == 200:
+        node_info = node_info_response.json()
+        print(f"Consensus status: {node_info['consensus_status']}")
+        print(f"Connected peers: {node_info['connected_peers']}")
     else:
-        print("Health info request failed.")
+        print("Node info request failed.")
     print("")
 
     # Get the Exonum stats:
     print("Exonum stats:")
-    stats_response = client.public_api.stats()
+    stats_response = client.private_api.get_stats()
     if stats_response.status_code == 200:
         stats = stats_response.json()
+        print(f"Current height: {stats['height']}")
         print(f"Tx pool size: {stats['tx_pool_size']}")
         print(f"Tx count: {stats['tx_count']}")
         print(f"Tx cache size: {stats['tx_cache_size']}")
     else:
         print("Stats request failed.")
     print("")
-
-    # Get the user agent:
-    print("Exonum user agent:")
-    user_agent_response = client.public_api.user_agent()
-    if user_agent_response.status_code == 200:
-        user_agent = user_agent_response.json()
-        print(f"User agent: {user_agent}")
-    else:
-        print("User agent request failed.")
 
 
 if __name__ == "__main__":
