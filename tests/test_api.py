@@ -17,7 +17,7 @@ class TestApi(unittest.TestCase):
 
     @patch("exonum_client.api.Api.get", new=mock_requests_get)
     def test_get(self):
-        url = EXONUM_URL_BASE.format(EXONUM_PROTO, EXONUM_IP, EXONUM_PUBLIC_PORT)
+        url = EXONUM_URL_BASE.format(EXONUM_PROTO, EXONUM_IP, EXONUM_PRIVATE_PORT)
         url += SYSTEM_ENDPOINT_POSTFIX.format("stats")
         resp = self.api.get(url)
         self.assertEqual(resp.status_code, 200)
@@ -33,21 +33,6 @@ class TestApi(unittest.TestCase):
 class TestPublicApi(unittest.TestCase):
     def setUp(self):
         self.public_api = PublicApi(EXONUM_IP, EXONUM_PUBLIC_PORT, EXONUM_PROTO)
-
-    @patch("exonum_client.api.PublicApi.get", new=mock_requests_get)
-    def test_helthcheck(self):
-        resp = self.public_api.health_info()
-        self.assertEqual(resp.status_code, 200)
-
-    @patch("exonum_client.api.PublicApi.get", new=mock_requests_get)
-    def test_stats(self):
-        resp = self.public_api.stats()
-        self.assertEqual(resp.status_code, 200)
-
-    @patch("exonum_client.api.PublicApi.get", new=mock_requests_get)
-    def test_user_agent(self):
-        resp = self.public_api.user_agent()
-        self.assertEqual(resp.status_code, 200)
 
     @patch("exonum_client.api.PublicApi.post", new=mock_requests_post)
     def test_send_transaction(self):
@@ -105,8 +90,13 @@ class TestPrivateApi(unittest.TestCase):
         self.private_api = PrivateApi(EXONUM_IP, EXONUM_PRIVATE_PORT, EXONUM_PROTO)
 
     @patch("exonum_client.api.PrivateApi.get", new=mock_requests_get)
-    def test_get_peers(self):
-        resp = self.private_api.get_peers()
+    def test_get_info(self):
+        resp = self.private_api.get_info()
+        self.assertEqual(resp.status_code, 200)
+
+    @patch("exonum_client.api.PrivateApi.get", new=mock_requests_get)
+    def test_get_stats(self):
+        resp = self.private_api.get_stats()
         self.assertEqual(resp.status_code, 200)
 
     @patch("exonum_client.api.PrivateApi.post", new=mock_requests_post)
@@ -114,16 +104,6 @@ class TestPrivateApi(unittest.TestCase):
         address = "address"
         public_key = "public_key"
         resp = self.private_api.add_peer(address, public_key)
-        self.assertEqual(resp.status_code, 200)
-
-    @patch("exonum_client.api.PrivateApi.get", new=mock_requests_get)
-    def test_get_consensus_interaction(self):
-        resp = self.private_api.get_consensus_interaction()
-        self.assertEqual(resp.status_code, 200)
-
-    @patch("exonum_client.api.PrivateApi.get", new=mock_requests_get)
-    def test_get_network_info(self):
-        resp = self.private_api.get_network_info()
         self.assertEqual(resp.status_code, 200)
 
     @patch("exonum_client.api.PrivateApi.post", new=mock_requests_post)
