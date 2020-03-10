@@ -42,11 +42,20 @@ class Protoc:
     @staticmethod
     def _modify_file(path: str, modules: List[str]) -> None:
         # This method modifies imports in the generated files to be relative:
-        if "/exonum/proof/" in path or "/exonum/runtime/" in path:
-            _modify_main_nested_file(path)
-            return
 
-        if "/exonum/" in path:
+        # Default os.path.join is too goofy for this case.
+        root_path = os.path.sep + "exonum" + os.path.sep
+        nested_paths = [
+            root_path + "proof" + os.path.sep,
+            root_path + "runtime" + os.path.sep,
+        ]
+
+        for nested_path in nested_paths:
+            if nested_path in path:
+                _modify_main_nested_file(path)
+                return
+
+        if root_path in path:
             _modify_main_file(path)
             return
 
