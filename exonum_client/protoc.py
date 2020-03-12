@@ -45,7 +45,7 @@ class Protoc:
         # This method modifies imports in the generated files to be relative:
 
         # Default os.path.join is too goofy for this case.
-        def _partial_path(path):
+        def _partial_path(path: str) -> str:
             return os.path.sep + path + os.path.sep
 
         root_path = _partial_path("exonum")
