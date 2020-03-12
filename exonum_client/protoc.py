@@ -49,10 +49,7 @@ class Protoc:
             return os.path.sep + path + os.path.sep
 
         root_path = _partial_path("exonum")
-        nested_paths = [
-            _partial_path("proof"),
-            _partial_path("runtime")
-        ]
+        nested_paths = [_partial_path("proof"), _partial_path("runtime")]
 
         for nested_path in nested_paths:
             if nested_path in path:
