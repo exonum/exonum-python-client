@@ -22,7 +22,8 @@ def _find_protoc() -> Optional[str]:
 
 
 def _find_files_recursive(path: str, extension: str) -> List[str]:
-    return glob.glob("{}/**/*{}".format(path, extension), recursive=True)
+    pattern = os.path.join(path, "**", "*{}".format(extension))
+    return glob.glob(pattern, recursive=True)
 
 
 class Protoc:
@@ -123,7 +124,7 @@ class Protoc:
         else:
             logger.error("Error acquired while compiling files: %s. Files: %s.", stderr.decode("utf-8"), proto_files)
 
-        modules = [proto_path.split("/")[-1].replace(".proto", "") for proto_path in proto_files]
+        modules = [proto_path.split(os.path.sep)[-1].replace(".proto", "") for proto_path in proto_files]
         for file in _find_files_recursive(path_out, "*.py"):
             open(os.path.join(os.path.split(file)[0], "__init__.py"), "a").close()
             self._modify_file(file, modules)
