@@ -57,14 +57,9 @@ def mock_requests_get(cls_obj, url, params=None):
 
     proto_sources_endpoint = exonum_public_base + "api/runtimes/rust/proto-sources"
 
-    # public
-    healthcheck_endpoint = exonum_public_base + SYSTEM_ENDPOINT_POSTFIX.format("healthcheck")
-    stats_endpoint = exonum_public_base + SYSTEM_ENDPOINT_POSTFIX.format("stats")
-    user_agent_endpoint = exonum_public_base + SYSTEM_ENDPOINT_POSTFIX.format("user_agent")
     # private
-    peers_endpoint = _exonum_private_base + SYSTEM_ENDPOINT_POSTFIX.format("peers")
-    consensus_endpoint = _exonum_private_base + SYSTEM_ENDPOINT_POSTFIX.format("consensus_enabled")
-    network_endpoint = _exonum_private_base + SYSTEM_ENDPOINT_POSTFIX.format("network")
+    info_endpoint = _exonum_private_base + SYSTEM_ENDPOINT_POSTFIX.format("info")
+    stats_endpoint = _exonum_private_base + SYSTEM_ENDPOINT_POSTFIX.format("stats")
 
     block_endpoint = exonum_public_base + EXPLORER_ENDPOINT_POSTFIX.format("block")
     blocks_endpoint = exonum_public_base + EXPLORER_ENDPOINT_POSTFIX.format("blocks")
@@ -80,14 +75,9 @@ def mock_requests_get(cls_obj, url, params=None):
             "{'type': 'artifact', 'name': 'exonum-supervisor', 'version': '1.0.0'}",
         ): proto_sources_response("supervisor"),
         # System endpoints:
-        # public
-        (healthcheck_endpoint, "None"): mock_response(200),
-        (stats_endpoint, "None"): mock_response(200),
-        (user_agent_endpoint, "None"): mock_response(200),
         # private
-        (peers_endpoint, "None"): mock_response(200),
-        (consensus_endpoint, "None"): mock_response(200),
-        (network_endpoint, "None"): mock_response(200),
+        (info_endpoint, "None"): mock_response(200),
+        (stats_endpoint, "None"): mock_response(200),
     }
 
     # Explorer endpoints
@@ -130,7 +120,7 @@ def mock_requests_post(cls_obj, url, data=None, headers=None):
     endpoints = {
         "transactions_endpoint": exonum_public_base + EXPLORER_ENDPOINT_POSTFIX.format("transactions"),
         "shutdown_endpoint": _exonum_private_base + SYSTEM_ENDPOINT_POSTFIX.format("shutdown"),
-        "consensus_endpoint": _exonum_private_base + SYSTEM_ENDPOINT_POSTFIX.format("consensus_enabled"),
+        "consensus_endpoint": _exonum_private_base + SYSTEM_ENDPOINT_POSTFIX.format("consensus_status"),
         "peers_endpoint": _exonum_private_base + SYSTEM_ENDPOINT_POSTFIX.format("peers"),
     }
 

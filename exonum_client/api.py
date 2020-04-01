@@ -64,7 +64,7 @@ class PublicApi(Api):
         self._tx_url = self.endpoint_prefix + "/explorer/v1/transactions"
         self._block_url = self.endpoint_prefix + "/explorer/v1/block"
         self._blocks_url = self.endpoint_prefix + "/explorer/v1/blocks"
-        self._system_url = self.endpoint_prefix + "/system/v1/{}"
+        self._services_url = self.endpoint_prefix + "/services/supervisor/services"
 
     def get_block(self, height: int) -> requests.Response:
         """
@@ -220,7 +220,7 @@ class PublicApi(Api):
             {
               "runtime_id": 0,
               "name": "exonum-supervisor",
-              "version": "0.13.0-rc.2"
+              "version": "1.0.0-rc.1"
             }
           ],
           "services": [
@@ -231,15 +231,15 @@ class PublicApi(Api):
                 "artifact": {
                   "runtime_id": 0,
                   "name": "exonum-supervisor",
-                  "version": "0.13.0-rc.2"
+                  "version": "1.0.0-rc.1"
                 }
               },
-              "status": "Active"
+              "status": "active"
             }
           ]
         }
         """
-        return self.get(self._system_url.format("services"))
+        return self.get(self._services_url)
 
     def get_instance_id_by_name(self, name: str) -> Optional[int]:
         """
@@ -321,18 +321,6 @@ class PublicApi(Api):
         """
         return [self.send_transaction(message) for message in messages]
 
-    def health_info(self) -> requests.Response:
-        """ Performs a GET request to the healthcheck Exonum endpoint. """
-        return self.get(self._system_url.format("healthcheck"))
-
-    def stats(self) -> requests.Response:
-        """ Performs a GET request to the stats Exonum endpoint. """
-        return self.get(self._system_url.format("stats"))
-
-    def user_agent(self) -> requests.Response:
-        """ Performs a GET request to the user_agent Exonum endpoint. """
-        return self.get(self._system_url.format("user_agent"))
-
 
 class PrivateApi(Api):
     """PrivateApi class provides methods to interact with the private API of an Exonum node."""
@@ -360,48 +348,42 @@ class PrivateApi(Api):
         response = self.post(self._system_url.format("peers"), data=data, headers={"content-type": "application/json"})
         return response
 
-    def get_peers(self) -> requests.Response:
+    def get_info(self) -> requests.Response:
         """
-        Performs a GET request to the '{system_base_path}/peers' to get a list of peers of the node.
+        Performs a GET request to the '{system_base_path}/info' to get info about a node. The info includes:
+         - consensus status;
+         - list of connected peers;
+         - exonum version;
+         - rust compiler version;
+         - info about OS;
 
         Example:
 
         >>> private_api = PrivateApi("127.0.0.1", 81, "http")
-        >>> peers = private_api.get_peers().json()
-        >>> print(json.dumps(peers, indent=2))
+        >>> peers = private_api.get_info().json()
+        >>> print(json.dumps(peers, indent=4))
         {
-          "incoming_connections": [{
-            "address": "127.0.0.1:57671",
-            "public_key": "8a17bdfe42c10abdb7f27b5648691db3338400c27812e847e02eb7193ad490f2"
-          }],
-          "outgoing_connections": {
-            "127.0.0.1:6334": {
-              "public_key": "dcb46dceaeb7d0eab7b6ed000f317f2ab9f7c8423ec9a6a602d81c0979e1333a",
-              "state": {
-                "type": "Active"
-              }
-            },
-            "127.0.0.1:6335": {
-              "public_key": "dcb46dceaeb7d0eab7b6ed000f317f2ab9f7c8423ec9a6a602d81c0979e1333a",
-              "state": {
-                "delay": 4000,
-                "type": "Reconnect"
-              }
-            },
-            "127.0.0.1:6336": {
-              "public_key": null,
-              "state": {
-                "type": "Active"
-              }
-            },
-            "127.0.0.1:6337": {
-              "public_key": null,
-              "state": {
-                "delay": 4000,
-                "type": "Reconnect"
-              }
-            }
-          }
+            "consensus_status": "active",
+            "connected_peers": [
+                {
+                  "address": "127.0.0.1:54610",
+                  "public_key": "5211b00d4e84e7a523d3377a72bd9be42bac14cab9e0c412f8e8a165947dbe9b",
+                  "direction": "incoming"
+                },
+                {
+                  "address": "127.0.0.1:54617",
+                  "public_key": "1ffd9a18dd2949b874e1cd850193f80fe1cd7023dd20f76348a56da3c5732cf4",
+                  "direction": "incoming"
+                },
+                {
+                  "address": "127.0.0.1:54613",
+                  "public_key": "8b91b55d88902c1e91d4acfd374684c07d7878fb3bfc4a04851fed36b8381dca",
+                  "direction": "incoming"
+                }
+            ],
+            "exonum_version": "1.0.0-rc.1",
+            "rust_version": "1.41.0",
+            "os_info": "Mac OS (10.15.3) (unknown)"
         }
 
         Returns
@@ -410,11 +392,11 @@ class PrivateApi(Api):
             Result of an API call.
             If it is successful, a list of peers will be returned.
         """
-        return self.get(self._system_url.format("peers"))
+        return self.get(self._system_url.format("info"))
 
     def set_consensus_interaction(self, enabled: bool = True) -> requests.Response:
         """
-        Performs a POST request to the '{system_base_path}/consensus_enabled'
+        Performs a POST request to the '{system_base_path}/consensus_status'
         to switch consensus interaction of the node on or off.
 
         Parameters
@@ -428,39 +410,30 @@ class PrivateApi(Api):
         """
         data = json.dumps({"enabled": enabled})
         return self.post(
-            self._system_url.format("consensus_enabled"), data=data, headers={"content-type": "application/json"}
+            self._system_url.format("consensus_status"), data=data, headers={"content-type": "application/json"}
         )
 
-    def get_consensus_interaction(self) -> requests.Response:
+    def get_stats(self) -> requests.Response:
         """
-        Performs a GET request to the '{system_base_path}/consensus_enabled' to get boolean value that states
-        if the node participates in consensus.
+        Performs a GET request to the '{system_base_path}/stats'
+        to get the node's statistic. The statistic includes:
+         - current height of the blockchain;
+         - amount of transactions in the transaction pool;
+         - amount of committed transactions;
+         - amount of transactions in the cache;
+         - work duration of the node in seconds.
 
         Example:
 
         >>> private_api = PrivateApi("127.0.0.1", 81, "http")
-        >>> private_api.get_consensus_interaction().json()
-        True
-
-        Returns
-        -------
-        response: requests.Response
-            Result of an API call.
-        """
-        return self.get(self._system_url.format("consensus_enabled"))
-
-    def get_network_info(self) -> requests.Response:
-        """
-        Performs a GET request to the '{system_base_path}/network'
-        to get info about the serialization protocol and the services functioning in the network.
-
-        Example:
-
-        >>> private_api = PrivateApi("127.0.0.1", 81, "http")
-        >>> network_info = private_api.get_network_info().json()
+        >>> network_info = private_api.get_stats().json()
         >>> print(json.dumps(network_info, indent=2))
         {
-          "core_version": "0.10.2"
+          "height": 63,
+          "tx_pool_size": 3
+          "tx_count": 10,
+          "tx_cache_size": 5,
+          "uptime": 487
         }
 
         Returns
@@ -468,7 +441,7 @@ class PrivateApi(Api):
         response: requests.Response
             Result of an API call.
         """
-        return self.get(self._system_url.format("network"))
+        return self.get(self._system_url.format("stats"))
 
     def shutdown(self) -> requests.Response:
         """
@@ -540,17 +513,23 @@ class ServiceApi(Api):
         """
         return self.get(self.service_endpoint(sub_uri))
 
-    def post_service(self, sub_uri: str, data: str) -> requests.Response:
+    def post_service(self, sub_uri: str, data: str, data_format: str = "json") -> requests.Response:
         """
         Performs a POST request to the endpoint generated by the `service_endpoint` method.
 
         Parameters are the same as in `service_endpoint` except for `data`.
-        `data` is expected to be a serialized JSON value.
+        `data` is expected to be serialized in JSON value or in protobuf binary format.
+
+        `format` allows to specify in which type of format the data is represented.
 
         Returns
         -------
         response: requests.Response
             Result of an API call.
         """
-        json_headers = {"content-type": "application/json"}
-        return self.post(self.service_endpoint(sub_uri), data=data, headers=json_headers)
+        if data_format == "json":
+            headers = {"content-type": "application/json"}
+        else:
+            headers = {"content-type": "application/octet-stream"}
+
+        return self.post(self.service_endpoint(sub_uri), data=data, headers=headers)

@@ -22,7 +22,8 @@ def _find_protoc() -> Optional[str]:
 
 
 def _find_files_recursive(path: str, extension: str) -> List[str]:
-    return glob.glob("{}/**/*{}".format(path, extension), recursive=True)
+    pattern = os.path.join(path, "**", "*{}".format(extension))
+    return glob.glob(pattern, recursive=True)
 
 
 class Protoc:
@@ -42,11 +43,20 @@ class Protoc:
     @staticmethod
     def _modify_file(path: str, modules: List[str]) -> None:
         # This method modifies imports in the generated files to be relative:
-        if "/exonum/proof/" in path or "/exonum/runtime/" in path:
-            _modify_main_nested_file(path)
-            return
 
-        if "/exonum/" in path:
+        # Default os.path.join is too goofy for this case.
+        def _partial_path(path: str) -> str:
+            return os.path.sep + path + os.path.sep
+
+        root_path = _partial_path("exonum")
+        nested_paths = [_partial_path("proof"), _partial_path("runtime")]
+
+        for nested_path in nested_paths:
+            if nested_path in path:
+                _modify_main_nested_file(path)
+                return
+
+        if root_path in path:
             _modify_main_file(path)
             return
 
@@ -111,7 +121,7 @@ class Protoc:
         else:
             logger.error("Error acquired while compiling files: %s. Files: %s.", stderr.decode("utf-8"), proto_files)
 
-        modules = [proto_path.split("/")[-1].replace(".proto", "") for proto_path in proto_files]
+        modules = [proto_path.split(os.path.sep)[-1].replace(".proto", "") for proto_path in proto_files]
         for file in _find_files_recursive(path_out, "*.py"):
             open(os.path.join(os.path.split(file)[0], "__init__.py"), "a").close()
             self._modify_file(file, modules)
