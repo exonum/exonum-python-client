@@ -23,8 +23,7 @@ from examples.transactions import create_wallet, get_cryptocurrency_instance_id,
 def run() -> None:
     """This example creates a wallet in the Cryptocurrency service, retrieves
     proofs for the wallet and verifies them.
-    For the example to work, be sure to have `exonum-cryptocurrency-advanced`
-    service instance with name `XNM` deployed."""
+    For the example to work, be sure to have `exonum-cryptocurrency-advanced` run."""
     client = ExonumClient(hostname="127.0.0.1", public_api_port=8080, private_api_port=8081)
 
     with client.protobuf_loader() as loader:

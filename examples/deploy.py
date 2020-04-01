@@ -5,10 +5,10 @@ from exonum_client import ExonumClient, ModuleManager
 
 RUST_RUNTIME_ID = 0
 SUPERVISOR_ARTIFACT_NAME = "exonum-supervisor"
-SUPERVISOR_ARTIFACT_VERSION = "0.13.0-rc.2"
-CRYPTOCURRENCY_ARTIFACT_NAME = "exonum-cryptocurrency-advanced"
-CRYPTOCURRENCY_ARTIFACT_VERSION = "0.13.0-rc.2"
-CRYPTOCURRENCY_INSTANCE_NAME = "XNM"
+SUPERVISOR_ARTIFACT_VERSION = "1.0.0"
+CRYPTOCURRENCY_ARTIFACT_NAME = "exonum-cryptocurrency"
+CRYPTOCURRENCY_ARTIFACT_VERSION = "0.2.0"
+CRYPTOCURRENCY_INSTANCE_NAME = "crypto"
 
 
 def run() -> None:
@@ -118,15 +118,9 @@ def start_service(client: ExonumClient, service_name: str, service_version: str,
 
 def send_request(client: ExonumClient, endpoint: str, data: bytes) -> None:
     """This function encodes request from bytes to JSON, sends it to the Exonum and waits."""
-    # Convert the request to a hexadecimal string:
-    hex_request = data.hex()
-
-    # Convert the request to a JSON:
-    json_request = json.dumps(hex_request)
-
     # Post the request to Exonum:
     supervisor_private_api = client.service_private_api("supervisor")
-    response = supervisor_private_api.post_service(endpoint, json_request)
+    response = supervisor_private_api.post_service(endpoint, data, data_format="binary")
 
     if response.status_code != 200:
         error_msg = f"Error occurred during the request to the '{endpoint}' endpoint: {response.content!r}"
@@ -134,7 +128,7 @@ def send_request(client: ExonumClient, endpoint: str, data: bytes) -> None:
 
     # Wait for 10 seconds.
     # TODO: currently due to a bug in Exonum it takes up to 10 seconds to update the dispatcher info:
-    time.sleep(10)
+    time.sleep(5)
 
 
 if __name__ == "__main__":
