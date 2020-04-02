@@ -12,7 +12,7 @@ with open("README.md", "r") as readme:
 setuptools.setup(
     name="exonum-python-client",
     version="1.0.0",
-    author="The Exonum team",
+    author="The Exonum Team",
     author_email="contact@exonum.com",
     description="Exonum Python Light Client",
     long_description=LONG_DESCRIPTION,
@@ -23,6 +23,7 @@ setuptools.setup(
         "exonum_client.proofs",
         "exonum_client.proofs.map_proof",
         "exonum_client.proofs.list_proof",
+        "exonum_client.protobuf_provider"
     ],
     install_requires=INSTALL_REQUIRES,
     python_requires=PYTHON_REQUIRES,
