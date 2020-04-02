@@ -23,7 +23,7 @@ setuptools.setup(
         "exonum_client.proofs",
         "exonum_client.proofs.map_proof",
         "exonum_client.proofs.list_proof",
-        "exonum_client.protobuf_provider"
+        "exonum_client.protobuf_provider",
     ],
     install_requires=INSTALL_REQUIRES,
     python_requires=PYTHON_REQUIRES,
