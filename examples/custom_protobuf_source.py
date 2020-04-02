@@ -16,28 +16,33 @@ SERVICE_NAME = "cryptocurrency-advanced"
 SERVICE_VERSION = "0.2.0"
 
 
-def setup_protobuf_provider(protobuf_provider: ProtobufProvider) -> None:
+def setup_protobuf_provider(protobuf_provider: ProtobufProvider, source: str) -> None:
     """Setups a protobuf provider with main protobuf sources and cryptocurrency-advanced sources for v0.2.0.
 
     Exonum client creates a ProtobufProvider object during its initialization, so we take it here
     and just extend with new sources."""
-    main_sources_url = "https://github.com/exonum/exonum-proto-sources/tree/master/src/exonum"
-    cryptocurrency_sources_url = (
-        "https://github.com/exonum/exonum/tree/v1.0.0/examples/cryptocurrency-advanced/backend/src/proto"
-    )
+
+    if source == "github":
+        main_sources_url = "https://github.com/exonum/exonum-proto-sources/tree/master/src/exonum"
+        cryptocurrency_sources_url = (
+            "https://github.com/exonum/exonum/tree/v1.0.0/examples/cryptocurrency-advanced/backend/src/proto"
+        )
+    elif source == "file":
+        main_sources_url = "../tests/proto_dir/proto/main"
+        cryptocurrency_sources_url = "../tests/proto_dir/proto/exonum_cryptocurrency_advanced_1_0_0"
+    else:
+        raise RuntimeError("Wrong location type for protobuf loader")
+
     protobuf_provider.add_main_source(main_sources_url)
     protobuf_provider.add_service_source(cryptocurrency_sources_url, SERVICE_NAME, SERVICE_VERSION)
 
 
-def run() -> None:
-    """Example of downloading the Protobuf sources and using the compiled
-    module."""
-
+def run_example(source: str) -> None:
     # Create client.
     client = ExonumClient(hostname="127.0.0.1", public_api_port=8080, private_api_port=8081)
 
     # Setup protobuf provider.
-    setup_protobuf_provider(client.protobuf_provider)
+    setup_protobuf_provider(client.protobuf_provider, source)
 
     # Create ProtobufLoader via context manager (so that we will not have to
     # initialize/deinitialize it manually):
@@ -72,6 +77,16 @@ def run() -> None:
         transfer.to.CopyFrom(to)
         transfer.amount = 10
         transfer.seed = 1
+
+
+def run() -> None:
+    """Example of downloading the Protobuf sources from different locations and using the compiled module."""
+
+    # Run example with sources from github.
+    run_example("github")
+
+    # Run example with sources from filesystem.
+    run_example("file")
 
 
 if __name__ == "__main__":

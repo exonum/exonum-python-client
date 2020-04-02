@@ -9,6 +9,9 @@ Recommended order is the following:
   and retrieve some information via REST API.
 - [protobuf.py](protobuf.py): Example of downloading and compiling Protobuf
   sources received from the Exonum node.
+- [custom_protobuf_source.py](custom_protobuf_source.py): Example of downloading 
+  and compiling Protobuf sources received from different sources
+  (github of filesystem).
 - [deploy.py](deploy.py): Sample script that deploys an artifact and starts a
   service instance.
 - [transactions.py](transactions.py): Sample script that uses the deployed and
@@ -49,6 +52,9 @@ Then, you can run any example:
 
 ```sh
 python examples/api.py
+python examples/custom_protobuf_source.py
 python examples/deploy.py
+python examples/proofs.py
+python examples/protobuf.py
 python examples/transactions.py
 ```

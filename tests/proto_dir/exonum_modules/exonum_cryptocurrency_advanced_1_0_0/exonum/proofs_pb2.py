@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='exonum',
   syntax='proto3',
   serialized_options=b'\n\030com.exonum.messages.core',
-  serialized_pb=b'\n\x13\x65xonum/proofs.proto\x12\x06\x65xonum\x1a\x17\x65xonum/blockchain.proto\x1a\x15\x65xonum/messages.proto\x1a\x1c\x65xonum/proof/map_proof.proto\"U\n\nBlockProof\x12\x1c\n\x05\x62lock\x18\x01 \x01(\x0b\x32\r.exonum.Block\x12)\n\nprecommits\x18\x02 \x03(\x0b\x32\x15.exonum.SignedMessage\"b\n\nIndexProof\x12\'\n\x0b\x62lock_proof\x18\x01 \x01(\x0b\x32\x12.exonum.BlockProof\x12+\n\x0bindex_proof\x18\x02 \x01(\x0b\x32\x16.exonum.proof.MapProofB\x1a\n\x18\x63om.exonum.messages.coreb\x06proto3'
+  serialized_pb=b'\n\x13\x65xonum/proofs.proto\x12\x06\x65xonum\x1a\x17\x65xonum/blockchain.proto\x1a\x15\x65xonum/messages.proto\x1a\x1c\x65xonum/proof/map_proof.proto\"U\n\nBlockProof\x12\x1c\n\x05\x62lock\x18\x01 \x01(\x0b\x32\r.exonum.Block\x12)\n\nprecommits\x18\x02 \x03(\x0b\x32\x15.exonum.SignedMessage\"b\n\nIndexProof\x12\'\n\x0b\x62lock_proof\x18\x01 \x01(\x0b\x32\x12.exonum.BlockProof\x12+\n\x0bindex_proof\x18\x02 \x01(\x0b\x32\x16.exonum.proof.MapProof\"{\n\tCallProof\x12\'\n\x0b\x62lock_proof\x18\x01 \x01(\x0b\x32\x12.exonum.BlockProof\x12*\n\ncall_proof\x18\x02 \x01(\x0b\x32\x16.exonum.proof.MapProof\x12\x19\n\x11\x65rror_description\x18\x03 \x01(\tB\x1a\n\x18\x63om.exonum.messages.coreb\x06proto3'
   ,
   dependencies=[exonum_dot_blockchain__pb2.DESCRIPTOR,exonum_dot_messages__pb2.DESCRIPTOR,exonum_dot_proof_dot_map__proof__pb2.DESCRIPTOR,])
 
@@ -103,12 +103,60 @@ _INDEXPROOF = _descriptor.Descriptor(
   serialized_end=294,
 )
 
+
+_CALLPROOF = _descriptor.Descriptor(
+  name='CallProof',
+  full_name='exonum.CallProof',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='block_proof', full_name='exonum.CallProof.block_proof', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='call_proof', full_name='exonum.CallProof.call_proof', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='error_description', full_name='exonum.CallProof.error_description', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=296,
+  serialized_end=419,
+)
+
 _BLOCKPROOF.fields_by_name['block'].message_type = exonum_dot_blockchain__pb2._BLOCK
 _BLOCKPROOF.fields_by_name['precommits'].message_type = exonum_dot_messages__pb2._SIGNEDMESSAGE
 _INDEXPROOF.fields_by_name['block_proof'].message_type = _BLOCKPROOF
 _INDEXPROOF.fields_by_name['index_proof'].message_type = exonum_dot_proof_dot_map__proof__pb2._MAPPROOF
+_CALLPROOF.fields_by_name['block_proof'].message_type = _BLOCKPROOF
+_CALLPROOF.fields_by_name['call_proof'].message_type = exonum_dot_proof_dot_map__proof__pb2._MAPPROOF
 DESCRIPTOR.message_types_by_name['BlockProof'] = _BLOCKPROOF
 DESCRIPTOR.message_types_by_name['IndexProof'] = _INDEXPROOF
+DESCRIPTOR.message_types_by_name['CallProof'] = _CALLPROOF
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 BlockProof = _reflection.GeneratedProtocolMessageType('BlockProof', (_message.Message,), {
@@ -124,6 +172,13 @@ IndexProof = _reflection.GeneratedProtocolMessageType('IndexProof', (_message.Me
   # @@protoc_insertion_point(class_scope:exonum.IndexProof)
   })
 _sym_db.RegisterMessage(IndexProof)
+
+CallProof = _reflection.GeneratedProtocolMessageType('CallProof', (_message.Message,), {
+  'DESCRIPTOR' : _CALLPROOF,
+  '__module__' : 'exonum.proofs_pb2'
+  # @@protoc_insertion_point(class_scope:exonum.CallProof)
+  })
+_sym_db.RegisterMessage(CallProof)
 
 
 DESCRIPTOR._options = None

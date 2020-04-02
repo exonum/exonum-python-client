@@ -1,8 +1,8 @@
 """Protobuf provider which loads .proto files from GitHub."""
 
-from typing import List
+import os
 import re
-
+from typing import List
 import requests
 
 from exonum_client.protobuf_loader import ProtobufProviderInterface, ProtoFile
@@ -62,7 +62,7 @@ class _GithubProtobufProvider(ProtobufProviderInterface):
 
             if _type == "file" and _name.endswith(".proto"):
                 file_content = requests.get(source_file["download_url"]).content.decode("utf-8")
-                full_name = path.replace("src/", "") + "/" + _name if self._is_main else _name
+                full_name = os.path.join(path.replace("src/", ""), _name) if self._is_main else _name
                 results.append(ProtoFile(name=full_name, content=file_content))
 
             if _type == "dir":
