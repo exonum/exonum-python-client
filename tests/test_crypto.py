@@ -20,10 +20,10 @@ from exonum_client.crypto import (
     PublicKey,
     SecretKey,
     KeyPair,
-    HASH_BYTES_LEN,
-    PUBLIC_KEY_BYTES_LEN,
-    SECRET_KEY_BYTES_LEN,
-    SIGNATURE_BYTES_LEN,
+    _HASH_BYTES_LEN,
+    _PUBLIC_KEY_BYTES_LEN,
+    _SECRET_KEY_BYTES_LEN,
+    _SIGNATURE_BYTES_LEN,
 )
 
 
@@ -72,10 +72,10 @@ class TestCrypto(unittest.TestCase):
     def test_constants(self) -> None:
         """Tests that constants have appropriate values."""
         expected_values = [
-            [HASH_BYTES_LEN, crypto_hash_sha256_BYTES],
-            [PUBLIC_KEY_BYTES_LEN, crypto_sign_PUBLICKEYBYTES],
-            [SECRET_KEY_BYTES_LEN, crypto_sign_SECRETKEYBYTES],
-            [SIGNATURE_BYTES_LEN, crypto_sign_BYTES],
+            [_HASH_BYTES_LEN, crypto_hash_sha256_BYTES],
+            [_PUBLIC_KEY_BYTES_LEN, crypto_sign_PUBLICKEYBYTES],
+            [_SECRET_KEY_BYTES_LEN, crypto_sign_SECRETKEYBYTES],
+            [_SIGNATURE_BYTES_LEN, crypto_sign_BYTES],
         ]
 
         for value, expected in expected_values:
@@ -83,7 +83,7 @@ class TestCrypto(unittest.TestCase):
 
     def test_hash(self) -> None:
         """Tests the Hash class."""
-        raw_hash = bytes([0xAB for _ in range(HASH_BYTES_LEN)])
+        raw_hash = bytes([0xAB for _ in range(_HASH_BYTES_LEN)])
         hash_obj = Hash(raw_hash)
 
         self.assertTrue(isinstance(hash_obj, _FixedByteArray))
@@ -95,13 +95,13 @@ class TestCrypto(unittest.TestCase):
 
     def test_keys(self) -> None:
         """Tests the PublicKey and the SecretKey classes."""
-        data = bytes([i for i in range(PUBLIC_KEY_BYTES_LEN)])
+        data = bytes([i for i in range(_PUBLIC_KEY_BYTES_LEN)])
 
         public_key = PublicKey(data)
         self.assertTrue(isinstance(public_key, _FixedByteArray))
         self.assertEqual(public_key.value, data)
 
-        data = bytes([i for i in range(SECRET_KEY_BYTES_LEN)])
+        data = bytes([i for i in range(_SECRET_KEY_BYTES_LEN)])
 
         secret_key = SecretKey(data)
         self.assertTrue(isinstance(secret_key, _FixedByteArray))
@@ -109,8 +109,8 @@ class TestCrypto(unittest.TestCase):
 
     def test_keypair(self) -> None:
         """Tests the KeyPair class."""
-        public_key = PublicKey(bytes([i for i in range(PUBLIC_KEY_BYTES_LEN)]))
-        secret_key = SecretKey(bytes([i for i in range(SECRET_KEY_BYTES_LEN)]))
+        public_key = PublicKey(bytes([i for i in range(_PUBLIC_KEY_BYTES_LEN)]))
+        secret_key = SecretKey(bytes([i for i in range(_SECRET_KEY_BYTES_LEN)]))
 
         # Check that creation with unmatched keys raises an error:
         with self.assertRaises(ValueError):
@@ -121,7 +121,7 @@ class TestCrypto(unittest.TestCase):
         self.assertTrue(isinstance(keypair.public_key, PublicKey))
         self.assertTrue(isinstance(keypair.secret_key, SecretKey))
         self.assertNotEqual(keypair.public_key, keypair.secret_key)
-        self.assertEqual(keypair.secret_key.value[PUBLIC_KEY_BYTES_LEN:], keypair.public_key.value)
+        self.assertEqual(keypair.secret_key.value[_PUBLIC_KEY_BYTES_LEN:], keypair.public_key.value)
 
         # Check that creating a keypair from the matched keys works:
         _new_keypair = KeyPair(keypair.public_key, keypair.secret_key)
@@ -141,6 +141,6 @@ class TestCrypto(unittest.TestCase):
         self.assertTrue(signature.verify(data, keypair.public_key))
 
         wrong_data = bytes([1, 2])
-        wrong_pk = PublicKey(bytes([i for i in range(PUBLIC_KEY_BYTES_LEN)]))
+        wrong_pk = PublicKey(bytes([i for i in range(_PUBLIC_KEY_BYTES_LEN)]))
         self.assertFalse(signature.verify(wrong_data, keypair.public_key))
         self.assertFalse(signature.verify(data, wrong_pk))

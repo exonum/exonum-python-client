@@ -47,7 +47,7 @@ class ProtobufLoader:
 
     >>> with client.protobuf_loader() as loader:
     >>>    loader.load_main_proto_files()
-    >>>    loader.load_service_proto_files(0, "exonum-supervisor", "0.13.0-rc.2")
+    >>>    loader.load_service_proto_files(0, "exonum-supervisor", "1.0.0")
 
     Code above will initialize loader, download core Exonum proto files and proto files for the Supervisor service.
     The code will compile the files into the Python modules. After that you will be able to load those modules

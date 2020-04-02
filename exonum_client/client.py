@@ -175,7 +175,7 @@ class ExonumClient:
     >>> health_info = client.public_api.health_info().json()
     {'consensus_status': 'Enabled', 'connected_peers': 0}
     >>> user_agent = client.public_api.user_agent().json()
-    exonum 0.13.0-rc.2/rustc 1.37.0 (eae3437df 2019-08-13)
+    exonum 1.0.0/rustc 1.42.0 (eae3437df 2019-08-13)
 
     # Websocket interaction
 
@@ -319,7 +319,7 @@ class ExonumClient:
 
         >>> with client.protobuf_loader("blocks") as loader:
         >>>     loader.load_main_proto_files()
-        >>>     loader.load_service_proto_files(0, "exonum-supervisor", "0.13.0-rc.2")
+        >>>     loader.load_service_proto_files(0, "exonum-supervisor", "1.0.0")
         """
         return ProtobufLoader(self.protobuf_provider)
 

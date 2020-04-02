@@ -18,16 +18,16 @@ def run() -> None:
         loader.load_service_proto_files(RUST_RUNTIME_ID, SUPERVISOR_ARTIFACT_NAME, SUPERVISOR_ARTIFACT_VERSION)
 
         # Load the main module (runtime.proto):
-        main_module = ModuleManager.import_main_module("runtime")
+        runtime_base_module = ModuleManager.import_main_module("exonum.runtime.base")
 
         # Create a Protobuf message object:
-        artifact_id = main_module.ArtifactId()
+        artifact_id = runtime_base_module.ArtifactId()
         artifact_id.runtime_id = RUST_RUNTIME_ID
         artifact_id.name = "some_service:0.1.0"
 
         # Working with Protobuf objects, you have to follow Protobuf Python API
         # conventions. See Protobuf Python API docs for details:
-        instance_spec = main_module.InstanceSpec()
+        instance_spec = runtime_base_module.InstanceSpec()
         instance_spec.artifact.CopyFrom(artifact_id)
 
         # Load the service module (service.proto from the supervisor service):

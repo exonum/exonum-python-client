@@ -22,7 +22,7 @@ def _find_protoc() -> Optional[str]:
 
 
 def _find_files_recursive(path: str, extension: str) -> List[str]:
-    pattern = os.path.join(path, "**", "*{}".format(extension))
+    pattern = os.path.join(path, "**", f"*{extension}")
     return glob.glob(pattern, recursive=True)
 
 

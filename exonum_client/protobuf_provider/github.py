@@ -1,8 +1,8 @@
 """Protobuf provider which loads .proto files from GitHub."""
 
-from typing import List
+import os
 import re
-
+from typing import List
 import requests
 
 from exonum_client.protobuf_loader import ProtobufProviderInterface, ProtoFile
@@ -46,20 +46,25 @@ class _GithubProtobufProvider(ProtobufProviderInterface):
         return self._get_sources()
 
     def _get_sources(self) -> List[ProtoFile]:
-        content_url = (
-            f"https://api.github.com/repos/{self._organization}/{self._repo}/contents/{self._path}?ref={self._ref}"
-        )
+        results: List[ProtoFile] = []
+        self._get_sources_recursive(self._path, results)
+
+        return results
+
+    def _get_sources_recursive(self, path: str, results: List[ProtoFile]) -> None:
+        content_url = f"https://api.github.com/repos/{self._organization}/{self._repo}/contents/{path}?ref={self._ref}"
 
         content = requests.get(content_url)
 
-        result: List[ProtoFile] = []
-
         for source_file in content.json():
-            name = source_file["name"]
-            if not name.endswith(".proto"):
-                continue
-            file_content = requests.get(source_file["download_url"]).content.decode("utf-8")
+            _name = source_file["name"]
+            _type = source_file["type"]
 
-            result.append(ProtoFile(name=name, content=file_content))
+            if _type == "file" and _name.endswith(".proto"):
+                file_content = requests.get(source_file["download_url"]).content.decode("utf-8")
+                full_name = os.path.join(path.replace("src/", ""), _name) if self._is_main else _name
+                results.append(ProtoFile(name=full_name, content=file_content))
 
-        return result
+            if _type == "dir":
+                _path = source_file["path"]
+                self._get_sources_recursive(_path, results)

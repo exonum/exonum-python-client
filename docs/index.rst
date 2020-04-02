@@ -151,42 +151,44 @@ list of working services:
 
 >>> client.public_api.available_services().json()
 {
-  'artifacts': [
+  "artifacts": [
     {
-      'runtime_id': 0,
-      'name': 'exonum-cryptocurrency-advanced',
-      'version': '0.12.0'
+      "runtime_id": 0,
+      "name": "exonum-supervisor",
+      "version": "1.0.0"
     },
     {
-      'runtime_id': 0,
-      'name': 'exonum-supervisor',
-      'version': '0.12.0'
+      "runtime_id": 0,
+      "name": "exonum-explorer-service",
+      "version": "1.0.0"
     }
   ],
-  'services': [
+  "services": [
     {
-      'spec': {
-        'id': 1024,
-        'name': 'XNM',
-        'artifact': {
-          'runtime_id': 0,
-          'name': 'exonum-cryptocurrency-advanced',
-          'version': '0.12.0'
+      "spec": {
+        "id": 2,
+        "name": "explorer",
+        "artifact": {
+          "runtime_id": 0,
+          "name": "exonum-explorer-service",
+          "version": "1.0.0"
         }
       },
-      'status': 'Active'
+      "status": "Active",
+      "pending_status": null
     },
     {
-      'spec': {
-        'id': 0,
-        'name': 'supervisor',
-        'artifact': {
-          'runtime_id': 0,
-          'name': 'exonum-supervisor',
-          'version': '0.12.0'
+      "spec": {
+        "id": 0,
+        "name": "supervisor",
+        "artifact": {
+          "runtime_id": 0,
+          "name": "exonum-supervisor",
+          "version": "1.0.0"
         }
       },
-      'status': 'Active'
+      "status": "Active",
+      "pending_status": null
     }
   ]
 }

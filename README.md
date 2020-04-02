@@ -31,8 +31,9 @@ The following table shows versions compatibility:
 |--------------|-------------------------|
 | 0.1          | 0.9.*                   |
 | 0.2          | 0.10.*                  |
-| 0.3.x        | 0.12.*                  |
-| master       | dynamic_services branch |
+| 0.3.1        | 0.12.*                  |
+| 1.0.x        | 1.0.*                   |
+| master       | `exonum` master branch  |
 
 ## System Dependencies
 
@@ -180,32 +181,44 @@ working services:
 
 ```python
 {
-  'artifacts': [
+  "artifacts": [
     {
-      'runtime_id': 0,
-      'name': 'exonum-cryptocurrency-advanced:1.0.0'
+      "runtime_id": 0,
+      "name": "exonum-supervisor",
+      "version": "1.0.0"
     },
     {
-      'runtime_id': 0,
-      'name': 'exonum-supervisor:1.0.0'
+      "runtime_id": 0,
+      "name": "exonum-explorer-service",
+      "version": "1.0.0"
     }
   ],
-  'services': [
+  "services": [
     {
-      'id': 1024,
-      'name': 'XNM',
-      'artifact': {
-        'runtime_id': 0,
-        'name': 'exonum-cryptocurrency-advanced:1.0.0'
-      }
+      "spec": {
+        "id": 2,
+        "name": "explorer",
+        "artifact": {
+          "runtime_id": 0,
+          "name": "exonum-explorer-service",
+          "version": "1.0.0"
+        }
+      },
+      "status": "Active",
+      "pending_status": null
     },
     {
-      'id': 0,
-      'name': 'supervisor',
-      'artifact': {
-        'runtime_id': 0,
-        'name': 'exonum-supervisor:1.0.0'
-      }
+      "spec": {
+        "id": 0,
+        "name": "supervisor",
+        "artifact": {
+          "runtime_id": 0,
+          "name": "exonum-supervisor",
+          "version": "1.0.0"
+        }
+      },
+      "status": "Active",
+      "pending_status": null
     }
   ]
 }

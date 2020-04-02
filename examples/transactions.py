@@ -124,7 +124,7 @@ def transfer(
     # Note that since we are using the Cryptocurrency module,
     # we need to load types from this module and not from the main module:
     types_module = ModuleManager.import_service_module(
-        CRYPTOCURRENCY_ARTIFACT_NAME, CRYPTOCURRENCY_ARTIFACT_VERSION, "types"
+        CRYPTOCURRENCY_ARTIFACT_NAME, CRYPTOCURRENCY_ARTIFACT_VERSION, "exonum.crypto.types"
     )
 
     transfer_message = cryptocurrency_module.Transfer()
