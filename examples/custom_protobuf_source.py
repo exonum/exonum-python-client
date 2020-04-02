@@ -57,14 +57,10 @@ def run() -> None:
         # Load the service module (service.proto from the cryptocurrency-advanced service).
         # Note that we load "service" module, which is absent in current version
         # of the service, it only exists in Exonum 1.0.
-        service_module = ModuleManager.import_service_module(
-            SERVICE_NAME, SERVICE_VERSION, "service"
-        )
+        service_module = ModuleManager.import_service_module(SERVICE_NAME, SERVICE_VERSION, "service")
         # Note that if we want to work with service module, we should use types also from that module.
         # That's required because of the inner python Protobuf implementation check system.
-        types_module = ModuleManager.import_service_module(
-            SERVICE_NAME, SERVICE_VERSION, "exonum.crypto.types"
-        )
+        types_module = ModuleManager.import_service_module(SERVICE_NAME, SERVICE_VERSION, "exonum.crypto.types")
 
         # Workflow is the same as for the main modules:
         transfer = service_module.Transfer()

@@ -51,10 +51,8 @@ class _GithubProtobufProvider(ProtobufProviderInterface):
 
         return results
 
-    def _get_sources_recursive(self, path, results: List[ProtoFile]) -> None:
-        content_url = (
-            f"https://api.github.com/repos/{self._organization}/{self._repo}/contents/{path}?ref={self._ref}"
-        )
+    def _get_sources_recursive(self, path: str, results: List[ProtoFile]) -> None:
+        content_url = f"https://api.github.com/repos/{self._organization}/{self._repo}/contents/{path}?ref={self._ref}"
 
         content = requests.get(content_url)
 
