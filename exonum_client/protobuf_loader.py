@@ -17,6 +17,7 @@ logger = getLogger(__name__)
 PYTHON_RUNTIME = 2
 
 
+# pylint: disable=inherit-non-class
 class ProtoFile(NamedTuple):
     """Structure that represents a proto file."""
 

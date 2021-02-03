@@ -65,18 +65,18 @@ class MapProofBuilder:
             encoder = getattr(module, structure_name)
             logger.debug("Successfully got encoder.")
             return encoder
-        except (ModuleNotFoundError, ImportError):
+        except (ModuleNotFoundError, ImportError) as e:
             error_data = {"main_module": main_module, "service_name": service_name, "service_module": service_module}
 
             err = MapProofBuilderError("Incorrect module data", error_data)
             logger.warning("%s: %s", str(err), error_data)
-            raise err
-        except AttributeError:
+            raise err from e
+        except AttributeError as e:
             error_data = {"service_name": structure_name}
 
             err = MapProofBuilderError("Incorrect structure name", error_data)
             logger.warning("%s: %s", str(err), error_data)
-            raise err
+            raise err from e
 
     # pylint: disable=too-many-arguments
     def set_key_encoder(
