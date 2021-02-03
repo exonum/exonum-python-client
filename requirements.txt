@@ -1,6 +1,6 @@
 alabaster==0.7.12
 appdirs==1.4.3
-astroid==2.3.1
+astroid==2.4.2
 attrs==19.2.0
 Babel==2.7.0
 black==19.3b0
@@ -24,10 +24,10 @@ mypy-extensions==0.4.1
 packaging==19.2
 pkginfo==1.5.0.1
 pluggy==0.13.0
-protobuf==3.9.2 --no-binary=protobuf
+protobuf==3.14.0 --no-binary=protobuf
 py==1.8.0
 Pygments==2.4.2
-pylint==2.4.2
+pylint==2.6.0
 pyparsing==2.4.2
 pysodium==0.7.2
 pytz==2019.2
@@ -48,7 +48,7 @@ toml==0.10.0
 tox==3.14.0
 tqdm==4.36.1
 twine==2.0.0
-typed-ast==1.4.0
+typed-ast==1.4.2
 typing-extensions==3.7.4
 urllib3==1.25.6
 virtualenv==16.7.5

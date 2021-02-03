@@ -165,7 +165,7 @@ class ExonumMessage:
         Returns
         -------
         parsed_message: Optional[ExonumMessage]
-            If parsing is successfull, an ExonumMessage object is returned.
+            If parsing is successful, an ExonumMessage object is returned.
             Otherwise the returned value is None.
         """
         try:
@@ -179,8 +179,8 @@ class ExonumMessage:
             author = signed_msg.author.data[:]
 
             exonum_message = cls(service_id, message_id, decoded_msg, prebuilt=exonum_msg.any_tx.SerializeToString())
+            exonum_message.set_signature_data(author, signature, bytes.fromhex(message_hex))
 
-            cls._set_signature_data(exonum_message, author, signature, bytes.fromhex(message_hex))
             logger.debug(
                 "Exonum message (ID: %s) from the service artifact '%s' " "for transaction '%s' parsed successfully.",
                 message_id,
@@ -301,7 +301,8 @@ class ExonumMessage:
         """Returns a serialized SignedMessage as bytes. If the message is not signed, returns None."""
         return self._signed_tx_raw
 
-    def _set_signature_data(self, author: bytes, signature: bytes, raw: bytes) -> None:
+    def set_signature_data(self, author: bytes, signature: bytes, raw: bytes) -> None:
+        """Sets author, signature and data of the transaction."""
         self._author = PublicKey(author)
         self._signature = Signature(signature)
         self._signed_tx_raw = raw
