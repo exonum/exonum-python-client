@@ -18,7 +18,7 @@ def _encode_byte_lists_to_base64(obj: Dict[Any, Any]) -> Dict[Any, Any]:
         for key, value in entries.items():
             if isinstance(value, dict):
                 _visit(value)
-            elif isinstance(value, list) and all(map(lambda x: 0 <= x <= 255, value)):
+            elif isinstance(value, list) and all(map(lambda x: 0 <= x <= 255 if isinstance(x, int) else False, value)):
                 obj_raw = bytes(value)
                 entries[key] = str(base64.b64encode(obj_raw), "utf-8")
 
