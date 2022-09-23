@@ -24,7 +24,7 @@ mypy-extensions==0.4.1
 packaging==19.2
 pkginfo==1.5.0.1
 pluggy==0.13.0
-protobuf==3.14.0 --no-binary=protobuf
+protobuf==3.18.3 --no-binary=protobuf
 py==1.10.0
 Pygments==2.7.4
 pylint==2.6.0
